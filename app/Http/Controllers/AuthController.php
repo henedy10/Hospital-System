@@ -27,4 +27,14 @@ class AuthController extends Controller
         // Placeholder for register logic
         return back()->with('error', 'Registration logic not implemented yet.');
     }
+
+    public function showForgotPassword()
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function showResetPassword(Request $request, $token)
+    {
+        return view('auth.reset-password', ['token' => $token, 'email' => $request->email]);
+    }
 }
