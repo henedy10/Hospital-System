@@ -20,8 +20,11 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
+        'role',
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -45,4 +48,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Role Constants
+    const ROLE_ADMIN = 'admin';
+    const ROLE_PATIENT = 'patient';
+    const ROLE_DOCTOR = 'doctor';
+    const ROLE_NURSE = 'nurse';
+
+    // Role Helpers
+    public function isAdmin()
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+    public function isPatient()
+    {
+        return $this->role === self::ROLE_PATIENT;
+    }
+    public function isDoctor()
+    {
+        return $this->role === self::ROLE_DOCTOR;
+    }
+    public function isNurse()
+    {
+        return $this->role === self::ROLE_NURSE;
+    }
 }
+

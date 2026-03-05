@@ -3,6 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
+
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
+
 
 class AuthController extends Controller
 {
@@ -16,17 +27,47 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        // Placeholder for login logic
-        return back()->with('error', 'Login logic not implemented yet.');
+        $credentials = $request->validated();
+
+        if (Auth::attempt($credentials, $request->remember)) {
+
+            $request->session()->regenerate();
+
+            $user = \Illuminate\Support\Facades\Auth::user();
+
+            return match ($user->role) {
+                \App\Models\User::ROLE_ADMIN => redirect()->route('admin.dashboard'),
+                \App\Models\User::ROLE_DOCTOR => redirect()->route('doctor.dashboard'),
+                \App\Models\User::ROLE_NURSE => redirect()->route('nurse.dashboard'),
+                \App\Models\User::ROLE_PATIENT => redirect()->route('patient.dashboard'),
+                default => redirect('/'),
+            };
+        }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');
     }
 
-    public function register(Request $request)
+
+    public function register(RegisterRequest $request)
     {
-        // Placeholder for register logic
-        return back()->with('error', 'Registration logic not implemented yet.');
+        $user = \App\Models\User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password),
+            'role' => \App\Models\User::ROLE_PATIENT,
+        ]);
+
+        Auth::login($user);
+
+
+        return redirect()->route('patient.dashboard');
     }
+
 
     public function showForgotPassword()
     {
@@ -37,4 +78,46 @@ class AuthController extends Controller
     {
         return view('auth.reset-password', ['token' => $token, 'email' => $request->email]);
     }
+
+    public function sendResetLink(ForgotPasswordRequest $request)
+    {
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with(['status' => __($status)])
+            : back()->withErrors(['email' => __($status)]);
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('status', __($status))
+            : back()->withErrors(['email' => [__($status)]]);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/');
+    }
+
 }

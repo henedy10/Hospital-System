@@ -8,18 +8,23 @@
         <p>Please sign in to your medical account</p>
     </div>
 
-    @if(session('error'))
+    @if ($errors->any())
         <div
-            style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; text-align: center;">
-            {{ session('error') }}
+            style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem;">
+            <ul style="list-style: none; padding: 0; margin: 0; text-align: center;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
+
 
     <form action="{{ url('/login') }}" method="POST">
         @csrf
         <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" class="form-control" placeholder="doctor@hospital.com" required
+            <input type="email" id="email" name="email" class="form-control" placeholder="Email Address" required
                 autofocus>
         </div>
 
