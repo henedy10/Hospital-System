@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="dashboard-welcome">
-        <h1>Welcome back, Sarah!</h1>
+        <h1>Welcome back, {{ Auth::user()->name }}!</h1>
         <p class="text-muted">Here's an overview of your health and upcoming appointments.</p>
     </div>
 
@@ -13,24 +13,35 @@
             <div class="stat-icon pulse-blue"><i class="fas fa-calendar-check"></i></div>
             <div class="stat-details">
                 <h3>Next Appointment</h3>
-                <p class="stat-value">Tomorrow, 10:00 AM</p>
-                <p class="stat-label">Dr. John Doe (General Medicine)</p>
+                @php $nextAppt = $recent_appointments->first(); @endphp
+                @if($nextAppt)
+                    <p class="stat-value">{{ \Carbon\Carbon::parse($nextAppt->appointment_date)->format('M d, Y') }}</p>
+                    <p class="stat-label">{{ $nextAppt->doctor_name }} ({{ $nextAppt->reason }})</p>
+                @else
+                    <p class="stat-value">No upcoming</p>
+                    <p class="stat-label">Schedule one today</p>
+                @endif
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon pulse-green"><i class="fas fa-file-medical"></i></div>
+            <div class="stat-icon pulse-green"><i class="fas fa-heartbeat"></i></div>
             <div class="stat-details">
-                <h3>Latest Report</h3>
-                <p class="stat-value">Blood Test Result</p>
-                <p class="stat-label">Uploaded 2 days ago</p>
+                <h3>Latest Vitals</h3>
+                @if($latest_vitals)
+                    <p class="stat-value">BP: {{ $latest_vitals->blood_pressure }}</p>
+                    <p class="stat-label">Temp: {{ $latest_vitals->temperature }}°F • HR: {{ $latest_vitals->heart_rate }}</p>
+                @else
+                    <p class="stat-value">No data</p>
+                    <p class="stat-label">Vitals not recorded yet</p>
+                @endif
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon pulse-purple"><i class="fas fa-pills"></i></div>
+            <div class="stat-icon pulse-purple"><i class="fas fa-file-medical"></i></div>
             <div class="stat-details">
-                <h3>Active Medications</h3>
-                <p class="stat-value">3 Prescriptions</p>
-                <p class="stat-label">Next dose: 8:00 PM</p>
+                <h3>Medical Records</h3>
+                <p class="stat-value">{{ Auth::user()->medicalHistories()->count() }} Records</p>
+                <p class="stat-label">View your full history</p>
             </div>
         </div>
     </div>
@@ -44,28 +55,25 @@
             </div>
             <div class="card-body">
                 <div class="appointment-list">
-                    <div class="appointment-item">
-                        <div class="appointment-date">
-                            <span class="day">06</span>
-                            <span class="month">MAR</span>
+                    @forelse($recent_appointments as $appointment)
+                        <div class="appointment-item">
+                            <div class="appointment-date">
+                                <span
+                                    class="day">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d') }}</span>
+                                <span
+                                    class="month">{{ strtoupper(\Carbon\Carbon::parse($appointment->appointment_date)->format('M')) }}</span>
+                            </div>
+                            <div class="appointment-info">
+                                <h4>{{ $appointment->reason }}</h4>
+                                <p>{{ $appointment->doctor_name }} •
+                                    {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('h:i A') }}</p>
+                            </div>
+                            <div class="appointment-status status-{{ $appointment->status }}">
+                                {{ ucfirst($appointment->status) }}</div>
                         </div>
-                        <div class="appointment-info">
-                            <h4>General Checkup</h4>
-                            <p>Dr. John Doe • 10:00 AM</p>
-                        </div>
-                        <div class="appointment-status status-upcoming">Confirmed</div>
-                    </div>
-                    <div class="appointment-item">
-                        <div class="appointment-date">
-                            <span class="day">15</span>
-                            <span class="month">MAR</span>
-                        </div>
-                        <div class="appointment-info">
-                            <h4>Dental Cleaning</h4>
-                            <p>Dr. Smith • 02:30 PM</p>
-                        </div>
-                        <div class="appointment-status status-pending">Pending</div>
-                    </div>
+                    @empty
+                        <div class="p-4 text-center text-muted">No upcoming appointments.</div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -78,22 +86,19 @@
             </div>
             <div class="card-body">
                 <div class="history-list">
-                    <div class="history-item">
-                        <div class="history-icon bg-light-blue"><i class="fas fa-flask"></i></div>
-                        <div class="history-info">
-                            <h4>Laboratory Analysis</h4>
-                            <p>Complete Blood Count • Feb 28, 2026</p>
+                    @forelse($medical_history as $record)
+                        <div class="history-item">
+                            <div class="history-icon bg-light-blue"><i class="fas fa-notes-medical"></i></div>
+                            <div class="history-info">
+                                <h4>{{ $record->condition }}</h4>
+                                <p>{{ $record->doctor_name }} •
+                                    {{ \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') }}</p>
+                            </div>
+                            <button class="btn-icon"><i class="fas fa-eye"></i></button>
                         </div>
-                        <button class="btn-icon"><i class="fas fa-download"></i></button>
-                    </div>
-                    <div class="history-item">
-                        <div class="history-icon bg-light-green"><i class="fas fa-prescription"></i></div>
-                        <div class="history-info">
-                            <h4>New Prescription</h4>
-                            <p>Amoxicillin 500mg • Feb 25, 2026</p>
-                        </div>
-                        <button class="btn-icon"><i class="fas fa-eye"></i></button>
-                    </div>
+                    @empty
+                        <div class="p-4 text-center text-muted">No medical history records.</div>
+                    @endforelse
                 </div>
             </div>
         </div>

@@ -8,92 +8,167 @@
             <h1>My Appointments</h1>
             <p class="text-muted">Manage your upcoming visits and view history.</p>
         </div>
-        <button class="btn-primary"><i class="fas fa-plus"></i> Book New Appointment</button>
+        <button class="btn-primary" onclick="openModal('bookModal')"><i class="fas fa-plus"></i> Book New
+            Appointment</button>
     </div>
 
     <div class="appointment-tabs">
-        <button class="tab-btn active">Upcoming</button>
-        <button class="tab-btn">Past</button>
-        <button class="tab-btn">Cancelled</button>
+        <a href="{{ route('patient.appointments', ['status' => 'upcoming']) }}"
+            class="tab-btn {{ $status === 'upcoming' ? 'active' : '' }}">Upcoming</a>
+        <a href="{{ route('patient.appointments', ['status' => 'completed']) }}"
+            class="tab-btn {{ $status === 'completed' ? 'active' : '' }}">Past</a>
+        <a href="{{ route('patient.appointments', ['status' => 'cancelled']) }}"
+            class="tab-btn {{ $status === 'cancelled' ? 'active' : '' }}">Cancelled</a>
     </div>
 
     <div class="appointments-container">
-        <div class="appointment-card">
-            <div class="doctor-profile">
-                <img src="https://ui-avatars.com/api/?name=John+Doe&background=0D9488&color=fff" alt="Doctor"
-                    class="doctor-avatar">
-                <div class="doctor-info">
-                    <h3>Dr. John Doe</h3>
-                    <p>General Medicine • Cardiology</p>
-                    <div class="rating"><i class="fas fa-star text-yellow"></i> 4.9 (120 reviews)</div>
-                </div>
-            </div>
-            <div class="appointment-details">
-                <div class="detail-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <div>
-                        <span>Date</span>
-                        <p>March 06, 2026</p>
+        @forelse($appointments as $appointment)
+            <div class="appointment-card {{ $appointment->status === 'upcoming' ? '' : 'status-completed-card' }}">
+                <div class="doctor-profile">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($appointment->doctor_name) }}&background=0D9488&color=fff"
+                        alt="Doctor" class="doctor-avatar">
+                    <div class="doctor-info">
+                        <h3>{{ $appointment->doctor_name }}</h3>
+                        <p>Specialist</p>
                     </div>
                 </div>
-                <div class="detail-item">
-                    <i class="fas fa-clock"></i>
-                    <div>
-                        <span>Time</span>
-                        <p>10:00 AM - 10:30 AM</p>
+                <div class="appointment-details">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <span>Date</span>
+                            <p>{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('F d, Y') }}</p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <span>Time</span>
+                            <p>{{ \Carbon\Carbon::parse($appointment->appointment_time)->format('h:i A') }}</p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <span>Reason</span>
+                            <p>{{ $appointment->reason }}</p>
+                        </div>
                     </div>
                 </div>
-                <div class="detail-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <div>
-                        <span>Location</span>
-                        <p>Block A, Room 302</p>
-                    </div>
+                <div class="appointment-actions">
+                    @if($appointment->status === 'upcoming')
+                        <button class="btn-secondary" onclick="openEditModal({{ json_encode($appointment) }})">Reschedule</button>
+                        <form action="{{ route('patient.appointments.cancel', $appointment) }}" method="POST"
+                            onsubmit="return confirm('Are you sure you want to cancel this appointment?')">
+                            @csrf
+                            <button type="submit" class="btn-outline-danger w-full text-center">Cancel</button>
+                        </form>
+                    @else
+                        <button class="btn-outline" disabled>{{ ucfirst($appointment->status) }}</button>
+                    @endif
                 </div>
             </div>
-            <div class="appointment-actions">
-                <button class="btn-secondary">Reschedule</button>
-                <button class="btn-outline-danger">Cancel</button>
+        @empty
+            <div class="p-8 text-center bg-white rounded-xl shadow-sm">
+                <p class="text-muted">You have no appointments in this category.</p>
+                <button class="btn-primary mt-4 mx-auto" onclick="openModal('bookModal')"><i class="fas fa-plus"></i> Book
+                    Now</button>
             </div>
-        </div>
+        @endforelse
+    </div>
 
-        <div class="appointment-card status-pending-card">
-            <div class="doctor-profile">
-                <img src="https://ui-avatars.com/api/?name=Alice+Smith&background=8B5CF6&color=fff" alt="Doctor"
-                    class="doctor-avatar">
-                <div class="doctor-info">
-                    <h3>Dr. Alice Smith</h3>
-                    <p>Dermatology</p>
-                    <div class="rating"><i class="fas fa-star text-yellow"></i> 4.8 (85 reviews)</div>
-                </div>
+    <!-- Booking Modal -->
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Book New Appointment</h2>
+                <button class="close-btn" onclick="closeModal('bookModal')">&times;</button>
             </div>
-            <div class="appointment-details">
-                <div class="detail-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <div>
-                        <span>Date</span>
-                        <p>March 15, 2026</p>
+            <form action="{{ route('patient.appointments.store') }}" method="POST">
+                @csrf
+                <div class="form-group">
+                    <label>Doctor Name</label>
+                    <select name="doctor_name" class="form-control" required>
+                        <option value="">Select Doctor</option>
+                        @foreach($doctors as $doctor)
+                            <option value="{{ $doctor->name }}">{{ $doctor->name }} - {{ $doctor->specialist ?? 'General' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" name="appointment_date" class="form-control" required min="{{ date('Y-m-d') }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Preferred Time</label>
+                        <select name="appointment_time" class="form-control" required>
+                            <option value="">Select Time</option>
+                            @for($i = 9; $i <= 17; $i++)
+                                <option value="{{ $i }}:00">{{ sprintf('%02d:00 AM', $i > 12 ? $i - 12 : $i) }}</option>
+                                <option value="{{ $i }}:30">{{ sprintf('%02d:30 AM', $i > 12 ? $i - 12 : $i) }}</option>
+                            @endfor
+                        </select>
                     </div>
                 </div>
-                <div class="detail-item">
-                    <i class="fas fa-clock"></i>
-                    <div>
-                        <span>Time</span>
-                        <p>02:30 PM - 03:00 PM</p>
+                <div class="form-group">
+                    <label>Reason for Visit</label>
+                    <textarea name="reason" class="form-control" rows="3" required
+                        placeholder="Briefly describe your reason for visiting"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" onclick="closeModal('bookModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Confirm Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reschedule Appointment</h2>
+                <button class="close-btn" onclick="closeModal('editModal')">&times;</button>
+            </div>
+            <form id="editForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="form-group">
+                    <label>Doctor Name</label>
+                    <select name="doctor_name" id="edit_doctor_name" class="form-control" required>
+                        @foreach($doctors as $doctor)
+                            <option value="{{ $doctor->name }}">{{ $doctor->name }} - {{ $doctor->specialist ?? 'General' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" name="appointment_date" id="edit_appointment_date" class="form-control" required
+                            min="{{ date('Y-m-d') }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Preferred Time</label>
+                        <select name="appointment_time" id="edit_appointment_time" class="form-control" required>
+                            @for($i = 9; $i <= 17; $i++)
+                                <option value="{{ sprintf('%02d:00', $i) }}">{{ date('h:i A', strtotime($i . ':00')) }}</option>
+                                <option value="{{ sprintf('%02d:30', $i) }}">{{ date('h:i A', strtotime($i . ':30')) }}</option>
+                            @endfor
+                        </select>
                     </div>
                 </div>
-                <div class="detail-item">
-                    <i class="fas fa-info-circle"></i>
-                    <div>
-                        <span>Status</span>
-                        <p class="text-orange">Awaiting Confirmation</p>
-                    </div>
+                <div class="form-group">
+                    <label>Reason for Visit</label>
+                    <textarea name="reason" id="edit_reason" class="form-control" rows="3" required></textarea>
                 </div>
-            </div>
-            <div class="appointment-actions">
-                <button class="btn-outline">View Details</button>
-                <button class="btn-outline-danger">Cancel Request</button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" onclick="closeModal('editModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Appointment</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -109,6 +184,21 @@
             font-size: 1.875rem;
             color: #111827;
             margin-bottom: 0.5rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: #ECFDF5;
+            color: #059669;
+            border: 1px solid #10B981;
         }
 
         .btn-primary {
@@ -137,6 +227,7 @@
         }
 
         .tab-btn {
+            text-decoration: none;
             background: none;
             border: none;
             padding: 1rem 1.5rem;
@@ -144,6 +235,11 @@
             color: #6B7280;
             cursor: pointer;
             position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #0D9488;
         }
 
         .tab-btn.active {
@@ -178,8 +274,9 @@
             border-left: 4px solid #0D9488;
         }
 
-        .status-pending-card {
-            border-left-color: #F59E0B;
+        .status-completed-card {
+            border-left-color: #9CA3AF;
+            opacity: 0.8;
         }
 
         .doctor-profile {
@@ -205,15 +302,6 @@
         .doctor-info p {
             font-size: 0.875rem;
             color: #6B7280;
-        }
-
-        .rating {
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-        }
-
-        .text-yellow {
-            color: #F59E0B;
         }
 
         .appointment-details {
@@ -260,6 +348,12 @@
             border-radius: 0.5rem;
             font-weight: 500;
             cursor: pointer;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #E5E7EB;
         }
 
         .btn-outline-danger {
@@ -270,6 +364,11 @@
             border-radius: 0.5rem;
             font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-danger:hover {
+            background: #FEF2F2;
         }
 
         .btn-outline {
@@ -280,10 +379,158 @@
             border-radius: 0.5rem;
             font-weight: 500;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
-        .text-orange {
-            color: #D97706;
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            width: 500px;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            color: #9CA3AF;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        form {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0D9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            background: #F9FAFB;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .p-8 {
+            padding: 2rem;
         }
     </style>
+
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function openEditModal(appointment) {
+            const form = document.getElementById('editForm');
+            form.action = `/patient/appointments/${appointment.id}`;
+
+            document.getElementById('edit_doctor_name').value = appointment.doctor_name;
+            document.getElementById('edit_appointment_date').value = appointment.appointment_date;
+
+            // Format time to HH:MM for select
+            const time = appointment.appointment_time.substring(0, 5);
+            document.getElementById('edit_appointment_time').value = time;
+
+            document.getElementById('edit_reason').value = appointment.reason;
+
+            openModal('editModal');
+        }
+
+        // Close on outside click
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
 @endsection

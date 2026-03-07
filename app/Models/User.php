@@ -23,7 +23,32 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'dob',
+        'address',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'emergency_contact_relationship',
+        'blood_type',
+        'allergies',
+        'insurance_provider',
+        'insurance_member_id',
+        'insurance_plan',
+        'profile_image',
+        'patient_id',
+        'is_verified',
+        'specialist',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if ($user->role === self::ROLE_PATIENT && !$user->patient_id) {
+                $user->patient_id = 'PAT-' . strtoupper(now()->format('y')) . '-' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
+        });
+    }
 
 
     /**
@@ -71,6 +96,30 @@ class User extends Authenticatable
     public function isNurse()
     {
         return $this->role === self::ROLE_NURSE;
+    }
+
+    /**
+     * Get the appointments for the user.
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    /**
+     * Get the medical histories for the user.
+     */
+    public function medicalHistories()
+    {
+        return $this->hasMany(MedicalHistory::class);
+    }
+
+    /**
+     * Get the vitals for the user.
+     */
+    public function vitals()
+    {
+        return $this->hasMany(Vital::class);
     }
 }
 

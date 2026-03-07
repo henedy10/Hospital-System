@@ -12,57 +12,26 @@
         <div class="history-main">
             <!-- Records Timeline -->
             <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-marker bg-blue"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-header">
-                            <span class="date">Feb 28, 2026</span>
-                            <span class="type-badge laboratory">Laboratory</span>
-                        </div>
-                        <h3>Complete Blood Count (CBC)</h3>
-                        <p>Conducted by LabCorp Solutions. Results show normal ranges for all parameters except slightly low
-                            Iron levels.</p>
-                        <div class="attachments">
-                            <div class="file-chip">
-                                <i class="fas fa-file-pdf text-red"></i>
-                                <span>blood_test_results.pdf</span>
-                                <button><i class="fas fa-download"></i></button>
+                @forelse($history as $record)
+                    <div class="timeline-item">
+                        <div class="timeline-marker {{ $loop->first ? 'bg-blue' : 'bg-green' }}"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <span class="date">{{ \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') }}</span>
+                                <span class="type-badge laboratory">Record</span>
+                            </div>
+                            <h3>{{ $record->condition }}</h3>
+                            <p>{{ $record->treatment }}</p>
+                            <div class="mt-2 text-sm text-muted">
+                                <strong>Doctor:</strong> {{ $record->doctor_name }}
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="timeline-item">
-                    <div class="timeline-marker bg-green"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-header">
-                            <span class="date">Feb 25, 2026</span>
-                            <span class="type-badge prescription">Prescription</span>
-                        </div>
-                        <h3>Antibiotic Treatment</h3>
-                        <p>Prescribed by Dr. John Doe for Sinusitis. Amoxicillin 500mg, 3 times a day for 7 days.</p>
-                        <div class="prescription-card">
-                            <div class="rx-header"><i class="fas fa-receipt"></i> RX Details</div>
-                            <div class="rx-body">
-                                <div class="med"><strong>Amoxicillin</strong> 500mg • 21 Capsules</div>
-                                <div class="med"><strong>Vitamin C</strong> 1000mg • 10 Tablets</div>
-                            </div>
-                        </div>
+                @empty
+                    <div class="p-8 text-center bg-white rounded-xl shadow-sm">
+                        <p class="text-muted">No medical history records found.</p>
                     </div>
-                </div>
-
-                <div class="timeline-item">
-                    <div class="timeline-marker bg-purple"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-header">
-                            <span class="date">Feb 10, 2026</span>
-                            <span class="type-badge visit">Doctor Visit</span>
-                        </div>
-                        <h3>Annual General Checkup</h3>
-                        <p>Routine health assessment with Dr. John Doe. Overall health is excellent. Recommended increasing
-                            daily water intake and regular exercise.</p>
-                    </div>
-                </div>
+                @endforelse
             </div>
         </div>
 

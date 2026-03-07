@@ -11,10 +11,9 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('patient')->after('email');
-            $table->string('phone')->nullable()->after('role');
+            $table->string('patient_id')->nullable()->unique()->after('id');
+            $table->boolean('is_verified')->default(false)->after('role');
         });
-
     }
 
     /**
@@ -23,8 +22,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['role', 'phone']);
+            $table->dropColumn(['patient_id', 'is_verified']);
         });
-
     }
 };

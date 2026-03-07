@@ -13,51 +13,177 @@
             <div class="profile-cover"></div>
             <div class="profile-user-block">
                 <div class="avatar-wrapper">
-                    <img src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=0D9488&color=fff&size=128"
+                    <img id="avatar-preview"
+                        src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0D9488&color=fff&size=128' }}"
                         alt="Profile" class="profile-avatar">
-                    <button class="edit-avatar"><i class="fas fa-camera"></i></button>
+                    <button type="button" class="edit-avatar"
+                        onclick="document.getElementById('profile_image_input').click()"><i
+                            class="fas fa-camera"></i></button>
+                    <input type="file" id="profile_image_input" name="profile_image" form="profile-update-form"
+                        class="hidden" accept="image/*" onchange="previewImage(this)">
                 </div>
+                @error('profile_image', 'profileUpdate') <span
+                class="invalid-feedback block mt-1">{{ $message }}</span>@enderror
                 <div class="user-meta">
-                    <h2>Sarah Johnson</h2>
-                    <p>Patient ID: #PAT-2026-8842</p>
-                    <span class="user-status active">Verified Account</span>
+                    <h2>{{ $user->name }}</h2>
+                    <p>Patient ID: {{ $user->patient_id ?? 'N/A' }}</p>
+                    <span class="user-status {{ $user->is_verified ? 'active' : 'pending' }}">
+                        {{ $user->is_verified ? 'Verified Account' : 'Pending Verification' }}
+                    </span>
                 </div>
             </div>
         </div>
 
         <div class="profile-grid">
             <div class="profile-main">
+
                 <div class="form-card">
                     <div class="card-title">
                         <i class="fas fa-user"></i>
                         <h3>Personal Information</h3>
                     </div>
-                    <form action="{{ route('patient.profile.update') }}" method="POST">
+                    <form action="{{ route('patient.profile.update') }}" method="POST" enctype="multipart/form-data"
+                        id="profile-update-form">
                         @csrf
+                        {{-- @if ($errors->profileUpdate->any())
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Please correct the errors in the form below.</span>
+                        </div>
+                        @endif --}}
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Full Name</label>
-                                <input type="text" value="Sarah Johnson" class="form-control">
+                                <input type="text" name="name" value="{{ old('name', $user->name) }}"
+                                    class="form-control @error('name', 'profileUpdate') is-invalid @enderror">
+                                @error('name', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
                             </div>
                             <div class="form-group">
                                 <label>Email Address</label>
-                                <input type="email" value="sarah.j@example.com" class="form-control">
+                                <input type="email" name="email" value="{{ old('email', $user->email) }}"
+                                    class="form-control @error('email', 'profileUpdate') is-invalid @enderror">
+                                @error('email', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Phone Number</label>
-                                <input type="text" value="+1 (555) 123-4567" class="form-control">
+                                <input type="text" name="phone" value="{{ old('phone', $user->phone) }}"
+                                    class="form-control @error('phone', 'profileUpdate') is-invalid @enderror">
+                                @error('phone', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
                             </div>
                             <div class="form-group">
                                 <label>Date of Birth</label>
-                                <input type="date" value="1995-05-15" class="form-control">
+                                <input type="date" name="dob" value="{{ old('dob', $user->dob) }}"
+                                    class="form-control @error('dob', 'profileUpdate') is-invalid @enderror">
+                                @error('dob', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Address</label>
-                            <textarea class="form-control" rows="3">123 Health Ave, Medical District, NY 10001</textarea>
+                            <textarea name="address"
+                                class="form-control @error('address', 'profileUpdate') is-invalid @enderror"
+                                rows="3">{{ old('address', $user->address) }}</textarea>
+                            @error('address', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
                         </div>
+
+                        <div class="card-title mt-4">
+                            <i class="fas fa-heartbeat"></i>
+                            <h3>Medical Information</h3>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Blood Type</label>
+                                <select name="blood_type"
+                                    class="form-control @error('blood_type', 'profileUpdate') is-invalid @enderror">
+                                    <option value="">Select Blood Type</option>
+                                    @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $type)
+                                        <option value="{{ $type }}" {{ old('blood_type', $user->blood_type) == $type ? 'selected' : '' }}>{{ $type }}</option>
+                                    @endforeach
+                                </select>
+                                @error('blood_type', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label>Allergies</label>
+                                <input type="text" name="allergies" value="{{ old('allergies', $user->allergies) }}"
+                                    class="form-control @error('allergies', 'profileUpdate') is-invalid @enderror"
+                                    placeholder="e.g. Peanuts, Penicillin">
+                                @error('allergies', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="card-title mt-4">
+                            <i class="fas fa-phone-alt"></i>
+                            <h3>Emergency Contact</h3>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Contact Name</label>
+                                <input type="text" name="emergency_contact_name"
+                                    value="{{ old('emergency_contact_name', $user->emergency_contact_name) }}"
+                                    class="form-control @error('emergency_contact_name', 'profileUpdate') is-invalid @enderror">
+                                @error('emergency_contact_name', 'profileUpdate') <span
+                                    class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label>Relationship</label>
+                                <input type="text" name="emergency_contact_relationship"
+                                    value="{{ old('emergency_contact_relationship', $user->emergency_contact_relationship) }}"
+                                    class="form-control @error('emergency_contact_relationship', 'profileUpdate') is-invalid @enderror">
+                                @error('emergency_contact_relationship', 'profileUpdate') <span
+                                class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone</label>
+                            <input type="text" name="emergency_contact_phone"
+                                value="{{ old('emergency_contact_phone', $user->emergency_contact_phone) }}"
+                                class="form-control @error('emergency_contact_phone', 'profileUpdate') is-invalid @enderror">
+                            @error('emergency_contact_phone', 'profileUpdate') <span
+                                class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="card-title mt-4">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Health Insurance</h3>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Provider</label>
+                                <input type="text" name="insurance_provider"
+                                    value="{{ old('insurance_provider', $user->insurance_provider) }}"
+                                    class="form-control @error('insurance_provider', 'profileUpdate') is-invalid @enderror">
+                                @error('insurance_provider', 'profileUpdate') <span
+                                    class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label>Plan Name</label>
+                                <input type="text" name="insurance_plan"
+                                    value="{{ old('insurance_plan', $user->insurance_plan) }}"
+                                    class="form-control @error('insurance_plan', 'profileUpdate') is-invalid @enderror">
+                                @error('insurance_plan', 'profileUpdate') <span
+                                class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Member ID</label>
+                            <input type="text" name="insurance_member_id"
+                                value="{{ old('insurance_member_id', $user->insurance_member_id) }}"
+                                class="form-control @error('insurance_member_id', 'profileUpdate') is-invalid @enderror">
+                            @error('insurance_member_id', 'profileUpdate') <span
+                            class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+
                         <div class="form-actions">
                             <button type="submit" class="btn-save">Update Profile</button>
                         </div>
@@ -67,46 +193,82 @@
                 <div class="form-card mt-2">
                     <div class="card-title">
                         <i class="fas fa-lock"></i>
-                        <h3>Current Password</h3>
+                        <h3>Security</h3>
                     </div>
-                    <div class="form-group">
-                        <label>New Password</label>
-                        <input type="password" placeholder="••••••••" class="form-control">
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn-outline">Change Password</button>
-                    </div>
+                    <form action="{{ route('patient.profile.password') }}" method="POST">
+                        @csrf
+                        {{-- @if ($errors->passwordUpdate->any())
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Please correct the errors in the password form.</span>
+                        </div>
+                        @endif --}}
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" name="current_password"
+                                class="form-control @error('current_password', 'passwordUpdate') is-invalid @enderror">
+                            @error('current_password', 'passwordUpdate') <span
+                            class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" name="password"
+                                    class="form-control @error('password', 'passwordUpdate') is-invalid @enderror">
+                                @error('password', 'passwordUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password</label>
+                                <input type="password" name="password_confirmation" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-save">Update Password</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
             <div class="profile-sidebar">
                 <div class="sidebar-card">
                     <h3>Emergency Contact</h3>
-                    <div class="contact-box">
-                        <div class="contact-info">
-                            <strong>Robert Johnson</strong>
-                            <p>Spouse</p>
+                    @if($user->emergency_contact_name)
+                        <div class="contact-box">
+                            <div class="contact-info">
+                                <strong>{{ $user->emergency_contact_name }}</strong>
+                                <p>{{ $user->emergency_contact_relationship }}</p>
+                            </div>
+                            <p class="contact-phone"><i class="fas fa-phone"></i> {{ $user->emergency_contact_phone }}</p>
                         </div>
-                        <p class="contact-phone"><i class="fas fa-phone"></i> +1 (555) 987-6543</p>
-                    </div>
-                    <button class="btn-block-outline btn-small mt-1">Edit Contact</button>
+                    @else
+                        <p class="text-sm text-gray-500 italic">No emergency contact set.</p>
+                    @endif
                 </div>
 
                 <div class="sidebar-card">
                     <h3>Health Insurance</h3>
-                    <div class="insurance-card">
-                        <div class="ins-header">Blue Shield Health</div>
-                        <div class="ins-body">
-                            <p><span>Member ID</span> <strong>BS-992031</strong></p>
-                            <p><span>Plan</span> <strong>Premium Plus</strong></p>
+                    @if($user->insurance_provider)
+                        <div class="insurance-card">
+                            <div class="ins-header">{{ $user->insurance_provider }}</div>
+                            <div class="ins-body">
+                                <p><span>Member ID</span> <strong>{{ $user->insurance_member_id }}</strong></p>
+                                <p><span>Plan</span> <strong>{{ $user->insurance_plan }}</strong></p>
+                            </div>
                         </div>
-                    </div>
+                    @else
+                        <p class="text-sm text-gray-500 italic">No insurance information set.</p>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
     <style>
+        .hidden {
+            display: none;
+        }
+
         .page-header {
             margin-bottom: 2rem;
         }
@@ -196,6 +358,11 @@
         .active {
             background: #ECFDF5;
             color: #059669;
+        }
+
+        .pending {
+            background: #FEF3C7;
+            color: #D97706;
         }
 
         .profile-grid {
@@ -387,4 +554,23 @@
             font-size: 0.75rem;
         }
     </style>
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    document.getElementById('avatar-preview').src = e.target.result;
+                    // Also update the sidebar avatar for a truly "realtime" feel
+                    const sidebarAvatar = document.querySelector('.user-profile .avatar');
+                    if (sidebarAvatar) {
+                        sidebarAvatar.src = e.target.result;
+                    }
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 @endsection

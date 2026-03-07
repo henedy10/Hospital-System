@@ -72,7 +72,12 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="#"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+                <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
+                    @csrf
+                </form>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
             </div>
         </aside>
 
@@ -84,29 +89,31 @@
                 </div>
                 <div class="user-profile">
                     <div class="user-info">
-                        @php
-                            $name = 'User';
-                            $role = 'Patient';
-                            if (request()->is('doctor*')) {
-                                $name = 'Dr. John Doe';
-                                $role = 'Cardiologist';
-                            } elseif (request()->is('nurse*')) {
-                                $name = 'Nurse Joy';
-                                $role = 'Specialized Nurse';
-                            } elseif (request()->is('patient*')) {
-                                $name = 'Sarah Johnson';
-                                $role = 'Patient';
-                            }
-                        @endphp
-                        <span class="user-name">{{ $name }}</span>
-                        <span class="user-role">{{ $role }}</span>
+                        <span class="user-name">{{ Auth::user()->name }}</span>
+                        <span class="user-role">{{ ucfirst(Auth::user()->role) }}</span>
                     </div>
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=0D9488&color=fff" alt="Avatar"
-                        class="avatar">
+                    <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=0D9488&color=fff' }}"
+                        alt="Avatar" class="avatar">
                 </div>
             </header>
 
             <section class="content-wrapper">
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ session('success') }}</span>
+                        <button type="button" class="close-alert" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ session('error') }}</span>
+                        <button type="button" class="close-alert" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                @endif
+
                 @yield('content')
             </section>
         </main>

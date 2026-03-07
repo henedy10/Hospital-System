@@ -63,9 +63,13 @@ Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
 Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function () {
     Route::get('/dashboard', [PatientDashboardController::class, 'index'])->name('patient.dashboard');
     Route::get('/appointments', [PatientAppointmentController::class, 'index'])->name('patient.appointments');
+    Route::post('/appointments', [PatientAppointmentController::class, 'store'])->name('patient.appointments.store');
+    Route::put('/appointments/{appointment}', [PatientAppointmentController::class, 'update'])->name('patient.appointments.update');
+    Route::post('/appointments/{appointment}/cancel', [PatientAppointmentController::class, 'cancel'])->name('patient.appointments.cancel');
     Route::get('/history', [PatientMedicalHistoryController::class, 'index'])->name('patient.history');
     Route::get('/profile', [PatientProfileController::class, 'index'])->name('patient.profile');
     Route::post('/profile', [PatientProfileController::class, 'update'])->name('patient.profile.update');
+    Route::post('/profile/password', [PatientProfileController::class, 'updatePassword'])->name('patient.profile.password');
 });
 
 

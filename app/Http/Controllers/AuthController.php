@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
@@ -35,13 +36,13 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            $user = \Illuminate\Support\Facades\Auth::user();
+            $user = Auth::user();
 
             return match ($user->role) {
-                \App\Models\User::ROLE_ADMIN => redirect()->route('admin.dashboard'),
-                \App\Models\User::ROLE_DOCTOR => redirect()->route('doctor.dashboard'),
-                \App\Models\User::ROLE_NURSE => redirect()->route('nurse.dashboard'),
-                \App\Models\User::ROLE_PATIENT => redirect()->route('patient.dashboard'),
+                User::ROLE_ADMIN => redirect()->route('admin.dashboard'),
+                User::ROLE_DOCTOR => redirect()->route('doctor.dashboard'),
+                User::ROLE_NURSE => redirect()->route('nurse.dashboard'),
+                User::ROLE_PATIENT => redirect()->route('patient.dashboard'),
                 default => redirect('/'),
             };
         }
@@ -54,12 +55,12 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
-            'role' => \App\Models\User::ROLE_PATIENT,
+            'role' => User::ROLE_PATIENT,
         ]);
 
         Auth::login($user);

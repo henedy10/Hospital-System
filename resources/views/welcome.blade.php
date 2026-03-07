@@ -39,7 +39,16 @@
                 <div class="flex items-center gap-4">
                     @if (Route::has('login'))
                         @auth
-                            <a href="{{ route('doctor.dashboard') }}"
+                            @php
+                                $dashboardRoute = 'login';
+                                if (Auth::user()->role === 'doctor')
+                                    $dashboardRoute = 'doctor.dashboard';
+                                elseif (Auth::user()->role === 'nurse')
+                                    $dashboardRoute = 'nurse.dashboard';
+                                elseif (Auth::user()->role === 'patient')
+                                    $dashboardRoute = 'patient.dashboard';
+                            @endphp
+                            <a href="{{ route($dashboardRoute) }}"
                                 class="px-6 py-2.5 bg-medical-primary text-white rounded-full text-sm font-semibold hover:bg-medical-primary/90 transition-all shadow-lg shadow-medical-primary/25">Dashboard</a>
                         @else
                             <a href="{{ route('login') }}"
