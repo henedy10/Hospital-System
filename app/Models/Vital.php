@@ -12,6 +12,8 @@ class Vital extends Model
         'heart_rate',
         'temperature',
         'respiratory_rate',
+        'weight',
+        'height',
     ];
 
     public function user()

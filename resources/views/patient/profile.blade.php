@@ -110,11 +110,31 @@
                                 @enderror
                             </div>
                             <div class="form-group">
-                                <label>Allergies</label>
-                                <input type="text" name="allergies" value="{{ old('allergies', $user->allergies) }}"
+                                <label>Allergies (comma separated)</label>
+                                <input type="text" name="allergies"
+                                    value="{{ old('allergies', is_array($user->allergies) ? implode(', ', $user->allergies) : $user->allergies) }}"
                                     class="form-control @error('allergies', 'profileUpdate') is-invalid @enderror"
                                     placeholder="e.g. Peanuts, Penicillin">
                                 @error('allergies', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Weight (kg)</label>
+                                <input type="number" step="0.1" name="weight" value="{{ old('weight', $user->weight) }}"
+                                    class="form-control @error('weight', 'profileUpdate') is-invalid @enderror"
+                                    placeholder="e.g. 75.5">
+                                @error('weight', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label>Height (cm)</label>
+                                <input type="number" step="0.1" name="height" value="{{ old('height', $user->height) }}"
+                                    class="form-control @error('height', 'profileUpdate') is-invalid @enderror"
+                                    placeholder="e.g. 180">
+                                @error('height', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>

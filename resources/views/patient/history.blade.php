@@ -47,19 +47,28 @@
                 <div class="summary-list">
                     <div class="summary-item">
                         <span>Blood Type</span>
-                        <strong>O Positive (O+)</strong>
+                        <strong>{{ Auth::user()->blood_type ?? 'N/A' }}</strong>
                     </div>
                     <div class="summary-item">
                         <span>Allergies</span>
-                        <strong class="text-red">Peanuts, Penicillin</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; max-width: 150px;">
+                            @if(is_array(Auth::user()->allergies) && count(Auth::user()->allergies) > 0)
+                                @foreach(Auth::user()->allergies as $allergy)
+                                    <span
+                                        style="background: #FEF2F2; color: #DC2626; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">{{ $allergy }}</span>
+                                @endforeach
+                            @else
+                                <strong class="text-red">None</strong>
+                            @endif
+                        </div>
                     </div>
                     <div class="summary-item">
                         <span>Height</span>
-                        <strong>165 cm</strong>
+                        <strong>{{ Auth::user()->height ?? (Auth::user()->vitals->first()->height ?? '--') }} cm</strong>
                     </div>
                     <div class="summary-item">
                         <span>Weight</span>
-                        <strong>58 kg</strong>
+                        <strong>{{ Auth::user()->weight ?? (Auth::user()->vitals->first()->weight ?? '--') }} kg</strong>
                     </div>
                 </div>
             </div>

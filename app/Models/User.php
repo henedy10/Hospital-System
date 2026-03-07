@@ -37,6 +37,8 @@ class User extends Authenticatable
         'patient_id',
         'is_verified',
         'specialist',
+        'weight',
+        'height',
     ];
 
     protected static function boot()
@@ -71,6 +73,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'allergies' => 'array',
         ];
     }
 

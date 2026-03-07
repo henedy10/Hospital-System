@@ -39,6 +39,8 @@ class ProfileUpdateRequest extends FormRequest
             'insurance_member_id' => 'nullable|string|max:255',
             'insurance_plan' => 'nullable|string|max:255',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'weight' => 'nullable|numeric|between:0,999.99',
+            'height' => 'nullable|numeric|between:0,999.99',
         ];
     }
 

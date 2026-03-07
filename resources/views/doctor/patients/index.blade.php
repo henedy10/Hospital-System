@@ -49,42 +49,49 @@
 
     <!-- Enhanced Patients Grid -->
     <div class="patient-grid" dir="rtl">
-        @foreach($patients as $patient)
+        @forelse($patients as $patient)
             <div class="glass-card patient-card" style="transition: transform 0.3s ease; cursor: pointer;"
-                onclick="window.location='{{ route('doctor.patients.show', $patient['id']) }}'">
+                onclick="window.location='{{ route('doctor.patients.show', $patient->id) }}'">
                 <div class="patient-avatar-wrapper" style="margin-bottom: 15px;">
-                    <img src="{{ $patient['avatar'] }}" alt="{{ $patient['name'] }}" class="patient-avatar"
-                        style="width: 70px; height: 70px;">
-                    <span
-                        style="position: absolute; bottom: 0; left: 50%; transform: translate(-50%, 50%); background: var(--primary); color: #fff; font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 700;">
-                        {{ $patient['blood_type'] }}
-                    </span>
+                    <img src="{{ $patient->profile_image ? asset('storage/' . $patient->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($patient->name) . '&background=0D9488&color=fff' }}"
+                        alt="{{ $patient->name }}" class="patient-avatar" style="width: 70px; height: 70px;">
+                    @if($patient->blood_type)
+                        <span
+                            style="position: absolute; bottom: 0; left: 50%; transform: translate(-50%, 50%); background: var(--primary); color: #fff; font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 700;">
+                            {{ $patient->blood_type }}
+                        </span>
+                    @endif
                 </div>
-                <div class="patient-name" style="font-size: 1.1rem; margin-bottom: 4px;">{{ $patient['name'] }}</div>
+                <div class="patient-name" style="font-size: 1.1rem; margin-bottom: 4px;">{{ $patient->name }}</div>
                 <div class="patient-meta" style="margin-bottom: 20px;">
-                    <i class="fas fa-venus-mars" style="font-size: 0.7rem; opacity: 0.7;"></i> {{ $patient['gender'] }} •
-                    {{ $patient['age'] }} عاماً
+                    <i class="fas fa-venus-mars" style="font-size: 0.7rem; opacity: 0.7;"></i> ذكر •
+                    {{ \Carbon\Carbon::parse($patient->dob)->age }} عاماً
                 </div>
 
                 <div class="patient-details"
                     style="background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 20px;">
                     <div class="detail-item" style="border-bottom: 1px solid #eef2f6; padding-bottom: 8px; margin-bottom: 8px;">
                         <span class="detail-label"><i class="far fa-calendar-alt"></i> آخر زيارة</span>
-                        <span class="detail-value">{{ $patient['last_visit'] }}</span>
+                        <span
+                            class="detail-value">{{ $patient->medicalHistories->first() ? $patient->medicalHistories->first()->diagnosis_date : '--' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label"><i class="fas fa-diagnoses"></i> الحالة</span>
                         <span class="detail-value"
-                            style="color: var(--primary); font-weight: 700;">{{ $patient['condition'] }}</span>
+                            style="color: var(--primary); font-weight: 700;">{{ $patient->medicalHistories->first() ? $patient->medicalHistories->first()->condition : 'لا يوجد سجل' }}</span>
                     </div>
                 </div>
 
                 <div class="patient-actions" style="gap: 10px;">
-                    <a href="{{ route('doctor.patients.show', $patient['id']) }}" class="btn-primary-sm"
+                    <a href="{{ route('doctor.patients.show', $patient->id) }}" class="btn-primary-sm"
                         style="flex: 1; text-decoration: none;">الملف السريري</a>
                     <a href="#" class="btn-icon" style="border-radius: 10px;"><i class="fas fa-ellipsis-h"></i></a>
                 </div>
             </div>
-        @endforeach
+        @empty
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <p style="color: var(--text-muted);">لا يوجد مرضى مسجلين حالياً.</p>
+            </div>
+        @endforelse
     </div>
 @endsection

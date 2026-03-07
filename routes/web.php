@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Doctor\DashboardController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\PatientController;
+use App\Http\Controllers\Doctor\MedicalHistoryController as DoctorMedicalHistoryController;
 use App\Http\Controllers\Doctor\ReportController;
 use App\Http\Controllers\Doctor\SettingController;
 use App\Http\Controllers\Nurse\DashboardController as NurseDashboardController;
@@ -43,6 +44,11 @@ Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function ()
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('doctor.appointments');
     Route::get('/patients', [PatientController::class, 'index'])->name('doctor.patients');
     Route::get('/patients/{id}', [PatientController::class, 'show'])->name('doctor.patients.show');
+
+    // Medical History
+    Route::post('/medical-history', [DoctorMedicalHistoryController::class, 'store'])->name('doctor.medical-history.store');
+    Route::put('/medical-history/{history}', [DoctorMedicalHistoryController::class, 'update'])->name('doctor.medical-history.update');
+    Route::delete('/medical-history/{history}', [DoctorMedicalHistoryController::class, 'destroy'])->name('doctor.medical-history.destroy');
     Route::get('/reports', [ReportController::class, 'index'])->name('doctor.reports');
     Route::get('/reports/{id}', [ReportController::class, 'show'])->name('doctor.reports.show');
     Route::get('/settings', [SettingController::class, 'index'])->name('doctor.settings');

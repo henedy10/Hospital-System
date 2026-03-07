@@ -33,6 +33,11 @@ class ProfileController extends Controller
             $data['profile_image'] = $path;
         }
 
+        // Process allergies from string to array
+        if (isset($data['allergies'])) {
+            $data['allergies'] = array_filter(array_map('trim', explode(',', $data['allergies'])));
+        }
+
         $user->update($data);
 
         return redirect()->back()->with('success', 'Profile updated successfully.');
