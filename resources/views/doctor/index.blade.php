@@ -4,9 +4,10 @@
 
 @section('content')
     <div class="welcome-section" style="margin-bottom: 32px;">
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">مرحباً دكتور، أهلاً
-            بعودتك! 👋</h1>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">إليك نظرة سريعة على إحصائياتك اليومية ونشاط المرضى.</p>
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Welcome Doctor,
+            Welcome Back! 👋</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Here is a quick look at your daily statistics and patient
+            activity.</p>
     </div>
 
     <div class="stats-grid">
@@ -18,20 +19,20 @@
                 </div>
                 <div class="stats-info">
                     <h3>{{ $dailyPatients }}</h3>
-                    <p>عدد المرضى يومياً</p>
+                    <p>Daily Patients</p>
                 </div>
             </div>
         </div>
 
-        <!-- Emergency Cases -->
+        <!-- Total Patients -->
         <div class="glass-card">
             <div class="stats-card">
-                <div class="icon-box bg-rose">
-                    <i class="fas fa-ambulance"></i>
+                <div class="icon-box bg-sky">
+                    <i class="fas fa-user-injured"></i>
                 </div>
                 <div class="stats-info">
-                    <h3 style="color: var(--danger);">{{ $emergencyCases }}</h3>
-                    <p>الحالات الطارئة</p>
+                    <h3 style="color: var(--primary);">{{ $totalPatients }}</h3>
+                    <p>Total Patients</p>
                 </div>
             </div>
         </div>
@@ -43,8 +44,8 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>12</h3>
-                    <p>المواعيد القادمة</p>
+                    <h3>{{ $upcomingAppointments }}</h3>
+                    <p>Upcoming Appointments</p>
                 </div>
             </div>
         </div>
@@ -52,7 +53,7 @@
 
     <div class="glass-card chart-container">
         <div class="chart-header">
-            <h2>رسم بياني لعدد المرضى شهرياً</h2>
+            <h2>Monthly Patients Chart</h2>
             <div class="chart-actions">
                 <select
                     style="padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; outline: none;">
@@ -77,7 +78,7 @@
                 data: {
                     labels: @json($monthlyData['labels']),
                     datasets: [{
-                        label: 'عدد المرضى',
+                        label: 'Number of Patients',
                         data: @json($monthlyData['data']),
                         borderColor: '#0D9488',
                         borderWidth: 3,

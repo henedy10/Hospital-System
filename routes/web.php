@@ -42,6 +42,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('doctor.dashboard');
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('doctor.appointments');
+    Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('doctor.appointments.update-status');
     Route::get('/patients', [PatientController::class, 'index'])->name('doctor.patients');
     Route::get('/patients/{id}', [PatientController::class, 'show'])->name('doctor.patients.show');
 
@@ -53,6 +54,9 @@ Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function ()
     Route::get('/reports/{id}', [ReportController::class, 'show'])->name('doctor.reports.show');
     Route::get('/settings', [SettingController::class, 'index'])->name('doctor.settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('doctor.settings.update');
+    Route::delete('/settings/image', [SettingController::class, 'removeImage'])->name('doctor.settings.image.remove');
+    Route::post('/settings/password', [SettingController::class, 'updatePassword'])->name('doctor.settings.password');
+    Route::post('/settings/notifications', [SettingController::class, 'updateNotifications'])->name('doctor.settings.notifications');
 });
 
 Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
@@ -75,6 +79,7 @@ Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function 
     Route::get('/history', [PatientMedicalHistoryController::class, 'index'])->name('patient.history');
     Route::get('/profile', [PatientProfileController::class, 'index'])->name('patient.profile');
     Route::post('/profile', [PatientProfileController::class, 'update'])->name('patient.profile.update');
+    Route::delete('/profile/image', [PatientProfileController::class, 'removeImage'])->name('patient.profile.image.remove');
     Route::post('/profile/password', [PatientProfileController::class, 'updatePassword'])->name('patient.profile.password');
 });
 

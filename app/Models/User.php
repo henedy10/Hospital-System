@@ -23,35 +23,10 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
-        'dob',
-        'address',
-        'emergency_contact_name',
-        'emergency_contact_phone',
-        'emergency_contact_relationship',
-        'blood_type',
-        'allergies',
-        'insurance_provider',
-        'insurance_member_id',
-        'insurance_plan',
         'profile_image',
-        'patient_id',
         'is_verified',
-        'specialist',
-        'weight',
-        'height',
+        'notification_settings',
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($user) {
-            if ($user->role === self::ROLE_PATIENT && !$user->patient_id) {
-                $user->patient_id = 'PAT-' . strtoupper(now()->format('y')) . '-' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
-            }
-        });
-    }
-
 
     /**
      * The attributes that should be hidden for serialization.
@@ -73,7 +48,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'allergies' => 'array',
+            'notification_settings' => 'array',
         ];
     }
 
@@ -102,11 +77,27 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the appointments for the user.
+     * Get the patient profile for the user.
+     */
+    public function patient()
+    {
+        return $this->hasOne(Patient::class);
+    }
+
+    /**
+     * Get the doctor profile for the user.
+     */
+    public function doctor()
+    {
+        return $this->hasOne(Doctor::class);
+    }
+
+    /**
+     * Get the appointments for the user (patient).
      */
     public function appointments()
     {
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Appointment::class, 'user_id');
     }
 
     /**
@@ -115,6 +106,14 @@ class User extends Authenticatable
     public function medicalHistories()
     {
         return $this->hasMany(MedicalHistory::class);
+    }
+
+    /**
+     * Get the appointments for the doctor.
+     */
+    public function doctorAppointments()
+    {
+        return $this->hasMany(Appointment::class, 'doctor_id');
     }
 
     /**

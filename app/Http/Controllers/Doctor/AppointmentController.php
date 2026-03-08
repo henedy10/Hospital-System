@@ -6,57 +6,48 @@ use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Mock data for appointments
-        $appointments = [
-            [
-                'id' => 1,
-                'patient_name' => 'أحمد محمد',
-                'time' => '10:30 AM',
-                'date' => '2026-02-28',
-                'type' => 'كشف جديد',
-                'status' => 'Confirmed',
-                'status_ar' => 'تم التأكيد'
-            ],
-            [
-                'id' => 2,
-                'patient_name' => 'سارة علي',
-                'time' => '11:15 AM',
-                'date' => '2026-02-28',
-                'type' => 'استشارة',
-                'status' => 'Pending',
-                'status_ar' => 'قيد الانتظار'
-            ],
-            [
-                'id' => 3,
-                'patient_name' => 'محمود حسن',
-                'time' => '12:00 PM',
-                'date' => '2026-02-28',
-                'type' => 'متابعة',
-                'status' => 'Cancelled',
-                'status_ar' => 'ملغي'
-            ],
-            [
-                'id' => 4,
-                'patient_name' => 'ليلى يوسف',
-                'time' => '01:30 PM',
-                'date' => '2026-02-28',
-                'type' => 'كشف جديد',
-                'status' => 'Confirmed',
-                'status_ar' => 'تم التأكيد'
-            ],
-            [
-                'id' => 5,
-                'patient_name' => 'عمر خالد',
-                'time' => '02:15 PM',
-                'date' => '2026-02-28',
-                'type' => 'متابعة',
-                'status' => 'Confirmed',
-                'status_ar' => 'تم التأكيد'
-            ],
-        ];
+        $query = auth()->user()->doctorAppointments()
+            ->with('user')
+            ->latest();
+
+        // Search by patient name
+        if ($request->filled('search')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by date
+        if ($request->filled('date')) {
+            $query->whereDate('appointment_date', $request->date);
+        }
+
+        $appointments = $query->paginate(10)->withQueryString();
 
         return view('doctor.appointments.index', compact('appointments'));
+    }
+
+    public function updateStatus(Request $request, \App\Models\Appointment $appointment)
+    {
+        if ($appointment->doctor_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'status' => 'required|in:upcoming,completed,cancelled'
+        ]);
+
+        $appointment->update([
+            'status' => $request->status
+        ]);
+
+        return back()->with('success', 'Appointment status updated successfully');
     }
 }

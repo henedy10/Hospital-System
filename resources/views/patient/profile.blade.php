@@ -19,6 +19,15 @@
                     <button type="button" class="edit-avatar"
                         onclick="document.getElementById('profile_image_input').click()"><i
                             class="fas fa-camera"></i></button>
+                    @if($user->profile_image)
+                    <form action="{{ route('patient.profile.image.remove') }}" method="POST" style="position: absolute; bottom: -8px; left: -8px; margin: 0;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="remove-avatar btn-icon" style="width: 36px; height: 36px; border-radius: 50%; background: #EF4444; color: white; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: scale 0.2s;" title="Remove Photo" onclick="return confirm('Are you sure you want to remove your profile picture?')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    @endif
                     <input type="file" id="profile_image_input" name="profile_image" form="profile-update-form"
                         class="hidden" accept="image/*" onchange="previewImage(this)">
                 </div>
@@ -26,7 +35,7 @@
                 class="invalid-feedback block mt-1">{{ $message }}</span>@enderror
                 <div class="user-meta">
                     <h2>{{ $user->name }}</h2>
-                    <p>Patient ID: {{ $user->patient_id ?? 'N/A' }}</p>
+                    <p>Patient ID: {{ $user->patient?->patient_id ?? 'N/A' }}</p>
                     <span class="user-status {{ $user->is_verified ? 'active' : 'pending' }}">
                         {{ $user->is_verified ? 'Verified Account' : 'Pending Verification' }}
                     </span>
@@ -77,7 +86,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Date of Birth</label>
-                                <input type="date" name="dob" value="{{ old('dob', $user->dob) }}"
+                                <input type="date" name="dob" value="{{ old('dob', $user->patient?->dob) }}"
                                     class="form-control @error('dob', 'profileUpdate') is-invalid @enderror">
                                 @error('dob', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
@@ -87,7 +96,7 @@
                             <label>Address</label>
                             <textarea name="address"
                                 class="form-control @error('address', 'profileUpdate') is-invalid @enderror"
-                                rows="3">{{ old('address', $user->address) }}</textarea>
+                                rows="3">{{ old('address', $user->patient?->address) }}</textarea>
                             @error('address', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
                         </div>
@@ -103,7 +112,7 @@
                                     class="form-control @error('blood_type', 'profileUpdate') is-invalid @enderror">
                                     <option value="">Select Blood Type</option>
                                     @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $type)
-                                        <option value="{{ $type }}" {{ old('blood_type', $user->blood_type) == $type ? 'selected' : '' }}>{{ $type }}</option>
+                                        <option value="{{ $type }}" {{ old('blood_type', $user->patient?->blood_type) == $type ? 'selected' : '' }}>{{ $type }}</option>
                                     @endforeach
                                 </select>
                                 @error('blood_type', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
@@ -112,7 +121,7 @@
                             <div class="form-group">
                                 <label>Allergies (comma separated)</label>
                                 <input type="text" name="allergies"
-                                    value="{{ old('allergies', is_array($user->allergies) ? implode(', ', $user->allergies) : $user->allergies) }}"
+                                    value="{{ old('allergies', is_array($user->patient?->allergies) ? implode(', ', $user->patient?->allergies) : $user->patient?->allergies) }}"
                                     class="form-control @error('allergies', 'profileUpdate') is-invalid @enderror"
                                     placeholder="e.g. Peanuts, Penicillin">
                                 @error('allergies', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
@@ -123,7 +132,8 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Weight (kg)</label>
-                                <input type="number" step="0.1" name="weight" value="{{ old('weight', $user->weight) }}"
+                                <input type="number" step="0.1" name="weight"
+                                    value="{{ old('weight', $user->patient?->weight) }}"
                                     class="form-control @error('weight', 'profileUpdate') is-invalid @enderror"
                                     placeholder="e.g. 75.5">
                                 @error('weight', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
@@ -131,7 +141,8 @@
                             </div>
                             <div class="form-group">
                                 <label>Height (cm)</label>
-                                <input type="number" step="0.1" name="height" value="{{ old('height', $user->height) }}"
+                                <input type="number" step="0.1" name="height"
+                                    value="{{ old('height', $user->patient?->height) }}"
                                     class="form-control @error('height', 'profileUpdate') is-invalid @enderror"
                                     placeholder="e.g. 180">
                                 @error('height', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
@@ -147,7 +158,7 @@
                             <div class="form-group">
                                 <label>Contact Name</label>
                                 <input type="text" name="emergency_contact_name"
-                                    value="{{ old('emergency_contact_name', $user->emergency_contact_name) }}"
+                                    value="{{ old('emergency_contact_name', $user->patient?->emergency_contact_name) }}"
                                     class="form-control @error('emergency_contact_name', 'profileUpdate') is-invalid @enderror">
                                 @error('emergency_contact_name', 'profileUpdate') <span
                                     class="invalid-feedback">{{ $message }}</span>
@@ -156,7 +167,7 @@
                             <div class="form-group">
                                 <label>Relationship</label>
                                 <input type="text" name="emergency_contact_relationship"
-                                    value="{{ old('emergency_contact_relationship', $user->emergency_contact_relationship) }}"
+                                    value="{{ old('emergency_contact_relationship', $user->patient?->emergency_contact_relationship) }}"
                                     class="form-control @error('emergency_contact_relationship', 'profileUpdate') is-invalid @enderror">
                                 @error('emergency_contact_relationship', 'profileUpdate') <span
                                 class="invalid-feedback">{{ $message }}</span> @enderror
@@ -165,7 +176,7 @@
                         <div class="form-group">
                             <label>Contact Phone</label>
                             <input type="text" name="emergency_contact_phone"
-                                value="{{ old('emergency_contact_phone', $user->emergency_contact_phone) }}"
+                                value="{{ old('emergency_contact_phone', $user->patient?->emergency_contact_phone) }}"
                                 class="form-control @error('emergency_contact_phone', 'profileUpdate') is-invalid @enderror">
                             @error('emergency_contact_phone', 'profileUpdate') <span
                                 class="invalid-feedback">{{ $message }}</span>
@@ -180,7 +191,7 @@
                             <div class="form-group">
                                 <label>Provider</label>
                                 <input type="text" name="insurance_provider"
-                                    value="{{ old('insurance_provider', $user->insurance_provider) }}"
+                                    value="{{ old('insurance_provider', $user->patient?->insurance_provider) }}"
                                     class="form-control @error('insurance_provider', 'profileUpdate') is-invalid @enderror">
                                 @error('insurance_provider', 'profileUpdate') <span
                                     class="invalid-feedback">{{ $message }}</span>
@@ -189,7 +200,7 @@
                             <div class="form-group">
                                 <label>Plan Name</label>
                                 <input type="text" name="insurance_plan"
-                                    value="{{ old('insurance_plan', $user->insurance_plan) }}"
+                                    value="{{ old('insurance_plan', $user->patient?->insurance_plan) }}"
                                     class="form-control @error('insurance_plan', 'profileUpdate') is-invalid @enderror">
                                 @error('insurance_plan', 'profileUpdate') <span
                                 class="invalid-feedback">{{ $message }}</span> @enderror
@@ -198,7 +209,7 @@
                         <div class="form-group">
                             <label>Member ID</label>
                             <input type="text" name="insurance_member_id"
-                                value="{{ old('insurance_member_id', $user->insurance_member_id) }}"
+                                value="{{ old('insurance_member_id', $user->patient?->insurance_member_id) }}"
                                 class="form-control @error('insurance_member_id', 'profileUpdate') is-invalid @enderror">
                             @error('insurance_member_id', 'profileUpdate') <span
                             class="invalid-feedback">{{ $message }}</span> @enderror
@@ -253,13 +264,13 @@
             <div class="profile-sidebar">
                 <div class="sidebar-card">
                     <h3>Emergency Contact</h3>
-                    @if($user->emergency_contact_name)
+                    @if($user->patient?->emergency_contact_name)
                         <div class="contact-box">
                             <div class="contact-info">
-                                <strong>{{ $user->emergency_contact_name }}</strong>
-                                <p>{{ $user->emergency_contact_relationship }}</p>
+                                <strong>{{ $user->patient?->emergency_contact_name }}</strong>
+                                <p>{{ $user->patient?->emergency_contact_relationship }}</p>
                             </div>
-                            <p class="contact-phone"><i class="fas fa-phone"></i> {{ $user->emergency_contact_phone }}</p>
+                            <p class="contact-phone"><i class="fas fa-phone"></i> {{ $user->patient?->emergency_contact_phone }}</p>
                         </div>
                     @else
                         <p class="text-sm text-gray-500 italic">No emergency contact set.</p>
@@ -268,12 +279,12 @@
 
                 <div class="sidebar-card">
                     <h3>Health Insurance</h3>
-                    @if($user->insurance_provider)
+                    @if($user->patient?->insurance_provider)
                         <div class="insurance-card">
-                            <div class="ins-header">{{ $user->insurance_provider }}</div>
+                            <div class="ins-header">{{ $user->patient?->insurance_provider }}</div>
                             <div class="ins-body">
-                                <p><span>Member ID</span> <strong>{{ $user->insurance_member_id }}</strong></p>
-                                <p><span>Plan</span> <strong>{{ $user->insurance_plan }}</strong></p>
+                                <p><span>Member ID</span> <strong>{{ $user->patient?->insurance_member_id }}</strong></p>
+                                <p><span>Plan</span> <strong>{{ $user->patient?->insurance_plan }}</strong></p>
                             </div>
                         </div>
                     @else

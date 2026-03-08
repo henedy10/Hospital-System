@@ -10,17 +10,17 @@ class ReportController extends Controller
     {
         // Mock data for reports
         $stats = [
-            ['label' => 'إجمالي التقارير', 'value' => 128, 'change' => '+12%', 'icon' => 'fas fa-file-medical', 'color' => 'bg-teal'],
-            ['label' => 'قيد المراجعة', 'value' => 14, 'change' => '-5%', 'icon' => 'fas fa-clock', 'color' => 'bg-amber'],
-            ['label' => 'دقة التشخيص', 'value' => '94%', 'change' => '+2%', 'icon' => 'fas fa-chart-line', 'color' => 'bg-rose'],
+            ['label' => 'Total Reports', 'value' => 128, 'change' => '+12%', 'icon' => 'fas fa-file-medical', 'color' => 'bg-teal'],
+            ['label' => 'Pending Review', 'value' => 14, 'change' => '-5%', 'icon' => 'fas fa-clock', 'color' => 'bg-amber'],
+            ['label' => 'Diagnostic Accuracy', 'value' => '94%', 'change' => '+2%', 'icon' => 'fas fa-chart-line', 'color' => 'bg-rose'],
         ];
 
         $reports = [
-            ['id' => 'R-1024', 'name' => 'تقرير فحص دوري - أحمد محمد', 'date' => '2026-02-28', 'category' => 'فحص عام', 'status' => 'جاهز', 'status_type' => 'success'],
-            ['id' => 'R-1025', 'name' => 'تحليل دم شامل - سارة علي', 'date' => '2026-02-27', 'category' => 'مختبر', 'status' => 'قيد المعالجة', 'status_type' => 'warning'],
-            ['id' => 'R-1026', 'name' => 'أشعة رنين مغناطيسي - محمود حسن', 'date' => '2026-02-26', 'category' => 'أشعة', 'status' => 'مراجعة', 'status_type' => 'info'],
-            ['id' => 'R-1027', 'name' => 'تقرير جراحة قلب - ليلي يوسف', 'date' => '2026-02-25', 'category' => 'جراحة', 'status' => 'جاهز', 'status_type' => 'success'],
-            ['id' => 'R-1028', 'name' => 'فحص عظام - عمر خالد', 'date' => '2026-02-24', 'category' => 'عظام', 'status' => 'ملغي', 'status_type' => 'danger'],
+            ['id' => 'R-1024', 'name' => 'Routine Checkup - Ahmed Mohamed', 'date' => '2026-02-28', 'category' => 'General Checkup', 'status' => 'Ready', 'status_type' => 'success'],
+            ['id' => 'R-1025', 'name' => 'Complete Blood Count - Sarah Ali', 'date' => '2026-02-27', 'category' => 'Laboratory', 'status' => 'Processing', 'status_type' => 'warning'],
+            ['id' => 'R-1026', 'name' => 'MRI Scan - Mahmoud Hassan', 'date' => '2026-02-26', 'category' => 'Radiology', 'status' => 'Review', 'status_type' => 'info'],
+            ['id' => 'R-1027', 'name' => 'Cardiac Surgery Report - Lily Youssef', 'date' => '2026-02-25', 'category' => 'Surgery', 'status' => 'Ready', 'status_type' => 'success'],
+            ['id' => 'R-1028', 'name' => 'Orthopedic Exam - Omar Khaled', 'date' => '2026-02-24', 'category' => 'Orthopedics', 'status' => 'Cancelled', 'status_type' => 'danger'],
         ];
 
         return view('doctor.reports.index', compact('stats', 'reports'));
@@ -31,30 +31,30 @@ class ReportController extends Controller
         // Detailed mock data for a "Best Case" report
         $report = [
             'id' => $id,
-            'name' => 'تقرير فحص دوري شامل',
+            'name' => 'Comprehensive Routine Checkup Report',
             'date' => '2026-02-28',
             'category' => 'Cardiology',
-            'department_ar' => 'قسم القلب والأوعية الدموية',
-            'status' => 'جاهز للمراجعة النهائية',
+            'department_en' => 'Cardiology and Vascular Department',
+            'status' => 'Ready for final review',
             'patient' => [
-                'name' => 'أحمد محمد علي',
+                'name' => 'Ahmed Mohamed Ali',
                 'id' => 'P-99201',
                 'age' => 45,
                 'weight' => '82 kg',
                 'blood_type' => 'O+',
                 'avatar' => 'https://ui-avatars.com/api/?name=Ahmed+Mohamed&background=0D9488&color=fff'
             ],
-            'diagnosis' => 'اشتباه في ارتفاع بسيط في ضغط الدم التوتري مع انتظام في ضربات القلب. يُنصح بالمتابعة الدورية وتقليل نسبة الصوديوم في الغذاء.',
+            'diagnosis' => 'Suspected mild hypertension with regular heart rhythm. Routine follow-up and reduced sodium intake are recommended.',
             'vitals' => [
-                ['label' => 'الضغط', 'value' => '135/85', 'status' => 'High Normal'],
-                ['label' => 'نبض القلب', 'value' => '72 bpm', 'status' => 'Regular'],
-                ['label' => 'درجة الحرارة', 'value' => '37.1 °C', 'status' => 'Normal'],
+                ['label' => 'Blood Pressure', 'value' => '135/85', 'status' => 'High Normal'],
+                ['label' => 'Heart Rate', 'value' => '72 bpm', 'status' => 'Regular'],
+                ['label' => 'Temperature', 'value' => '37.1 °C', 'status' => 'Normal'],
             ],
-            'clinical_notes' => 'المريض يعاني من إجهاد عمل مستمر وصداع نصفي متكرر. أجريت فحوصات الأسبوع الماضي وكانت النتائج مقبولة عدا ارتفاع طفيف في الكوليسترول.',
+            'clinical_notes' => 'The patient suffers from persistent work stress and frequent migraines. Tests performed last week showed acceptable results except for a slight increase in cholesterol.',
             'treatment_plan' => [
-                'قرص واحد املوديبين (5mg) مساءً.',
-                'ممارسة رياضة المشي 30 دقيقة يومياً.',
-                'إعادة التحليل بعد أسبوعين.'
+                'One Amlodipine tablet (5mg) in the evening.',
+                '30 minutes of walking daily.',
+                'Repeat tests after two weeks.'
             ]
         ];
 

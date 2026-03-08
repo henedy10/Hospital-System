@@ -63,6 +63,10 @@ class AuthController extends Controller
             'role' => User::ROLE_PATIENT,
         ]);
 
+        $user->patient()->create([
+            'patient_id' => 'PAT-' . date('y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT)
+        ]);
+
         Auth::login($user);
 
 

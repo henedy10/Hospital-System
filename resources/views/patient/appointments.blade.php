@@ -87,11 +87,11 @@
             <form action="{{ route('patient.appointments.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label>Doctor Name</label>
-                    <select name="doctor_name" class="form-control" required>
+                    <label>Doctor</label>
+                    <select name="doctor_id" class="form-control" required>
                         <option value="">Select Doctor</option>
                         @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->name }}">{{ $doctor->name }} - {{ $doctor->specialist ?? 'General' }}
+                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->specialist ?? 'General' }}
                             </option>
                         @endforeach
                     </select>
@@ -136,10 +136,10 @@
                 @csrf
                 @method('PUT')
                 <div class="form-group">
-                    <label>Doctor Name</label>
-                    <select name="doctor_name" id="edit_doctor_name" class="form-control" required>
+                    <label>Doctor</label>
+                    <select name="doctor_id" id="edit_doctor_id" class="form-control" required>
                         @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->name }}">{{ $doctor->name }} - {{ $doctor->specialist ?? 'General' }}
+                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->specialist ?? 'General' }}
                             </option>
                         @endforeach
                     </select>
@@ -514,7 +514,7 @@
             const form = document.getElementById('editForm');
             form.action = `/patient/appointments/${appointment.id}`;
 
-            document.getElementById('edit_doctor_name').value = appointment.doctor_name;
+            document.getElementById('edit_doctor_id').value = appointment.doctor_id;
             document.getElementById('edit_appointment_date').value = appointment.appointment_date;
 
             // Format time to HH:MM for select

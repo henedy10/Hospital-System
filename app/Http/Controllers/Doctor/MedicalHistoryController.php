@@ -27,7 +27,7 @@ class MedicalHistoryController extends Controller
             'doctor_name' => Auth::user()->name,
         ]);
 
-        return redirect()->back()->with('success', 'تم إضافة السجل الطبي بنجاح');
+        return redirect()->back()->with('success', 'Medical record added successfully');
     }
 
     public function update(Request $request, MedicalHistory $history)
@@ -44,12 +44,12 @@ class MedicalHistoryController extends Controller
             'treatment' => $request->treatment,
         ]);
 
-        return redirect()->back()->with('success', 'تم تحديث السجل الطبي بنجاح');
+        return redirect()->back()->with('success', 'Medical record updated successfully');
     }
 
     public function destroy(MedicalHistory $history)
     {
         $history->delete();
-        return redirect()->back()->with('success', 'تم حذف السجل الطبي بنجاح');
+        return redirect()->back()->with('success', 'Medical record deleted successfully');
     }
 }

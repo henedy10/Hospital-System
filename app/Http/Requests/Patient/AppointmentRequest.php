@@ -22,7 +22,7 @@ class AppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'doctor_name' => 'required|string|max:255',
+            'doctor_id' => 'required|exists:users,id',
             'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required|string',
             'reason' => 'required|string|max:1000',

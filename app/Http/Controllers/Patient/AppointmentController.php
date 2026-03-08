@@ -28,8 +28,11 @@ class AppointmentController extends Controller
 
     public function store(AppointmentRequest $request)
     {
+        $doctor = \App\Models\User::findOrFail($request->doctor_id);
+
         Auth::user()->appointments()->create([
-            'doctor_name' => $request->doctor_name,
+            'doctor_id' => $doctor->id,
+            'doctor_name' => $doctor->name,
             'appointment_date' => $request->appointment_date,
             'appointment_time' => $request->appointment_time,
             'reason' => $request->reason,
@@ -56,8 +59,11 @@ class AppointmentController extends Controller
             abort(403);
         }
 
+        $doctor = \App\Models\User::findOrFail($request->doctor_id);
+
         $appointment->update([
-            'doctor_name' => $request->doctor_name,
+            'doctor_id' => $doctor->id,
+            'doctor_name' => $doctor->name,
             'appointment_date' => $request->appointment_date,
             'appointment_time' => $request->appointment_time,
             'reason' => $request->reason,

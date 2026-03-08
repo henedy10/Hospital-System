@@ -7,23 +7,38 @@ use App\Models\User;
 
 class PatientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Stats for the patients page
         $stats = [
-            ['label' => 'إجمالي المرضى', 'value' => User::where('role', User::ROLE_PATIENT)->count(), 'icon' => 'fas fa-users', 'color' => 'bg-teal'],
-            ['label' => 'مرضى جدد (هذا الشهر)', 'value' => User::where('role', User::ROLE_PATIENT)->whereMonth('created_at', now()->month)->count(), 'icon' => 'fas fa-user-plus', 'color' => 'bg-sky'],
-            ['label' => 'حالات حرجة', 'value' => '0', 'icon' => 'fas fa-exclamation-circle', 'color' => 'bg-red'],
+            ['label' => 'Total Patients', 'value' => User::where('role', User::ROLE_PATIENT)->count(), 'icon' => 'fas fa-users', 'color' => 'bg-teal'],
+            ['label' => 'New Patients (This Month)', 'value' => User::where('role', User::ROLE_PATIENT)->whereMonth('created_at', now()->month)->count(), 'icon' => 'fas fa-user-plus', 'color' => 'bg-sky'],
+            ['label' => 'Critical Cases', 'value' => '0', 'icon' => 'fas fa-exclamation-circle', 'color' => 'bg-red'],
         ];
 
-        // Fetch patients from DB
-        $patients = User::where('role', User::ROLE_PATIENT)
+        $query = User::where('role', User::ROLE_PATIENT)
             ->with([
-                'medicalHistories' => function ($query) {
-                    $query->latest('diagnosis_date');
-                }
-            ])
-            ->get();
+                'medicalHistories' => function ($q) {
+                    $q->latest('diagnosis_date');
+                },
+                'patient'
+            ]);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('patient', function ($q) use ($search) {
+                        $q->where('patient_id', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('medicalHistories', function ($q) use ($search) {
+                        $q->where('condition', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Fetch patients from DB with pagination
+        $patients = $query->paginate(12)->withQueryString();
 
         return view('doctor.patients.index', compact('patients', 'stats'));
     }
