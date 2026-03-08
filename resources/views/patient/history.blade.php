@@ -28,9 +28,7 @@
                         </div>
                     </div>
                 @empty
-                    <div class="p-8 text-center bg-white rounded-xl shadow-sm">
-                        <p class="text-muted">No medical history records found.</p>
-                    </div>
+                    <p class="text-red-500 font-bold">* No medical history records found.</p>
                 @endforelse
             </div>
         </div>
@@ -47,13 +45,13 @@
                 <div class="summary-list">
                     <div class="summary-item">
                         <span>Blood Type</span>
-                        <strong>{{ Auth::user()->blood_type ?? 'N/A' }}</strong>
+                        <strong>{{ Auth::user()->patient->blood_type ?? 'N/A' }}</strong>
                     </div>
                     <div class="summary-item">
                         <span>Allergies</span>
                         <div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; max-width: 150px;">
-                            @if(is_array(Auth::user()->allergies) && count(Auth::user()->allergies) > 0)
-                                @foreach(Auth::user()->allergies as $allergy)
+                            @if(is_array(Auth::user()->patient->allergies) && count(Auth::user()->patient->allergies) > 0)
+                                @foreach(Auth::user()->patient->allergies as $allergy)
                                     <span
                                         style="background: #FEF2F2; color: #DC2626; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">{{ $allergy }}</span>
                                 @endforeach
@@ -64,11 +62,11 @@
                     </div>
                     <div class="summary-item">
                         <span>Height</span>
-                        <strong>{{ Auth::user()->height ?? (Auth::user()->vitals->first()->height ?? '--') }} cm</strong>
+                        <strong>{{ Auth::user()->patient->height ?? (Auth::user()->patient->height ?? '--') }} cm</strong>
                     </div>
                     <div class="summary-item">
                         <span>Weight</span>
-                        <strong>{{ Auth::user()->weight ?? (Auth::user()->vitals->first()->weight ?? '--') }} kg</strong>
+                        <strong>{{ Auth::user()->patient->weight ?? (Auth::user()->patient->weight ?? '--') }} kg</strong>
                     </div>
                 </div>
             </div>

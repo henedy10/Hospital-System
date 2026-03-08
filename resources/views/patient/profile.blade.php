@@ -54,12 +54,6 @@
                     <form action="{{ route('patient.profile.update') }}" method="POST" enctype="multipart/form-data"
                         id="profile-update-form">
                         @csrf
-                        {{-- @if ($errors->profileUpdate->any())
-                        <div class="alert alert-error">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <span>Please correct the errors in the form below.</span>
-                        </div>
-                        @endif --}}
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Full Name</label>
@@ -273,7 +267,7 @@
                             <p class="contact-phone"><i class="fas fa-phone"></i> {{ $user->patient?->emergency_contact_phone }}</p>
                         </div>
                     @else
-                        <p class="text-sm text-gray-500 italic">No emergency contact set.</p>
+                        <p class="text-sm text-red-500 italic">No emergency contact set.</p>
                     @endif
                 </div>
 
@@ -288,7 +282,7 @@
                             </div>
                         </div>
                     @else
-                        <p class="text-sm text-gray-500 italic">No insurance information set.</p>
+                        <p class="text-sm text-red-500 italic">No insurance information set.</p>
                     @endif
                 </div>
             </div>

@@ -19,7 +19,7 @@
                     <p class="stat-label">{{ $nextAppt->doctor_name }} ({{ $nextAppt->reason }})</p>
                 @else
                     <p class="stat-value">No upcoming</p>
-                    <p class="stat-label">Schedule one today</p>
+                    <p class="text-blue-500">Schedule one today</p>
                 @endif
             </div>
         </div>
@@ -32,7 +32,7 @@
                     <p class="stat-label">Temp: {{ $latest_vitals->temperature }}°F • HR: {{ $latest_vitals->heart_rate }}</p>
                 @else
                     <p class="stat-value">No data</p>
-                    <p class="stat-label">Vitals not recorded yet</p>
+                    <p class="text-green-500">Vitals not recorded yet</p>
                 @endif
             </div>
         </div>
@@ -41,7 +41,7 @@
             <div class="stat-details">
                 <h3>Medical Records</h3>
                 <p class="stat-value">{{ Auth::user()->medicalHistories()->count() }} Records</p>
-                <p class="stat-label">View your full history</p>
+                <p class="text-violet-500">View your full history</p>
             </div>
         </div>
     </div>
@@ -72,7 +72,7 @@
                                 {{ ucfirst($appointment->status) }}</div>
                         </div>
                     @empty
-                        <div class="p-4 text-center text-muted">No upcoming appointments.</div>
+                            <div class="p-4 text-center text-red-600 font-semibold">No upcoming appointments.</div>
                     @endforelse
                 </div>
             </div>
@@ -97,7 +97,7 @@
                             <button class="btn-icon"><i class="fas fa-eye"></i></button>
                         </div>
                     @empty
-                        <div class="p-4 text-center text-muted">No medical history records.</div>
+                        <div class="p-4 text-center text-red-600 font-semibold">No upcoming appointments.</div>
                     @endforelse
                 </div>
             </div>

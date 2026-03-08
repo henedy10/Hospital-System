@@ -70,9 +70,7 @@
             </div>
         @empty
             <div class="p-8 text-center bg-white rounded-xl shadow-sm">
-                <p class="text-muted">You have no appointments in this category.</p>
-                <button class="btn-primary mt-4 mx-auto" onclick="openModal('bookModal')"><i class="fas fa-plus"></i> Book
-                    Now</button>
+                <p class="text-red-500 font-bold">* You have no appointments in this category.</p>
             </div>
         @endforelse
     </div>

@@ -14,6 +14,8 @@ class MedicalHistoryController extends Controller
             ->orderBy('diagnosis_date', 'desc')
             ->get();
 
-        return view('patient.history', compact('history'));
+        $patient = Auth::user()->patient();
+
+        return view('patient.history', compact('history','patient'));
     }
 }
