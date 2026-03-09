@@ -69,6 +69,16 @@
                         <li class="{{ request()->routeIs('patient.profile') ? 'active' : '' }}"><a
                                 href="{{ route('patient.profile') }}"><i class="fas fa-user-circle"></i>
                                 <span>My Profile</span></a></li>
+                    @elseif(request()->is('admin*'))
+                        <li class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"><a
+                                href="{{ route('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span></a></li>
+                        <li class="{{ request()->routeIs('admin.users*') ? 'active' : '' }}"><a
+                                href="{{ route('admin.users.index') }}"><i class="fas fa-users-cog"></i>
+                                <span>Manage Users</span></a></li>
+                        <li class="{{ request()->routeIs('admin.appointments') ? 'active' : '' }}"><a
+                                href="{{ route('admin.appointments') }}"><i class="fas fa-calendar-alt"></i>
+                                <span>Appointments</span></a></li>
                     @endif
                 </ul>
             </nav>

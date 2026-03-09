@@ -11,9 +11,6 @@
             <p style="color: var(--text-muted); font-size: 0.95rem;">Manage your appointments and daily review sessions
                 effectively.</p>
         </div>
-        <button class="btn-primary" style="width: auto; padding: 10px 24px; margin-top: 0;">
-            <i class="fas fa-plus"></i> Add New Appointment
-        </button>
     </div>
 
     <div class="glass-card">
@@ -127,7 +124,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Pagination -->
         <div style="margin-top: 30px; display: flex; justify-content: center; padding-bottom: 10px;">
             {{ $appointments->links() }}

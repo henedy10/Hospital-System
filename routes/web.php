@@ -3,21 +3,39 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Doctor\DashboardController;
-use App\Http\Controllers\Doctor\AppointmentController;
-use App\Http\Controllers\Doctor\PatientController;
-use App\Http\Controllers\Doctor\MedicalHistoryController as DoctorMedicalHistoryController;
-use App\Http\Controllers\Doctor\ReportController;
-use App\Http\Controllers\Doctor\SettingController;
-use App\Http\Controllers\Nurse\DashboardController as NurseDashboardController;
-use App\Http\Controllers\Nurse\PatientController as NursePatientController;
-use App\Http\Controllers\Nurse\VitalsController;
-use App\Http\Controllers\Nurse\TaskController as NurseTaskController;
-use App\Http\Controllers\Nurse\SettingController as NurseSettingController;
-use App\Http\Controllers\Patient\DashboardController as PatientDashboardController;
-use App\Http\Controllers\Patient\AppointmentController as PatientAppointmentController;
-use App\Http\Controllers\Patient\MedicalHistoryController as PatientMedicalHistoryController;
-use App\Http\Controllers\Patient\ProfileController as PatientProfileController;
+use App\Http\Controllers\Admin\
+{
+    DashboardController as AdminDashboardController,
+    UserController as AdminUserController,
+    AppointmentController as AdminAppointmentController
+};
+
+use App\Http\Controllers\Doctor\
+{
+    DashboardController,
+    AppointmentController,
+    PatientController,
+    MedicalHistoryController as DoctorMedicalHistoryController,
+    ReportController,
+    SettingController
+};
+
+use App\Http\Controllers\Nurse\
+{
+    DashboardController as NurseDashboardController,
+    PatientController as NursePatientController,
+    VitalsController,
+    TaskController as NurseTaskController,
+    SettingController as NurseSettingController,
+};
+
+use App\Http\Controllers\Patient\
+{
+    DashboardController as PatientDashboardController,
+    AppointmentController as PatientAppointmentController,
+    MedicalHistoryController as PatientMedicalHistoryController,
+    ProfileController as PatientProfileController
+};
 
 
 Route::get('/', function () {
@@ -84,5 +102,17 @@ Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function 
 });
 
 
+Route::middleware(['auth', 'role:admin'])->prefix('/admin')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
+    // User management
+    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::get('/users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
+    Route::post('/users', [AdminUserController::class, 'store'])->name('admin.users.store');
+    Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 
+    // Appointments overview
+    Route::get('/appointments', [AdminAppointmentController::class, 'index'])->name('admin.appointments');
+});

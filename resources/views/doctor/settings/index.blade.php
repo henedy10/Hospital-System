@@ -36,14 +36,29 @@
                     <p>Update your profile picture and professional account details.</p>
                 </div>
                 <div class="settings-main">
-                    <form action="{{ route('doctor.settings.update') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="form-section">
-                            <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 32px;">
-                                <img src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0D9488&color=fff' }}"
-                                    alt="Avatar" id="profile-preview"
-                                    style="width: 80px; height: 80px; border-radius: 20px; object-fit: cover;">
-                                <div>
+
+
+                    <div class="form-section">
+                        <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 32px;">
+                            @if($user->profile_image)
+                                <form action="{{ route('doctor.settings.image.remove') }}" method="POST" enctype="multipart/form-data"
+                                    style="display: inline-block; margin-left: 8px;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-secondary"
+                                        style="padding: 8px 16px; font-size: 0.85rem; color: #EF4444; border-color: #FECACA; background: #FEF2F2;"
+                                        title="Remove Photo"
+                                        onclick="return confirm('Are you sure you want to remove your profile picture?')">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </form>
+                            @endif
+                            <img src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0D9488&color=fff' }}"
+                            alt="Avatar" id="profile-preview"
+                            style="width: 80px; height: 80px; border-radius: 20px; object-fit: cover;">
+                            <form action="{{ route('doctor.settings.update') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div>
                                     <input type="file" name="profile_image" id="profile_image" style="display: none;"
                                         onchange="previewImage(this)">
                                     <button type="button" class="btn-secondary"
@@ -51,19 +66,6 @@
                                         onclick="document.getElementById('profile_image').click()">
                                         <i class="fas fa-camera"></i> Change Photo
                                     </button>
-                                    @if($user->profile_image)
-                                        <form action="{{ route('doctor.settings.image.remove') }}" method="POST"
-                                            style="display: inline-block; margin-left: 8px;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn-secondary"
-                                                style="padding: 8px 16px; font-size: 0.85rem; color: #EF4444; border-color: #FECACA; background: #FEF2F2;"
-                                                title="Remove Photo"
-                                                onclick="return confirm('Are you sure you want to remove your profile picture?')">
-                                                <i class="fas fa-trash"></i> Remove
-                                            </button>
-                                        </form>
-                                    @endif
                                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">JPG, GIF or
                                         PNG. Max 800 KB.</p>
                                 </div>
@@ -84,7 +86,7 @@
 
                             <div class="form-group" style="margin-bottom: 20px;">
                                 <label class="input-label">Medical Specialization</label>
-                                <input type="text" name="specialist" class="form-control" style="padding-left: 16px;"
+                                <input type="text" name="specialist" disabled class="form-control" style="padding-left: 16px;"
                                     value="{{ old('specialist', $user->doctor?->specialty) }}">
                             </div>
 
