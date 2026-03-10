@@ -31,11 +31,13 @@
 
         body {
             background: var(--bg-gradient);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 24px 0;
             color: var(--text-main);
         }
 

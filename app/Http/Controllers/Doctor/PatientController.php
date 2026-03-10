@@ -1,27 +1,45 @@
 <?php
 
 namespace App\Http\Controllers\Doctor;
+
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PatientController extends Controller
 {
     public function index(Request $request)
     {
-        // Stats for the patients page
+        $doctorId = Auth::id();
+
+        // Patients who have had at least one appointment with this doctor
+        $myPatientsQuery = User::where('role', User::ROLE_PATIENT)
+            ->whereHas('appointments', function ($q) use ($doctorId) {
+                $q->where('doctor_id', $doctorId);
+            });
+
+        // Stats: only for patients with appointments with this doctor
         $stats = [
-            ['label' => 'Total Patients', 'value' => User::where('role', User::ROLE_PATIENT)->count(), 'icon' => 'fas fa-users', 'color' => 'bg-teal'],
-            ['label' => 'New Patients (This Month)', 'value' => User::where('role', User::ROLE_PATIENT)->whereMonth('created_at', now()->month)->count(), 'icon' => 'fas fa-user-plus', 'color' => 'bg-sky'],
+            ['label' => 'My Patients', 'value' => (clone $myPatientsQuery)->count(), 'icon' => 'fas fa-users', 'color' => 'bg-teal'],
+            ['label' => 'Seen This Month', 'value' => (clone $myPatientsQuery)->whereHas('appointments', function ($q) use ($doctorId) {
+                $q->where('doctor_id', $doctorId)->whereMonth('appointment_date', now()->month)->whereYear('appointment_date', now()->year);
+            })->count(), 'icon' => 'fas fa-user-plus', 'color' => 'bg-sky'],
             ['label' => 'Critical Cases', 'value' => '0', 'icon' => 'fas fa-exclamation-circle', 'color' => 'bg-red'],
         ];
 
         $query = User::where('role', User::ROLE_PATIENT)
+            ->whereHas('appointments', function ($q) use ($doctorId) {
+                $q->where('doctor_id', $doctorId);
+            })
             ->with([
                 'medicalHistories' => function ($q) {
                     $q->latest('diagnosis_date');
                 },
-                'patient'
+                'patient',
+                'appointments' => function ($q) use ($doctorId) {
+                    $q->where('doctor_id', $doctorId)->orderByDesc('appointment_date')->limit(1);
+                }
             ]);
 
         if ($request->filled('search')) {
@@ -45,7 +63,12 @@ class PatientController extends Controller
 
     public function show($id)
     {
+        $doctorId = Auth::id();
+
         $patient = User::where('role', User::ROLE_PATIENT)
+            ->whereHas('appointments', function ($q) use ($doctorId) {
+                $q->where('doctor_id', $doctorId);
+            })
             ->with([
                 'medicalHistories' => function ($query) {
                     $query->latest('diagnosis_date');

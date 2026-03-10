@@ -25,11 +25,11 @@
         @forelse($appointments as $appointment)
             <div class="appointment-card {{ $appointment->status === 'upcoming' ? '' : 'status-completed-card' }}">
                 <div class="doctor-profile">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($appointment->doctor_name) }}&background=0D9488&color=fff"
+                    <img src="{{ $appointment->doctor->user->profile_image ? asset('storage/' . $appointment->doctor->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($appointment->doctor->user->name) . '&background=0D9488&color=fff&size=128' }}"
                         alt="Doctor" class="doctor-avatar">
                     <div class="doctor-info">
-                        <h3>{{ $appointment->doctor_name }}</h3>
-                        <p>Specialist</p>
+                        <h3>{{ $appointment->doctor->user->name }}</h3>
+                        <p>{{$appointment->doctor->specialty}}</p>
                     </div>
                 </div>
                 <div class="appointment-details">
@@ -89,7 +89,7 @@
                     <select name="doctor_id" class="form-control" required>
                         <option value="">Select Doctor</option>
                         @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->specialist ?? 'General' }}
+                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->doctor->specialty ?? 'General' }}
                             </option>
                         @endforeach
                     </select>

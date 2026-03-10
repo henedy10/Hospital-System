@@ -33,7 +33,7 @@ class DashboardController extends Controller
         ];
 
         // Recent users (last 8)
-        $recentUsers = User::orderByDesc('created_at')->take(8)->get();
+        $recentUsers = User::where('role','!=','admin')->orderByDesc('created_at')->take(8)->get();
 
         return view('admin.index', compact(
             'totalDoctors',

@@ -13,15 +13,15 @@ class AppointmentController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->get('status', 'upcoming');
+        $status = $request->status ?? 'upcoming';
 
-        $appointments = Auth::user()->appointments()
+        $appointments = Appointment::where('user_id',Auth::id())
+            ->with('doctor.user')
             ->where('status', $status)
             ->orderBy('appointment_date', 'asc')
             ->orderBy('appointment_time', 'asc')
             ->get();
-
-        $doctors = \App\Models\User::where('role', 'doctor')->get();
+        $doctors = \App\Models\User::with('doctor')->where('role', 'doctor')->get();
 
         return view('patient.appointments', compact('appointments', 'status', 'doctors'));
     }

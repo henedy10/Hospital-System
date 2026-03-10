@@ -85,6 +85,16 @@
                                 @error('dob', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
                             </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select name="gender" class="form-control @error('gender', 'profileUpdate') is-invalid @enderror">
+                                    <option value="">Select gender</option>
+                                    <option value="male" {{ old('gender', $user->patient?->gender) === 'male' ? 'selected' : '' }}>Male</option>
+                                    <option value="female" {{ old('gender', $user->patient?->gender) === 'female' ? 'selected' : '' }}>Female</option>
+                                </select>
+                                @error('gender', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Address</label>
@@ -222,12 +232,6 @@
                     </div>
                     <form action="{{ route('patient.profile.password') }}" method="POST">
                         @csrf
-                        {{-- @if ($errors->passwordUpdate->any())
-                        <div class="alert alert-error">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <span>Please correct the errors in the password form.</span>
-                        </div>
-                        @endif --}}
                         <div class="form-group">
                             <label>Current Password</label>
                             <input type="password" name="current_password"

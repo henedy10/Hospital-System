@@ -43,6 +43,7 @@ class ProfileController extends Controller
 
         $patientData = [
             'dob' => $data['dob'] ?? null,
+            'gender' => $data['gender'] ?? null,
             'address' => $data['address'] ?? null,
             'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
             'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,

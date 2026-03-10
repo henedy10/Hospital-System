@@ -33,6 +33,7 @@ class ProfileUpdateRequest extends FormRequest
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|regex:/^01[0125][0-9]{8}$/',
             'emergency_contact_relationship' => 'nullable|string|max:255',
+            'gender' => 'required|in:male,female,other',
             'blood_type' => 'nullable|string|max:10',
             'allergies' => 'nullable|string',
             'insurance_provider' => 'nullable|string|max:255',

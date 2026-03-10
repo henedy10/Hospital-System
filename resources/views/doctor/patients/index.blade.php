@@ -6,10 +6,8 @@
     <div class="welcome-section"
         style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-            <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Advanced Patient
-                Registry 🩺</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Comprehensive management of patient files and clinical
-                analytics.</p>
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">My Patients 🩺</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Patients who have had appointments with you. View profiles and clinical history.</p>
         </div>
     </div>
 
@@ -36,11 +34,11 @@
                 <input type="text" name="search" value="{{ request('search') }}" class="form-control"
                     placeholder="Search by patient name, ID, or condition...">
             </div>
-            <select class="select-control" style="flex: 1; opacity: 0.5;" disabled title="Coming soon">
+            {{-- <select class="select-control" style="flex: 1; opacity: 0.5;" disabled title="Coming soon">
                 <option value="">All Departments (Coming Soon)</option>
                 <option value="Cardiology">Cardiology</option>
                 <option value="Orthopedics">Orthopedics</option>
-            </select>
+            </select> --}}
             <button type="submit" class="btn-primary" style="width: auto; padding: 0 20px; margin-top: 0; outline: none;"><i
                     class="fas fa-search"></i> Search</button>
         </form>
@@ -73,7 +71,7 @@
                             #{{ $patient->patient?->patient_id ?? $patient->id }}
                         </td>
                         <td style="padding: 16px 20px; color: var(--text-muted); font-size: 0.9rem;">
-                            {{ $patient->patient?->dob ? \Carbon\Carbon::parse($patient->patient->dob)->age : '--' }} Yrs • Male
+                            {{ $patient->patient?->dob ? \Carbon\Carbon::parse($patient->patient->dob)->age : '--' }} Yrs • {{ $patient->patient?->gender ? ucfirst($patient->patient->gender) : '--' }}
                         </td>
                         <td style="padding: 16px 20px;">
                             @if($patient->patient?->blood_type)
@@ -88,7 +86,10 @@
                             {{ $patient->medicalHistories->first() ? $patient->medicalHistories->first()->condition : 'No Records' }}
                         </td>
                         <td style="padding: 16px 20px; color: var(--text-muted); font-size: 0.9rem;">
-                            {{ $patient->medicalHistories->first() ? \Carbon\Carbon::parse($patient->medicalHistories->first()->diagnosis_date)->format('M d, Y') : '--' }}
+                            @php
+                                $lastVisit = $patient->appointments->first();
+                            @endphp
+                            {{ $lastVisit ? \Carbon\Carbon::parse($lastVisit->appointment_date)->format('M d, Y') : '--' }}
                         </td>
                         <td style="padding: 16px 20px; text-align: right;">
                             <a href="{{ route('doctor.patients.show', $patient->id) }}" class="btn-primary-sm" style="text-decoration: none; padding: 6px 12px; font-size: 0.8rem;">Profile</a>
@@ -97,7 +98,7 @@
                 @empty
                     <tr>
                         <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                            No patients currently registered.
+                            No patients with appointments yet. Patients will appear here after they book an appointment with you.
                         </td>
                     </tr>
                 @endforelse

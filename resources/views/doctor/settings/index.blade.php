@@ -87,7 +87,7 @@
                             <div class="form-group" style="margin-bottom: 20px;">
                                 <label class="input-label">Medical Specialization</label>
                                 <input type="text" name="specialist" disabled class="form-control" style="padding-left: 16px;"
-                                    value="{{ old('specialist', $user->doctor?->specialty) }}">
+                                    value="{{$user->doctor->specialty}}">
                             </div>
 
                             <div class="form-group">

@@ -64,7 +64,10 @@ class AuthController extends Controller
         ]);
 
         $user->patient()->create([
-            'patient_id' => 'PAT-' . date('y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT)
+            'patient_id' => 'PAT-' . date('y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
+            'gender' => $request->gender,
+            'weight' => $request->filled('weight') ? $request->weight : null,
+            'height' => $request->filled('height') ? $request->height : null,
         ]);
 
         Auth::login($user);

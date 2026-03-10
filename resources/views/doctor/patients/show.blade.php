@@ -47,7 +47,7 @@
                     </div>
                     <div style="background: #f8fafc; padding: 12px; border-radius: 12px;">
                         <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Gender</span>
-                        <span style="font-weight: 700;">Male</span>
+                        <span style="font-weight: 700;">{{ $patient->patient?->gender ? ucfirst($patient->patient->gender) : '--' }}</span>
                     </div>
                     <div style="background: #f8fafc; padding: 12px; border-radius: 12px;">
                         <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Weight</span>
