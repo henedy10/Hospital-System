@@ -99,8 +99,8 @@
                                 <span style="font-size: 0.65rem; font-weight: 600; color: var(--text-muted);">{{ \Carbon\Carbon::parse($apt->appointment_date)->format('M') }}</span>
                             </div>
                             <div style="min-width: 0; flex: 1;">
-                                <span style="font-weight: 600; color: var(--text-main); display: block;">{{ $apt->reason }}</span>
-                                <span style="font-size: 0.85rem; color: var(--text-muted);">{{ $apt->doctor_name }} · {{ \Carbon\Carbon::parse($apt->appointment_time)->format('h:i A') }}</span>
+                                <span style="font-weight: 600; color: var(--text-main); display: block;">{{ "Reason: ".$apt->reason }}</span>
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">{{ $apt->doctor->user->name }} · {{ \Carbon\Carbon::parse($apt->appointment_time)->format('h:i A') }}</span>
                             </div>
                             <span class="status-badge status-{{ $apt->status }}">{{ ucfirst($apt->status) }}</span>
                         </li>
@@ -123,14 +123,27 @@
             @else
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     @foreach($recentMedicalHistory as $record)
-                        <li style="border-bottom: 1px solid #eef2f6; padding: 14px 0; display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #EFF6FF; color: #3B82F6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <i class="fas fa-notes-medical" style="font-size: 0.9rem;"></i>
+                        <li style="border-bottom:1px solid #eef2f6; padding:14px 0; display:flex; align-items:center; gap:12px;">
+
+                            <!-- Icon -->
+                            <div style="width:40px; height:40px; border-radius:50%; background:#EFF6FF; color:#3B82F6; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <i class="fas fa-notes-medical" style="font-size:0.9rem;"></i>
                             </div>
-                            <div style="min-width: 0; flex: 1;">
-                                <span style="font-weight: 600; color: var(--text-main); display: block;">{{ $record->condition }}</span>
-                                <span style="font-size: 0.85rem; color: var(--text-muted);">{{ $record->doctor_name }} · {{ \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') }}</span>
+
+                            <!-- Record Info -->
+                            <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;">
+
+                                <span style="font-weight:600; color:var(--text-main);">
+                                    {{"Condition: ".$record->condition }}
+                                </span>
+
+                                <span style="font-size:0.85rem; color:var(--text-muted);">
+                                    {{ "Dr. ".$record->doctor->user->name }} -
+                                    {{ \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') }}
+                                </span>
+
                             </div>
+
                         </li>
                     @endforeach
                 </ul>

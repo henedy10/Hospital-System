@@ -70,7 +70,6 @@
             <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 14px 20px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">#</th>
                         <th style="padding: 14px 20px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Patient</th>
                         <th style="padding: 14px 20px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Doctor</th>
                         <th style="padding: 14px 20px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Date & Time</th>
@@ -90,13 +89,12 @@
                         @endphp
                         <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;"
                             onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
-                            <td style="padding: 14px 20px; color: var(--text-muted); font-size: 0.8rem;">{{ $appt->id }}</td>
                             <td style="padding: 14px 20px;">
                                 <div style="font-weight: 500; color: var(--text-main);">{{ optional($appt->user)->name ?? '—' }}</div>
                             </td>
                             <td style="padding: 14px 20px;">
                                 @if($appt->doctor)
-                                    <div style="font-weight: 500; color: var(--text-main);">{{ $appt->doctor->name }}</div>
+                                    <div style="font-weight: 500; color: var(--text-main);">{{ $appt->doctor->user->name }}</div>
                                 @else
                                     <span style="color: var(--text-muted);">—</span>
                                 @endif

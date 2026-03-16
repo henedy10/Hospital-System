@@ -15,7 +15,7 @@ class AppointmentController extends Controller
         $doctorId = $request->query('doctor_id', '');
         $date = $request->query('date', '');
 
-        $query = Appointment::with(['user', 'doctor'])
+        $query = Appointment::with(['user', 'doctor.user'])
             ->orderByDesc('appointment_date')
             ->orderByDesc('appointment_time');
 

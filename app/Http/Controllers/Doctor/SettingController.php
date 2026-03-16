@@ -18,7 +18,7 @@ class SettingController extends Controller
 
     public function update(ProfileUpdateRequest $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $data = $request->validated();
 
         $userData = [
@@ -37,7 +37,6 @@ class SettingController extends Controller
         $user->update($userData);
 
         $doctorData = [
-            'specialty' => $data['specialist'] ?? null,
             'bio' => $data['bio'] ?? null,
         ];
 
@@ -52,7 +51,7 @@ class SettingController extends Controller
 
     public function removeImage()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if ($user->profile_image && \Storage::disk('public')->exists($user->profile_image)) {
             \Storage::disk('public')->delete($user->profile_image);
         }
@@ -62,7 +61,7 @@ class SettingController extends Controller
 
     public function updatePassword(PasswordUpdateRequest $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $user->update([
             'password' => \Hash::make($request->password),
         ]);
@@ -72,7 +71,7 @@ class SettingController extends Controller
 
     public function updateNotifications(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $user->update([
             'notification_settings' => [
                 'email' => $request->has('email'),

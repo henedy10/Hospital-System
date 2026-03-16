@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,12 +12,11 @@ class PatientController extends Controller
 {
     public function index(Request $request)
     {
-        $doctorId = Auth::id();
+        $doctorId = User::with('doctor')->where('id',Auth::id())->first();
 
         // Patients who have had at least one appointment with this doctor
-        $myPatientsQuery = User::where('role', User::ROLE_PATIENT)
-            ->whereHas('appointments', function ($q) use ($doctorId) {
-                $q->where('doctor_id', $doctorId);
+        $myPatientsQuery = Patient::whereHas('appointments', function ($q) use ($doctorId) {
+                $q->where('doctor_id', $doctorId->doctor->id);
             });
 
         // Stats: only for patients with appointments with this doctor
@@ -28,15 +28,14 @@ class PatientController extends Controller
             ['label' => 'Critical Cases', 'value' => '0', 'icon' => 'fas fa-exclamation-circle', 'color' => 'bg-red'],
         ];
 
-        $query = User::where('role', User::ROLE_PATIENT)
-            ->whereHas('appointments', function ($q) use ($doctorId) {
-                $q->where('doctor_id', $doctorId);
-            })
+        $query = Patient::with('user')->whereHas('appointments', function ($q) use ($doctorId) {
+                    $q->where('doctor_id', $doctorId->doctor->id);
+                })
             ->with([
                 'medicalHistories' => function ($q) {
                     $q->latest('diagnosis_date');
                 },
-                'patient',
+                'user',
                 'appointments' => function ($q) use ($doctorId) {
                     $q->where('doctor_id', $doctorId)->orderByDesc('appointment_date')->limit(1);
                 }
@@ -45,13 +44,9 @@ class PatientController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhereHas('patient', function ($q) use ($search) {
-                        $q->where('patient_id', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('medicalHistories', function ($q) use ($search) {
-                        $q->where('condition', 'like', "%{$search}%");
-                    });
+                $q->whereHas('user',function ($q) use($search){
+                    $q->where('name', 'like', "%{$search}%");
+                });
             });
         }
 

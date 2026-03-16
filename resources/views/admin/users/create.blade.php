@@ -98,6 +98,22 @@
                             style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s; box-sizing: border-box;"
                             onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
+
+                    <div id="genderField" style="display:none;">
+                        <label
+                            style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                            Gender
+                        </label>
+
+                        <select name="gender"
+                            style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; outline: none;">
+                            <option value="">Select Gender</option>
+                            <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Male</option>
+                            <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Female</option>
+                        </select>
+                        @error('gender') <p style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 {{-- Password --}}
@@ -147,6 +163,7 @@
         const roleRadios = document.querySelectorAll('.role-radio');
         const roleCardLabels = document.querySelectorAll('.role-card-label');
         const specialtyField = document.getElementById('specialtyField');
+        const genderField = document.getElementById('genderField');
 
         const roleColors = {
             doctor: { border: '#7c3aed', bg: '#f5f3ff' },
@@ -170,7 +187,10 @@
 
         function toggleSpecialty() {
             const selected = document.querySelector('.role-radio:checked')?.value;
+
             specialtyField.style.display = (selected === 'doctor') ? 'block' : 'none';
+            genderField.style.display = (selected === 'patient') ? 'block' : 'none';
+
             updateRoleCards();
         }
 

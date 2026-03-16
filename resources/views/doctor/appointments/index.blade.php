@@ -55,9 +55,9 @@
                         <tr style="border-bottom: 1px solid #eef2f6; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
                             <td style="padding: 16px 20px;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
-                                    <img src="{{ $appointment->user->profile_image ? asset('storage/' . $appointment->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($appointment->user->name) . '&background=0D9488&color=fff' }}"
+                                    <img src="{{ $appointment->patient->user->profile_image ? asset('storage/' . $appointment->patient->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($appointment->patient->user->name) . '&background=0D9488&color=fff' }}"
                                         alt="Patient" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                                    <span style="font-weight: 700; color: var(--text-main);">{{ $appointment->user->name }}</span>
+                                    <span style="font-weight: 700; color: var(--text-main);">{{ $appointment->patient->user->name }}</span>
                                 </div>
                             </td>
                             <td style="padding: 16px 20px; font-weight: 600; color: var(--text-main);">
@@ -104,7 +104,7 @@
                                             </button>
                                         </form>
                                     @endif
-                                    <a href="{{ route('doctor.patients.show', $appointment->user_id) }}" class="btn-icon" title="Patient Profile" style="color: var(--primary); background: #f0fdfa; padding: 8px; border-radius: 12px;">
+                                    <a href="#" class="btn-icon" title="Patient Profile" style="color: var(--primary); background: #f0fdfa; padding: 8px; border-radius: 12px;">
                                         <i class="fas fa-user"></i>
                                     </a>
                                 </div>
@@ -117,7 +117,7 @@
                                     <i class="fas fa-calendar-times" style="font-size: 1.5rem; color: #94A3B8;"></i>
                                 </div>
                                 <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-main); font-weight: 700;">No Appointments Found</h3>
-                                <p style="margin-top: 8px; font-size: 0.9rem;">There are no appointments matching your criteria.</p>
+                                <p style="color:red; margin-top: 8px; font-size: 0.9rem;">There are no appointments matching your criteria.</p>
                             </td>
                         </tr>
                     @endforelse

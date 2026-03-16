@@ -58,6 +58,52 @@
                 <div class="appointment-actions">
                     @if($appointment->status === 'upcoming')
                         <button class="btn-secondary" onclick="openEditModal({{ json_encode($appointment) }})">Reschedule</button>
+                            <!-- Edit Modal -->
+                            <div id="editModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Reschedule Appointment</h2>
+                                        <button class="close-btn" onclick="closeModal('editModal')">&times;</button>
+                                    </div>
+                                    <form id="editForm" method="POST" action="{{route('patient.appointments.update',$appointment)}}">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="form-group">
+                                            <label>Doctor</label>
+                                            <select name="doctor_id" id="edit_doctor_id" class="form-control" required>
+                                                @foreach($doctors as $doctor)
+                                                    <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }} - {{ $doctor->specialty ?? 'General' }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Date</label>
+                                                <input type="date" name="appointment_date" id="edit_appointment_date" class="form-control" required
+                                                    min="{{ date('Y-m-d') }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Preferred Time</label>
+                                                <select name="appointment_time" id="edit_appointment_time" class="form-control" required>
+                                                    @for($i = 9; $i <= 17; $i++)
+                                                        <option value="{{ sprintf('%02d:00', $i) }}">{{ date('h:i A', strtotime($i . ':00')) }}</option>
+                                                        <option value="{{ sprintf('%02d:30', $i) }}">{{ date('h:i A', strtotime($i . ':30')) }}</option>
+                                                    @endfor
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Reason for Visit</label>
+                                            <textarea name="reason" id="edit_reason" class="form-control" rows="3" required></textarea>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn-outline" onclick="closeModal('editModal')">Cancel</button>
+                                            <button type="submit" class="btn-primary">Update Appointment</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         <form action="{{ route('patient.appointments.cancel', $appointment) }}" method="POST"
                             onsubmit="return confirm('Are you sure you want to cancel this appointment?')">
                             @csrf
@@ -89,7 +135,7 @@
                     <select name="doctor_id" class="form-control" required>
                         <option value="">Select Doctor</option>
                         @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->doctor->specialty ?? 'General' }}
+                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }} - {{ $doctor->specialty ?? 'General' }}
                             </option>
                         @endforeach
                     </select>
@@ -123,52 +169,7 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Reschedule Appointment</h2>
-                <button class="close-btn" onclick="closeModal('editModal')">&times;</button>
-            </div>
-            <form id="editForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="form-group">
-                    <label>Doctor</label>
-                    <select name="doctor_id" id="edit_doctor_id" class="form-control" required>
-                        @foreach($doctors as $doctor)
-                            <option value="{{ $doctor->id }}">Dr. {{ $doctor->name }} - {{ $doctor->specialist ?? 'General' }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" name="appointment_date" id="edit_appointment_date" class="form-control" required
-                            min="{{ date('Y-m-d') }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Preferred Time</label>
-                        <select name="appointment_time" id="edit_appointment_time" class="form-control" required>
-                            @for($i = 9; $i <= 17; $i++)
-                                <option value="{{ sprintf('%02d:00', $i) }}">{{ date('h:i A', strtotime($i . ':00')) }}</option>
-                                <option value="{{ sprintf('%02d:30', $i) }}">{{ date('h:i A', strtotime($i . ':30')) }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Reason for Visit</label>
-                    <textarea name="reason" id="edit_reason" class="form-control" rows="3" required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-outline" onclick="closeModal('editModal')">Cancel</button>
-                    <button type="submit" class="btn-primary">Update Appointment</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
 
     <style>
         .page-header {

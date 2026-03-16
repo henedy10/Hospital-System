@@ -1,63 +1,153 @@
 <?php
 
 namespace App\Http\Controllers\Doctor;
+
 use App\Http\Controllers\Controller;
+use App\Models\Doctor;
+use App\Models\MedicalHistory;
+use App\Models\Patient;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
-    public function index()
+    /**
+     * List all reports (medical histories) for the authenticated doctor.
+     */
+    public function index(Request $request)
     {
-        // Mock data for reports
+        $doctor = Doctor::where('user_id',Auth::id())->first();
+
+        $baseQuery = MedicalHistory::with(['patient.user'])->whereHas('doctor',function ($q) {
+            $q->where('user_id',Auth::id());
+        });
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+
+            $baseQuery->where(function ($q) use ($search) {
+                $q->where('condition', 'like', "%{$search}%")
+                    ->orWhereHas('patient.user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $reports = $baseQuery
+            ->latest('diagnosis_date')
+            ->paginate(10)
+            ->withQueryString();
+
+        $totalReports = (clone $baseQuery)->count();
+        $thisMonthReports = (clone $baseQuery)
+            ->whereMonth('diagnosis_date', now()->month)
+            ->whereYear('diagnosis_date', now()->year)
+            ->count();
+        $uniquePatients = (clone $baseQuery)->distinct('user_id')->count('user_id');
+
+        $previousMonthReports = (clone $baseQuery)
+            ->whereMonth('diagnosis_date', now()->subMonth()->month)
+            ->whereYear('diagnosis_date', now()->subMonth()->year)
+            ->count();
+
+        $changePercentage = $previousMonthReports > 0
+            ? round((($thisMonthReports - $previousMonthReports) / $previousMonthReports) * 100)
+            : 0;
+
+        $changeLabel = ($changePercentage >= 0 ? '+' : '') . $changePercentage . '%';
+
         $stats = [
-            ['label' => 'Total Reports', 'value' => 128, 'change' => '+12%', 'icon' => 'fas fa-file-medical', 'color' => 'bg-teal'],
-            ['label' => 'Pending Review', 'value' => 14, 'change' => '-5%', 'icon' => 'fas fa-clock', 'color' => 'bg-amber'],
-            ['label' => 'Diagnostic Accuracy', 'value' => '94%', 'change' => '+2%', 'icon' => 'fas fa-chart-line', 'color' => 'bg-rose'],
+            [
+                'label' => 'Total Reports',
+                'value' => $totalReports,
+                'change' => $changeLabel,
+                'icon' => 'fas fa-file-medical',
+                'color' => 'bg-teal',
+            ],
+            [
+                'label' => 'Reports This Month',
+                'value' => $thisMonthReports,
+                'change' => $changeLabel,
+                'icon' => 'fas fa-calendar-check',
+                'color' => 'bg-amber',
+            ],
+            [
+                'label' => 'Unique Patients',
+                'value' => $uniquePatients,
+                'change' => '+0%',
+                'icon' => 'fas fa-users',
+                'color' => 'bg-rose',
+            ],
         ];
 
-        $reports = [
-            ['id' => 'R-1024', 'name' => 'Routine Checkup - Ahmed Mohamed', 'date' => '2026-02-28', 'category' => 'General Checkup', 'status' => 'Ready', 'status_type' => 'success'],
-            ['id' => 'R-1025', 'name' => 'Complete Blood Count - Sarah Ali', 'date' => '2026-02-27', 'category' => 'Laboratory', 'status' => 'Processing', 'status_type' => 'warning'],
-            ['id' => 'R-1026', 'name' => 'MRI Scan - Mahmoud Hassan', 'date' => '2026-02-26', 'category' => 'Radiology', 'status' => 'Review', 'status_type' => 'info'],
-            ['id' => 'R-1027', 'name' => 'Cardiac Surgery Report - Lily Youssef', 'date' => '2026-02-25', 'category' => 'Surgery', 'status' => 'Ready', 'status_type' => 'success'],
-            ['id' => 'R-1028', 'name' => 'Orthopedic Exam - Omar Khaled', 'date' => '2026-02-24', 'category' => 'Orthopedics', 'status' => 'Cancelled', 'status_type' => 'danger'],
-        ];
+        $patientsForSelect = Patient::with('user')->whereHas('appointments' , function ($q) use($doctor){
+            $q->where('doctor_id',$doctor->id);
+        })
+            ->orderBy('user:name')
+            ->get();
 
-        return view('doctor.reports.index', compact('stats', 'reports'));
+        return view('doctor.reports.index', compact('stats', 'reports', 'totalReports', 'patientsForSelect'));
     }
 
-    public function show($id)
+    /**
+     * Show a single report, ensuring it belongs to one of the doctor's patients.
+     */
+    public function show(Request $request, MedicalHistory $history)
     {
-        // Detailed mock data for a "Best Case" report
+        $role = 'doctor';
+        $history->load(['patient.user', 'user.vitals','doctor.user']);
+
+        // $latestVital = $user->vitals()->latest()->first();
+
+        // $vitals = [];
+
+        // if ($latestVital) {
+        //     $vitals = [
+        //         [
+        //             'label' => 'Blood Pressure',
+        //             'value' => $latestVital->blood_pressure ?? '—',
+        //             'status' => 'Normal',
+        //         ],
+        //         [
+        //             'label' => 'Heart Rate',
+        //             'value' => $latestVital->heart_rate ? $latestVital->heart_rate . ' bpm' : '—',
+        //             'status' => 'Normal',
+        //         ],
+        //         [
+        //             'label' => 'Temperature',
+        //             'value' => $latestVital->temperature ? $latestVital->temperature . ' °C' : '—',
+        //             'status' => 'Normal',
+        //         ],
+        //     ];
+        // }
+
         $report = [
-            'id' => $id,
-            'name' => 'Comprehensive Routine Checkup Report',
-            'date' => '2026-02-28',
-            'category' => 'Cardiology',
-            'department_en' => 'Cardiology and Vascular Department',
-            'status' => 'Ready for final review',
+            'id' => $history->id,
+            'name' => $history->condition,
+            'date' => optional($history->diagnosis_date)->format('Y-m-d') ?? $history->created_at->format('Y-m-d'),
+            'category' => 'Clinical Report',
+            'department_en' => ucfirst($history->doctor->specialty) . ' Clinical' ?: 'Attending Physician',
+            'status' => 'Recorded',
             'patient' => [
-                'name' => 'Ahmed Mohamed Ali',
-                'id' => 'P-99201',
-                'age' => 45,
-                'weight' => '82 kg',
-                'blood_type' => 'O+',
-                'avatar' => 'https://ui-avatars.com/api/?name=Ahmed+Mohamed&background=0D9488&color=fff'
+                'name' => $history->patient->user->name,
+                'id' => optional($history->patient)->patient_id ?? 'N/A',
+                'age' => $history->patient->dob ? $history->patient->dob->age : null,
+                'weight' => $history->patient->weight ? $history->patient->weight . ' kg' : 'N/A',
+                'blood_type' => $history->patient->blood_type ?? 'N/A',
+                'avatar' => $history->patient->user->profile_image
+                    ? asset('storage/' . $history->patient->user->profile_image)
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($history->patient->user->name) . '&background=0D9488&color=fff',
             ],
-            'diagnosis' => 'Suspected mild hypertension with regular heart rhythm. Routine follow-up and reduced sodium intake are recommended.',
-            'vitals' => [
-                ['label' => 'Blood Pressure', 'value' => '135/85', 'status' => 'High Normal'],
-                ['label' => 'Heart Rate', 'value' => '72 bpm', 'status' => 'Regular'],
-                ['label' => 'Temperature', 'value' => '37.1 °C', 'status' => 'Normal'],
-            ],
-            'clinical_notes' => 'The patient suffers from persistent work stress and frequent migraines. Tests performed last week showed acceptable results except for a slight increase in cholesterol.',
-            'treatment_plan' => [
-                'One Amlodipine tablet (5mg) in the evening.',
-                '30 minutes of walking daily.',
-                'Repeat tests after two weeks.'
-            ]
+            'diagnosis' => $history->condition,
+            // 'vitals' => $vitals,
+            'clinical_notes' => $history->treatment,
+            'treatment_plan' => $history->treatment
+                ? preg_split("/\r\n|\n|\r/", $history->treatment)
+                : [],
+            'doctor' => $history->doctor,
         ];
 
-        return view('doctor.reports.show', compact('report'));
+        return view('doctor.reports.show', compact('report','role'));
     }
 }

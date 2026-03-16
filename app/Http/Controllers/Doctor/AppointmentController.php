@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers\Doctor;
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AppointmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = auth()->user()->doctorAppointments()
-            ->with('user')
+        $query = Appointment::whereHas('doctor.user' , function ($q){
+            $q->where('id',Auth::id());
+        })
+            ->with('patient.user')
             ->latest();
-
         // Search by patient name
         if ($request->filled('search')) {
-            $query->whereHas('user', function ($q) use ($request) {
+            $query->whereHas('patient.user', function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%');
             });
         }
@@ -29,14 +32,14 @@ class AppointmentController extends Controller
             $query->whereDate('appointment_date', $request->date);
         }
 
-        $appointments = $query->paginate(10)->withQueryString();
+        $appointments = $query->paginate(10);
 
         return view('doctor.appointments.index', compact('appointments'));
     }
 
     public function updateStatus(Request $request, \App\Models\Appointment $appointment)
     {
-        if ($appointment->doctor_id !== auth()->id()) {
+        if ($appointment->doctor_id !== Auth::id()) {
             abort(403);
         }
 

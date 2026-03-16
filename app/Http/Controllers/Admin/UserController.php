@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -46,6 +47,7 @@ class UserController extends Controller
             'role' => ['required', Rule::in([User::ROLE_DOCTOR, User::ROLE_NURSE, User::ROLE_PATIENT])],
             'password' => 'required|string|min:8|confirmed',
             'specialty' => 'nullable|string|max:255',
+            'gender' => 'required|in:male,female'
         ]);
 
         $user = User::create([
@@ -63,6 +65,7 @@ class UserController extends Controller
         } elseif ($user->role === User::ROLE_PATIENT) {
             $user->patient()->create([
                 'patient_id' => 'PAT-' . date('y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
+                'gender' => $validated['gender']
             ]);
         }
 
@@ -84,22 +87,8 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone' => 'nullable|string|max:20',
             'specialty' => 'nullable|string|max:255',
-            'password' => 'nullable|string|min:8|confirmed',
         ]);
-
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? $user->phone,
-        ]);
-
-        if (!empty($validated['password'])) {
-            $user->update(['password' => Hash::make($validated['password'])]);
-        }
 
         if ($user->role === User::ROLE_DOCTOR && !empty($validated['specialty'])) {
             $user->doctor()->updateOrCreate(['user_id' => $user->id], ['specialty' => $validated['specialty']]);
@@ -114,7 +103,7 @@ class UserController extends Controller
             return redirect()->route('admin.users.index')->with('error', 'Cannot delete admin accounts.');
         }
 
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return redirect()->route('admin.users.index')->with('error', 'You cannot delete your own account.');
         }
 

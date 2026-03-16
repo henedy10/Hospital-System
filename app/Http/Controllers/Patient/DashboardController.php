@@ -3,6 +3,12 @@
 namespace App\Http\Controllers\Patient;
 
 use App\Http\Controllers\Controller;
+use App\Models\
+{
+    Appointment,
+    MedicalHistory,
+    User
+};
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,11 +16,11 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        $user = User::with('patient')->where('id',Auth::id())->first();
         $today = Carbon::today();
-
         // Upcoming: future appointments (date >= today), not cancelled, ordered by date/time
-        $upcomingAppointments = $user->appointments()
+        $upcomingAppointments = Appointment::with('user')
+            ->where('patient_id',$user->patient->id)
             ->where('appointment_date', '>=', $today)
             ->where('status', '!=', 'cancelled')
             ->orderBy('appointment_date')
@@ -25,20 +31,19 @@ class DashboardController extends Controller
         $nextAppointment = $upcomingAppointments->first();
 
         // Counts for stats
-        $upcomingCount = $user->appointments()
-            ->where('appointment_date', '>=', $today)
+        $upcomingCount = Appointment::where('appointment_date', '>=', $today)
             ->where('status', 'upcoming')
             ->count();
 
-        $medicalRecordsCount = $user->medicalHistories()->count();
 
-        $latestVitals = $user->vitals()->latest()->first();
+            $latestVitals = $user->vitals()->latest()->first();
 
-        // Recent medical history (for the list)
-        $recentMedicalHistory = $user->medicalHistories()
-            ->orderByDesc('diagnosis_date')
-            ->limit(5)
-            ->get();
+            // Recent medical history (for the list)
+        $medicalRecordsCount  = MedicalHistory::where('patient_id',$user->patient->id)->count() ;
+        $recentMedicalHistory = MedicalHistory::where('patient_id',$user->patient->id)
+                                            ->orderByDesc('diagnosis_date')
+                                            ->limit(5)
+                                            ->get();
 
         return view('patient.dashboard', [
             'user' => $user,

@@ -102,6 +102,12 @@
                                 <div class="timeline-date">{{ $history->diagnosis_date }}</div>
                                 <div class="timeline-type">{{ $history->condition }}</div>
                                 <p class="timeline-desc">{{ $history->treatment }}</p>
+                                <div style="margin-top: 8px;">
+                                    <a href="{{ route('doctor.reports.show', $history) }}" class="btn-primary-sm"
+                                        style="text-decoration: none; font-size: 0.75rem; padding: 4px 10px;">
+                                        View Report
+                                    </a>
+                                </div>
                                 <div style="margin-top: 10px; font-size: 0.8rem; font-weight: 700; color: var(--primary);">
                                     By: {{ $history->doctor_name }}
                                 </div>

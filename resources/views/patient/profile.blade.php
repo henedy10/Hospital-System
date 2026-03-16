@@ -36,9 +36,6 @@
                 <div class="user-meta">
                     <h2>{{ $user->name }}</h2>
                     <p>Patient ID: {{ $user->patient?->patient_id ?? 'N/A' }}</p>
-                    <span class="user-status {{ $user->is_verified ? 'active' : 'pending' }}">
-                        {{ $user->is_verified ? 'Verified Account' : 'Pending Verification' }}
-                    </span>
                 </div>
             </div>
         </div>
@@ -80,7 +77,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Date of Birth</label>
-                                <input type="date" name="dob" value="{{ old('dob', $user->patient?->dob) }}"
+                                <input type="date" name="dob" value="{{ old('dob', $user->patient?->dob?->format('Y-m-d')) }}"
                                     class="form-control @error('dob', 'profileUpdate') is-invalid @enderror">
                                 @error('dob', 'profileUpdate') <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror

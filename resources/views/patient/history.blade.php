@@ -15,16 +15,31 @@
                 @forelse($history as $record)
                     <div class="timeline-item">
                         <div class="timeline-marker {{ $loop->first ? 'bg-blue' : 'bg-green' }}"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-header">
-                                <span class="date">{{ \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') }}</span>
-                                <span class="type-badge laboratory">Record</span>
-                            </div>
-                            <h3>{{ $record->condition }}</h3>
-                            <p>{{ $record->treatment }}</p>
-                            <div class="mt-2 text-sm text-muted">
-                                <strong>Doctor:</strong> {{ $record->doctor_name }}
-                            </div>
+                            <div class="timeline-content">
+
+                                <div class="timeline-header">
+                                    <span class="date">
+                                        Date: {{ \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') }}
+                                    </span>
+                                    <span class="type-badge laboratory">
+                                            <a href="{{ route('patient.history.show',$record->id) }}" class="btn-icon"
+                                                title="View Details"><i class="fas fa-eye"></i></a>
+                                    </span>
+                                </div>
+
+                                <h3 style="color: rgb(178, 123, 123); margin-top:8px;">
+                                    Condition: {{ $record->condition }}
+                                </h3>
+
+                                <div style="margin-top:10px; font-size:14px; color:#64748b; display:flex; flex-direction:column; gap:4px;">
+                                    <div>
+                                        <strong>Doctor:</strong> {{ $record->doctor->user->name }}
+                                    </div>
+
+                                    <div>
+                                        <strong>Department:</strong> {{ ucfirst($record->doctor->specialty) }}
+                                    </div>
+                                </div>
                         </div>
                     </div>
                 @empty
@@ -34,12 +49,6 @@
         </div>
 
         <div class="history-sidebar">
-            <div class="sidebar-card">
-                <h3>Download Records</h3>
-                <p>Get a comprehensive PDF report of your entire medical history.</p>
-                <button class="btn-block-outline"><i class="fas fa-cloud-download-alt"></i> Download Full Archive</button>
-            </div>
-
             <div class="sidebar-card">
                 <h3>Health Summary</h3>
                 <div class="summary-list">
@@ -153,7 +162,7 @@
 
         .date {
             font-size: 0.875rem;
-            color: #6B7280;
+            color: #184eb9;
             font-weight: 500;
         }
 

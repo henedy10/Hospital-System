@@ -69,7 +69,7 @@ Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function ()
     Route::put('/medical-history/{history}', [DoctorMedicalHistoryController::class, 'update'])->name('doctor.medical-history.update');
     Route::delete('/medical-history/{history}', [DoctorMedicalHistoryController::class, 'destroy'])->name('doctor.medical-history.destroy');
     Route::get('/reports', [ReportController::class, 'index'])->name('doctor.reports');
-    Route::get('/reports/{id}', [ReportController::class, 'show'])->name('doctor.reports.show');
+    Route::get('/reports/{history}', [ReportController::class, 'show'])->name('doctor.reports.show');
     Route::get('/settings', [SettingController::class, 'index'])->name('doctor.settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('doctor.settings.update');
     Route::delete('/settings/image', [SettingController::class, 'removeImage'])->name('doctor.settings.image.remove');
@@ -95,6 +95,7 @@ Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function 
     Route::put('/appointments/{appointment}', [PatientAppointmentController::class, 'update'])->name('patient.appointments.update');
     Route::post('/appointments/{appointment}/cancel', [PatientAppointmentController::class, 'cancel'])->name('patient.appointments.cancel');
     Route::get('/history', [PatientMedicalHistoryController::class, 'index'])->name('patient.history');
+    Route::get('/history/{history}', [PatientMedicalHistoryController::class, 'show'])->name('patient.history.show');
     Route::get('/profile', [PatientProfileController::class, 'index'])->name('patient.profile');
     Route::post('/profile', [PatientProfileController::class, 'update'])->name('patient.profile.update');
     Route::delete('/profile/image', [PatientProfileController::class, 'removeImage'])->name('patient.profile.image.remove');

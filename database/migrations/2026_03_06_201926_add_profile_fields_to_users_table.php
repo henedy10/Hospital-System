@@ -11,9 +11,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            $table->string('role')->default('patient')->after('email');
+            $table->string('phone')->nullable()->after('role');
             $table->date('dob')->nullable()->after('phone');
             $table->text('address')->nullable()->after('dob');
-            $table->string('emergency_contact_name')->nullable()->after('address');
+            $table->string('profile_image')->nullable()->after('address');
+            $table->string('emergency_contact_name')->nullable()->after('profile_image');
             $table->string('emergency_contact_phone')->nullable()->after('emergency_contact_name');
             $table->string('emergency_contact_relationship')->nullable()->after('emergency_contact_phone');
             $table->string('blood_type')->nullable()->after('emergency_contact_relationship');
@@ -21,6 +24,7 @@ return new class extends Migration {
             $table->string('insurance_provider')->nullable()->after('allergies');
             $table->string('insurance_member_id')->nullable()->after('insurance_provider');
             $table->string('insurance_plan')->nullable()->after('insurance_member_id');
+            $table->json('notification_settings')->nullable();
         });
     }
 

@@ -87,7 +87,7 @@
                     @endif
                 </div>
                 @if($todayAppointments->isEmpty())
-                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0; padding: 12px 0;">No appointments scheduled for today.</p>
+                    <p style="color:red; font-size: 0.9rem; margin: 0; padding: 12px 0;">No appointments scheduled for today.</p>
                 @else
                     <ul style="list-style: none; padding: 0; margin: 0;">
                         @foreach($todayAppointments as $apt)
@@ -116,19 +116,19 @@
                     <a href="{{ route('doctor.appointments') }}?status=upcoming" style="font-size: 0.85rem; color: var(--primary); font-weight: 600; text-decoration: none;">View all</a>
                 </div>
                 @if($upcomingAppointments->isEmpty())
-                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0; padding: 12px 0;">No upcoming appointments.</p>
+                    <p style="color: red; font-size: 0.9rem; margin: 0; padding: 12px 0;">No upcoming appointments.</p>
                 @else
                     <ul style="list-style: none; padding: 0; margin: 0;">
                         @foreach($upcomingAppointments as $apt)
                             <li style="border-bottom: 1px solid #eef2f6; padding: 14px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
                                 <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-                                    <img src="{{ $apt->user->profile_image ? asset('storage/' . $apt->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($apt->user->name) . '&background=0D9488&color=fff' }}" alt="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+                                    <img src="{{ $apt->patient->user->profile_image ? asset('storage/' . $apt->patient->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($apt->patient->user->name) . '&background=0D9488&color=fff' }}" alt="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
                                     <div style="min-width: 0;">
-                                        <span style="font-weight: 600; color: var(--text-main); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $apt->user->name }}</span>
+                                        <span style="font-weight: 600; color: var(--text-main); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $apt->patient->user->name }}</span>
                                         <span style="font-size: 0.8rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($apt->appointment_date)->format('M j') }} · {{ \Carbon\Carbon::parse($apt->appointment_time)->format('h:i A') }}</span>
                                     </div>
                                 </div>
-                                <a href="{{ route('doctor.patients.show', $apt->user_id) }}" class="btn-primary-sm" style="text-decoration: none; padding: 5px 10px; font-size: 0.75rem; white-space: nowrap;">Profile</a>
+                                <a href="#" class="btn-primary-sm" style="text-decoration: none; padding: 5px 10px; font-size: 0.75rem; white-space: nowrap;">Profile</a>
                             </li>
                         @endforeach
                     </ul>

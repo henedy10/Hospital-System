@@ -47,24 +47,20 @@
                             style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
                             Full Name <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="text" name="name" value="{{ old('name', $user->name) }}"
+                        <input type="text" name="name" disabled value="{{ $user->name }}"
                             style="width: 100%; padding: 10px 14px; border: 1.5px solid {{ $errors->has('name') ? '#ef4444' : '#e2e8f0' }}; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s; box-sizing: border-box;"
                             onfocus="this.style.borderColor='#6366f1'"
                             onblur="this.style.borderColor='{{ $errors->has('name') ? '#ef4444' : '#e2e8f0' }}'">
-                        @error('name') <p style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ $message }}</p>
-                        @enderror
                     </div>
                     <div>
                         <label
                             style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
                             Email <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="email" name="email" value="{{ old('email', $user->email) }}"
+                        <input type="email" name="email" disabled value="{{$user->email}}"
                             style="width: 100%; padding: 10px 14px; border: 1.5px solid {{ $errors->has('email') ? '#ef4444' : '#e2e8f0' }}; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s; box-sizing: border-box;"
                             onfocus="this.style.borderColor='#6366f1'"
                             onblur="this.style.borderColor='{{ $errors->has('email') ? '#ef4444' : '#e2e8f0' }}'">
-                        @error('email') <p style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ $message }}</p>
-                        @enderror
                     </div>
                 </div>
 
@@ -73,7 +69,7 @@
                     <div>
                         <label
                             style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">Phone</label>
-                        <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="+1 555 0100"
+                        <input type="tel" name="phone" disabled value="{{ $user->phone}}" placeholder="+1 555 0100"
                             style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s; box-sizing: border-box;"
                             onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
@@ -87,31 +83,6 @@
                                 onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
                         </div>
                     @endif
-                </div>
-
-                {{-- Password Reset Section --}}
-                <div
-                    style="border: 1.5px dashed #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 28px; background: #fafbfc;">
-                    <p style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 12px;">
-                        <i class="fas fa-lock" style="margin-right: 6px; color: #6366f1;"></i> Change Password
-                        <span style="font-weight: 400; color: var(--text-muted); margin-left: 6px;">(leave blank to keep
-                            current)</span>
-                    </p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div>
-                            <input type="password" name="password" placeholder="New password"
-                                style="width: 100%; padding: 10px 14px; border: 1.5px solid {{ $errors->has('password') ? '#ef4444' : '#e2e8f0' }}; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s; box-sizing: border-box;"
-                                onfocus="this.style.borderColor='#6366f1'"
-                                onblur="this.style.borderColor='{{ $errors->has('password') ? '#ef4444' : '#e2e8f0' }}'">
-                            @error('password') <p style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ $message }}
-                            </p> @enderror
-                        </div>
-                        <div>
-                            <input type="password" name="password_confirmation" placeholder="Confirm new password"
-                                style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s; box-sizing: border-box;"
-                                onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-                        </div>
-                    </div>
                 </div>
 
                 {{-- Submit --}}

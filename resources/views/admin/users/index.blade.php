@@ -80,11 +80,13 @@
                             <td style="padding: 14px 20px; color: var(--text-muted);">{{ $u->created_at->format('M d, Y') }}</td>
                             <td style="padding: 14px 20px;">
                                 <div style="display: flex; gap: 8px; align-items: center;">
-                                    <a href="{{ route('admin.users.edit', $u) }}"
-                                        style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: #ede9fe; color: #7c3aed; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: background 0.15s;"
-                                        onmouseover="this.style.background='#ddd6fe'" onmouseout="this.style.background='#ede9fe'">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
+                                    @if ($u->role !== 'patient')
+                                        <a href="{{ route('admin.users.edit', $u) }}"
+                                            style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: #ede9fe; color: #7c3aed; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: background 0.15s;"
+                                            onmouseover="this.style.background='#ddd6fe'" onmouseout="this.style.background='#ede9fe'">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    @endif
 
                                     <form action="{{ route('admin.users.destroy', $u) }}" method="POST"
                                         onsubmit="return confirm('Delete {{ addslashes($u->name) }}? This action cannot be undone.')">

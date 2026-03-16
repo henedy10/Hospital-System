@@ -15,7 +15,8 @@
             <button class="btn-outline" style="width: auto; padding: 10px 24px;">
                 <i class="fas fa-file-export"></i> Export Data
             </button>
-            <button class="btn-primary" style="width: auto; padding: 10px 24px; margin-top: 0;">
+            <button class="btn-primary" style="width: auto; padding: 10px 24px; margin-top: 0;"
+                onclick="openCreateReportModal()">
                 <i class="fas fa-plus"></i> Create New Report
             </button>
         </div>
@@ -38,52 +39,72 @@
                     </div>
                 </div>
             </div>
+
+    <!-- Create Report Modal -->
+    <div id="createReportModal" class="modal"
+        style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);">
+        <div class="glass-card"
+            style="background: white; margin: 5% auto; padding: 32px; width: 520px; border-radius: 24px; position: relative;">
+            <h3 style="margin-top: 0; margin-bottom: 24px; font-weight: 800;">Create New Report</h3>
+            <form action="{{ route('doctor.medical-history.store') }}" method="POST">
+                @csrf
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Patient</label>
+                    <select name="patient_id" required
+                        style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <option value="" disabled selected>Select patient</option>
+                        @foreach($patientsForSelect as $patient)
+                            <option value="{{ $patient->id }}">{{ $patient->user->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Medical
+                        Condition / Diagnosis</label>
+                    <input type="text" name="condition" required
+                        style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Diagnosis
+                        Date</label>
+                    <input type="date" name="diagnosis_date" required value="{{ date('Y-m-d') }}"
+                        style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Treatment /
+                        Notes (one line per step)</label>
+                    <textarea name="treatment" rows="4"
+                        style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" onclick="closeCreateReportModal()" class="btn-outline"
+                        style="width: auto; padding: 10px 24px;">Cancel</button>
+                    <button type="submit" class="btn-primary"
+                        style="width: auto; padding: 10px 24px; margin-top: 0;">Save Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
         @endforeach
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 32px;">
-        <!-- Improved Diagnosis Distribution Chart -->
-        <div class="glass-card" style="display: flex; flex-direction: column;">
-            <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 24px;">Diagnosis Distribution</h2>
-
-            <div style="position: relative; height: 200px; margin-bottom: 20px;">
-                <canvas id="categoryChart"></canvas>
-                <div
-                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
-                    <span style="display: block; font-size: 1.5rem; font-weight: 800; color: var(--text-main);">128</span>
-                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">TOTAL</span>
-                </div>
-            </div>
-
-            <div id="chartLegend" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 10px; height: 10px; border-radius: 3px; background: #0D9488;"></div>
-                    <span style="font-size: 0.85rem; font-weight: 500;">Heart (30%)</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 10px; height: 10px; border-radius: 3px; background: #0EA5E9;"></div>
-                    <span style="font-size: 0.85rem; font-weight: 500;">Bones (20%)</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 10px; height: 10px; border-radius: 3px; background: #F59E0B;"></div>
-                    <span style="font-size: 0.85rem; font-weight: 500;">Lab (25%)</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 10px; height: 10px; border-radius: 3px; background: #EF4444;"></div>
-                    <span style="font-size: 0.85rem; font-weight: 500;">Surgery (25%)</span>
-                </div>
-            </div>
-        </div>
-
+    <div style="grid-column: 1 / -1;">
         <!-- Reports Table -->
         <div class="glass-card">
             <div class="chart-header">
                 <h2 style="font-size: 1.1rem; font-weight: 700;">Latest Issued Reports</h2>
-                <div class="search-input-wrapper" style="width: 250px;">
-                    <i class="fas fa-search" style="left: 12px; font-size: 0.8rem;"></i>
-                    <input type="text" class="form-control" style="padding: 8px 12px 8px 32px; font-size: 0.85rem;"
-                        placeholder="Search reports...">
-                </div>
+                <form method="GET" action="{{ route('doctor.reports') }}" style="margin: 0;">
+                    <div class="search-input-wrapper" style="width: 250px;">
+                        <i class="fas fa-search" style="left: 12px; font-size: 0.8rem;"></i>
+                        <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+                            style="padding: 8px 12px 8px 32px; font-size: 0.85rem;" placeholder="Search reports...">
+                    </div>
+                </form>
             </div>
 
             <div class="table-responsive">
@@ -91,42 +112,75 @@
                     <thead>
                         <tr>
                             <th>Report ID</th>
+                            <th>Patient Name</th>
                             <th>Report Name</th>
                             <th>Date</th>
-                            <th>Category</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th style="display: flex; justify-content:center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($reports as $report)
-                            <tr>
-                                <td style="color: var(--primary); font-weight: 600;">{{ $report['id'] }}</td>
-                                <td>{{ $report['name'] }}</td>
-                                <td>{{ $report['date'] }}</td>
-                                <td>{{ $report['category'] }}</td>
+                        @forelse($reports as $report)
+                            <tr style="font-weight: 600;">
                                 <td>
-                                    <span class="report-status {{ $report['status_type'] }}">
-                                        {{ $report['status'] }}
+                                    R-{{ str_pad($report->id, 4, '0', STR_PAD_LEFT) }}
+                                </td>
+
+                                <td>
+                                    {{ $report->patient?->user?->name}}
+                                </td>
+
+                                <td>
+                                    {{ $report->condition }}
+                                    @if($report->user)
+                                        - {{ $report->user->name }}
+                                    @endif
+                                </td>
+                                <td>{{ optional($report->diagnosis_date)->format('Y-m-d') ?? $report->created_at->format('Y-m-d') }}</td>
+                                <td>
+                                    <span class="report-status success">
+                                        Recorded
                                     </span>
                                 </td>
                                 <td>
-                                    <div style="display: flex; gap: 8px;">
-                                        <a href="{{ route('doctor.reports.show', $report['id']) }}" class="btn-icon"
+                                    <div style="display: flex; justify-content:center; gap: 8px;">
+                                        <a href="{{ route('doctor.reports.show', $report->id) }}" class="btn-icon"
                                             title="View Details"><i class="fas fa-eye"></i></a>
-                                        <a href="#" class="btn-icon" title="Download"><i class="fas fa-download"></i></a>
-                                        <a href="#" class="btn-icon" title="Print"><i class="fas fa-print"></i></a>
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                    <div style="background: #f8fafc; display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; margin-bottom: 16px;">
+                                        <i class="fas fa-calendar-times" style="font-size: 1.5rem; color: #94A3B8;"></i>
+                                    </div>
+                                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-main); font-weight: 700;">No Reports Found</h3>
+                                    <p style="color:red;margin-top: 8px; font-size: 0.9rem;">There are no reports matching your criteria.</p>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
+
+            @if($reports instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                <div style="margin-top: 16px;">
+                    {{ $reports->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
     <script>
+        function openCreateReportModal() {
+            document.getElementById('createReportModal').style.display = 'block';
+        }
+
+        function closeCreateReportModal() {
+            document.getElementById('createReportModal').style.display = 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             // Doughnut Chart for Categories
             const catCtx = document.getElementById('categoryChart').getContext('2d');

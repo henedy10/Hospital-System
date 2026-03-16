@@ -32,7 +32,7 @@
             <div class="search-input-wrapper" style="flex: 2;">
                 <i class="fas fa-search"></i>
                 <input type="text" name="search" value="{{ request('search') }}" class="form-control"
-                    placeholder="Search by patient name, ID, or condition...">
+                    placeholder="Search by patient name...">
             </div>
             {{-- <select class="select-control" style="flex: 1; opacity: 0.5;" disabled title="Coming soon">
                 <option value="">All Departments (Coming Soon)</option>
@@ -53,7 +53,6 @@
                     <th style="padding: 16px 20px; font-weight: 600;">ID</th>
                     <th style="padding: 16px 20px; font-weight: 600;">Age & Gender</th>
                     <th style="padding: 16px 20px; font-weight: 600;">Blood</th>
-                    <th style="padding: 16px 20px; font-weight: 600;">Condition</th>
                     <th style="padding: 16px 20px; font-weight: 600;">Last Visit</th>
                     <th style="padding: 16px 20px; font-weight: 600; text-align: right;">Action</th>
                 </tr>
@@ -63,27 +62,24 @@
                     <tr style="border-bottom: 1px solid #eef2f6; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
                         <td style="padding: 16px 20px;">
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <img src="{{ $patient->profile_image ? asset('storage/' . $patient->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($patient->name) . '&background=0D9488&color=fff' }}" alt="{{ $patient->name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                                <span style="font-weight: 700; color: var(--text-main);">{{ $patient->name }}</span>
+                                <img src="{{ $patient->user->profile_image ? asset('storage/' . $patient->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($patient->user->name) . '&background=0D9488&color=fff' }}" alt="{{ $patient->user->name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                <span style="font-weight: 700; color: var(--text-main);">{{ $patient->user->name }}</span>
                             </div>
                         </td>
                         <td style="padding: 16px 20px; color: var(--text-muted); font-size: 0.9rem;">
-                            #{{ $patient->patient?->patient_id ?? $patient->id }}
+                            #{{ $patient->patient_id ?? $patient->id }}
                         </td>
                         <td style="padding: 16px 20px; color: var(--text-muted); font-size: 0.9rem;">
-                            {{ $patient->patient?->dob ? \Carbon\Carbon::parse($patient->patient->dob)->age : '--' }} Yrs • {{ $patient->patient?->gender ? ucfirst($patient->patient->gender) : '--' }}
+                            {{ $patient->dob ? \Carbon\Carbon::parse($patient->dob)->age : '--' }} Yrs • {{ $patient->gender ? ucfirst($patient->gender) : '--' }}
                         </td>
                         <td style="padding: 16px 20px;">
-                            @if($patient->patient?->blood_type)
+                            @if($patient->blood_type)
                                 <span style="background: var(--primary); color: #fff; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; font-weight: 700;">
-                                    {{ $patient->patient?->blood_type }}
+                                    {{ $patient->blood_type }}
                                 </span>
                             @else
                                 <span style="color: var(--text-muted); font-size: 0.9rem;">--</span>
                             @endif
-                        </td>
-                        <td style="padding: 16px 20px; color: var(--primary); font-weight: 600; font-size: 0.9rem;">
-                            {{ $patient->medicalHistories->first() ? $patient->medicalHistories->first()->condition : 'No Records' }}
                         </td>
                         <td style="padding: 16px 20px; color: var(--text-muted); font-size: 0.9rem;">
                             @php
@@ -97,7 +93,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <td colspan="7" style="color:red;text-align: center; padding: 40px; ">
                             No patients with appointments yet. Patients will appear here after they book an appointment with you.
                         </td>
                     </tr>
