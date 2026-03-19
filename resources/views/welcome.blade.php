@@ -31,7 +31,7 @@
 
                 <div class="hidden md:flex items-center gap-8 text-sm font-medium">
                     <a href="#" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Home</a>
-                    <a href="#" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Services</a>
+                    <a href="#Services" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Services</a>
                     <a href="#" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Doctors</a>
                     <a href="#" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Contact</a>
                 </div>
@@ -87,19 +87,30 @@
                         <a href="{{ route('register') }}"
                             class="px-8 py-4 bg-medical-primary text-white rounded-full font-bold hover:translate-y-[-2px] transition-all shadow-xl shadow-medical-primary/30">Get
                             Started Today</a>
-                        <a href="#"
+                        <a href="#Services"
                             class="px-8 py-4 bg-white border border-medical-dark/10 rounded-full font-bold hover:bg-gray-50 transition-all">View
                             Our Specialities</a>
                     </div>
 
                     <div class="mt-12 flex items-center gap-6">
                         <div class="flex -space-x-4">
-                            <div class="w-12 h-12 rounded-full border-4 border-white bg-gray-200"></div>
-                            <div class="w-12 h-12 rounded-full border-4 border-white bg-gray-300"></div>
-                            <div class="w-12 h-12 rounded-full border-4 border-white bg-gray-400"></div>
+                            @foreach($doctors as $doctor)
+                                @if($doctor->profile_image)
+                                    <img src="{{ asset('storage/' . $doctor->profile_image) }}" alt="{{ $doctor->name }}" class="w-12 h-12 rounded-full border-4 border-white object-cover bg-gray-200">
+                                @else
+                                    <div class="w-12 h-12 rounded-full border-4 border-white bg-medical-primary text-white flex items-center justify-center font-bold text-lg">
+                                        {{ strtoupper(substr($doctor->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                            @endforeach
+                            @if(count($doctors) < 3)
+                                @for($i = 0; $i < (3 - count($doctors)); $i++)
+                                    <div class="w-12 h-12 rounded-full border-4 border-white bg-gray-200"></div>
+                                @endfor
+                            @endif
                         </div>
                         <div class="text-sm">
-                            <div class="font-bold">500+ Experts</div>
+                            <div class="font-bold">{{ $totalDoctors }}+ Experts</div>
                             <div class="text-medical-dark/50">Are here to help you</div>
                         </div>
                     </div>
@@ -127,9 +138,9 @@
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
-                                <div class="text-xs font-bold text-medical-dark/50">Response Time</div>
+                                <div class="text-xs font-bold text-medical-dark/50">Happy Patients</div>
                             </div>
-                            <div class="text-2xl font-bold text-medical-dark leading-none">Under 15m</div>
+                            <div class="text-2xl font-bold text-medical-dark leading-none">{{ $totalPatients }}+</div>
                         </div>
                     </div>
                 </div>
@@ -138,7 +149,7 @@
     </section>
 
     <!-- Services Section -->
-    <section class="py-24 bg-white relative">
+    <section class="py-24 bg-white relative" id="Services">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-medical-secondary font-bold text-sm tracking-widest uppercase mb-4">Our Specialities
@@ -147,79 +158,37 @@
             </div>
 
             <div class="grid md:grid-cols-3 gap-8">
-                <!-- Cardiology -->
-                <div
-                    class="group p-8 rounded-3xl bg-medical-bg hover:bg-medical-primary transition-all duration-500 hover:translate-y-[-8px] hover:shadow-2xl hover:shadow-medical-primary/40">
+                @forelse ($specialties as $specialty)
                     <div
-                        class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform">
-                        <svg class="w-8 h-8 text-medical-primary group-hover:text-medical-secondary" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                            </path>
-                        </svg>
+                        class="group p-8 rounded-3xl bg-medical-bg hover:bg-medical-primary transition-all duration-500 hover:translate-y-[-8px] hover:shadow-2xl hover:shadow-medical-primary/40">
+                        <div
+                            class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform">
+                            <!-- Use generic medical icon across all specialities -->
+                            <svg class="w-8 h-8 text-medical-primary group-hover:text-medical-secondary" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h4 class="text-xl font-bold mb-4 group-hover:text-white transition-colors">
+                            {{ $specialty->specialty }}</h4>
+                        <p class="text-medical-dark/50 group-hover:text-white/70 transition-colors mb-6">World-class
+                            {{ strtolower($specialty->specialty) }} care with advanced diagnostic and treatment options.</p>
+                        <a href="#"
+                            class="text-medical-primary font-bold group-hover:text-white inline-flex items-center gap-2">
+                            Learn More
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
                     </div>
-                    <h4 class="text-xl font-bold mb-4 group-hover:text-white transition-colors">Cardiology</h4>
-                    <p class="text-medical-dark/50 group-hover:text-white/70 transition-colors mb-6">World-class heart
-                        care with advanced diagnostic and treatment options.</p>
-                    <a href="#"
-                        class="text-medical-primary font-bold group-hover:text-white inline-flex items-center gap-2">
-                        Learn More
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                        </svg>
-                    </a>
-                </div>
-
-                <!-- Neurology -->
-                <div
-                    class="group p-8 rounded-3xl bg-medical-bg hover:bg-medical-primary transition-all duration-500 hover:translate-y-[-8px] hover:shadow-2xl hover:shadow-medical-primary/40">
-                    <div
-                        class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform">
-                        <svg class="w-8 h-8 text-medical-primary group-hover:text-medical-secondary" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
+                @empty
+                    <div class="col-span-3 text-center py-12 text-medical-dark/50">
+                        More specialities coming soon.
                     </div>
-                    <h4 class="text-xl font-bold mb-4 group-hover:text-white transition-colors">Neurology</h4>
-                    <p class="text-medical-dark/50 group-hover:text-white/70 transition-colors mb-6">Expert treatment
-                        for disorders of the brain, spine, and nervous system.</p>
-                    <a href="#"
-                        class="text-medical-primary font-bold group-hover:text-white inline-flex items-center gap-2">
-                        Learn More
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                        </svg>
-                    </a>
-                </div>
-
-                <!-- Pediatrics -->
-                <div
-                    class="group p-8 rounded-3xl bg-medical-bg hover:bg-medical-primary transition-all duration-500 hover:translate-y-[-8px] hover:shadow-2xl hover:shadow-medical-primary/40">
-                    <div
-                        class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform">
-                        <svg class="w-8 h-8 text-medical-primary group-hover:text-medical-secondary" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                            </path>
-                        </svg>
-                    </div>
-                    <h4 class="text-xl font-bold mb-4 group-hover:text-white transition-colors">Pediatrics</h4>
-                    <p class="text-medical-dark/50 group-hover:text-white/70 transition-colors mb-6">Dedicated pediatric
-                        care ensuring the healthy growth of your children.</p>
-                    <a href="#"
-                        class="text-medical-primary font-bold group-hover:text-white inline-flex items-center gap-2">
-                        Learn More
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                        </svg>
-                    </a>
-                </div>
+                @endforelse
             </div>
         </div>
     </section>
