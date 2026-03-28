@@ -28,7 +28,7 @@ class PatientController extends Controller
             ['label' => 'Critical Cases', 'value' => '0', 'icon' => 'fas fa-exclamation-circle', 'color' => 'bg-red'],
         ];
 
-        $query = Patient::with('user')->whereHas('appointments', function ($q) use ($doctorId) {
+        $query = Patient::whereHas('appointments', function ($q) use ($doctorId) {
                     $q->where('doctor_id', $doctorId->doctor->id);
                 })
             ->with([
@@ -52,27 +52,26 @@ class PatientController extends Controller
 
         // Fetch patients from DB with pagination
         $patients = $query->paginate(12)->withQueryString();
-
         return view('doctor.patients.index', compact('patients', 'stats'));
     }
 
     public function show($id)
     {
-        $doctorId = Auth::id();
+        $doctor = User::with('doctor')->where('id', Auth::id())->first();
 
-        $patient = User::where('role', User::ROLE_PATIENT)
-            ->whereHas('appointments', function ($q) use ($doctorId) {
-                $q->where('doctor_id', $doctorId);
+        $patient = Patient::where('user_id', $id)->whereHas('appointments', function ($q) use ($doctor) {
+                $q->where('doctor_id', $doctor->doctor->id);
             })
             ->with([
                 'medicalHistories' => function ($query) {
-                    $query->latest('diagnosis_date');
+                    $query->with('doctor.user')->latest()->take(5);
                 },
                 'vitals' => function ($query) {
                     $query->latest()->take(10);
-                }
+                },
+                'user'
             ])
-            ->findOrFail($id);
+            ->first();
 
         return view('doctor.patients.show', compact('patient'));
     }

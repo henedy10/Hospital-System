@@ -12,9 +12,9 @@
                 reports.</p>
         </div>
         <div style="display: flex; gap: 12px;">
-            <button class="btn-outline" style="width: auto; padding: 10px 24px;">
+            <!-- <button class="btn-outline" style="width: auto; padding: 10px 24px;">
                 <i class="fas fa-file-export"></i> Export Data
-            </button>
+            </button> -->
             <button class="btn-primary" style="width: auto; padding: 10px 24px; margin-top: 0;"
                 onclick="openCreateReportModal()">
                 <i class="fas fa-plus"></i> Create New Report

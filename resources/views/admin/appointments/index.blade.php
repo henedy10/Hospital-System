@@ -90,7 +90,7 @@
                         <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;"
                             onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
                             <td style="padding: 14px 20px;">
-                                <div style="font-weight: 500; color: var(--text-main);">{{ optional($appt->user)->name ?? '—' }}</div>
+                                <div style="font-weight: 500; color: var(--text-main);">{{ optional($appt->patient->user)->name ?? '—' }}</div>
                             </td>
                             <td style="padding: 14px 20px;">
                                 @if($appt->doctor)

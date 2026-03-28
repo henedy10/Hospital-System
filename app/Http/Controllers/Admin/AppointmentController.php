@@ -24,7 +24,9 @@ class AppointmentController extends Controller
         }
 
         if ($doctorId) {
-            $query->where('doctor_id', $doctorId);
+            $query->whereHas('doctor', function ($query) use ($doctorId) {
+                $query->where('user_id', $doctorId);
+            });
         }
 
         if ($date) {

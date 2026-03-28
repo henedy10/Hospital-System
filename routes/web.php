@@ -56,6 +56,14 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+
+    Route::get('/chat', \App\Livewire\Chat::class)->name('chat');
+});
+
 
 Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('doctor.dashboard');

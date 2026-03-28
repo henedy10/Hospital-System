@@ -3,9 +3,25 @@
 @section('title', 'Medical History')
 
 @section('content')
+    @php
+        $patient = Auth::user()->patient;
+        $allergies = optional($patient)->allergies;
+        $latestRecord = $history->first();
+        $recordsCount = $history->count();
+    @endphp
+
     <div class="page-header">
-        <h1>Medical History</h1>
-        <p class="text-muted">A complete record of your visits, reports, and prescriptions.</p>
+        <div class="page-header-row">
+            <div>
+                <h1>Medical History</h1>
+                <p class="muted">A complete record of your visits, reports, and prescriptions.</p>
+            </div>
+
+            <div class="history-count">
+                <i class="fas fa-notes-medical" aria-hidden="true"></i>
+                <span>{{ $recordsCount }} record{{ $recordsCount === 1 ? '' : 's' }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="history-grid">
@@ -14,70 +30,88 @@
             <div class="timeline">
                 @forelse($history as $record)
                     <div class="timeline-item">
-                        <div class="timeline-marker {{ $loop->first ? 'bg-blue' : 'bg-green' }}"></div>
-                            <div class="timeline-content">
+                        <div class="timeline-icon {{ $loop->iteration % 2 === 0 ? 'orange' : 'sky' }}">
+                            <i class="fas fa-file-medical" aria-hidden="true"></i>
+                        </div>
 
-                                <div class="timeline-header">
-                                    <span class="date">
-                                        Date: {{ \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') }}
-                                    </span>
-                                    <span class="type-badge laboratory">
-                                            <a href="{{ route('patient.history.show',$record->id) }}" class="btn-icon"
-                                                title="View Details"><i class="fas fa-eye"></i></a>
-                                    </span>
-                                </div>
-
-                                <h3 style="color: rgb(178, 123, 123); margin-top:8px;">
-                                    Condition: {{ $record->condition }}
-                                </h3>
-
-                                <div style="margin-top:10px; font-size:14px; color:#64748b; display:flex; flex-direction:column; gap:4px;">
-                                    <div>
-                                        <strong>Doctor:</strong> {{ $record->doctor->user->name }}
+                        <div class="timeline-content">
+                            <div class="timeline-head">
+                                <div>
+                                    <div class="timeline-date">
+                                        {{ $record->diagnosis_date ? \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') : $record->created_at->format('M d, Y') }}
                                     </div>
 
-                                    <div>
-                                        <strong>Department:</strong> {{ ucfirst($record->doctor->specialty) }}
-                                    </div>
+                                    <div class="timeline-type"><strong>Condition:</strong>{{ $record->condition }}</div>
                                 </div>
+
+                                <a href="{{ route('patient.history.show', $record->id) }}" class="btn-icon" title="View details">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </a>
+                            </div>
+
+                            <p class="timeline-desc">
+                                <strong>Doctor:</strong> {{ optional($record->doctor?->user)->name ?? '—' }}<br/>
+                                <strong>Department:</strong> {{ $record->doctor && $record->doctor->specialty ? ucfirst($record->doctor->specialty) : '—' }}
+                            </p>
                         </div>
                     </div>
                 @empty
-                    <p class="text-red-500 font-bold">* No medical history records found.</p>
+                    <div class="empty-state">
+                        <i class="fas fa-notes-medical" aria-hidden="true"></i>
+                        <p>No medical history records found.</p>
+                    </div>
                 @endforelse
             </div>
         </div>
 
         <div class="history-sidebar">
             <div class="sidebar-card">
-                <h3>Health Summary</h3>
+                <div class="sidebar-card-header">
+                    <i class="fas fa-heart" aria-hidden="true"></i>
+                    <h3>Health Summary</h3>
+                </div>
+
                 <div class="summary-list">
                     <div class="summary-item">
                         <span>Blood Type</span>
-                        <strong>{{ Auth::user()->patient->blood_type ?? 'N/A' }}</strong>
+                        <strong>{{ optional($patient)->blood_type ?? 'N/A' }}</strong>
                     </div>
+
                     <div class="summary-item">
                         <span>Allergies</span>
-                        <div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; max-width: 150px;">
-                            @if(is_array(Auth::user()->patient->allergies) && count(Auth::user()->patient->allergies) > 0)
-                                @foreach(Auth::user()->patient->allergies as $allergy)
-                                    <span
-                                        style="background: #FEF2F2; color: #DC2626; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">{{ $allergy }}</span>
+                        <div class="allergy-pills">
+                            @if(is_array($allergies) && count($allergies) > 0)
+                                @foreach($allergies as $allergy)
+                                    <span class="allergy-pill">{{ $allergy }}</span>
                                 @endforeach
                             @else
-                                <strong class="text-red">None</strong>
+                                <span class="allergy-pill allergy-pill--none">None</span>
                             @endif
                         </div>
                     </div>
+
                     <div class="summary-item">
                         <span>Height</span>
-                        <strong>{{ Auth::user()->patient->height ?? (Auth::user()->patient->height ?? '--') }} cm</strong>
+                        <strong>{{ optional($patient)->height ?? '--' }} cm</strong>
                     </div>
+
                     <div class="summary-item">
                         <span>Weight</span>
-                        <strong>{{ Auth::user()->patient->weight ?? (Auth::user()->patient->weight ?? '--') }} kg</strong>
+                        <strong>{{ optional($patient)->weight ?? '--' }} kg</strong>
                     </div>
                 </div>
+
+                @if($latestRecord)
+                    <div class="latest-visit">
+                        <div class="latest-label">Last Visit</div>
+                        <div class="latest-value">
+                            {{ $latestRecord->diagnosis_date ? \Carbon\Carbon::parse($latestRecord->diagnosis_date)->format('M d, Y') : $latestRecord->created_at->format('M d, Y') }}
+                        </div>
+                        <div class="latest-sub">
+                            Dr. {{ optional($latestRecord->doctor?->user)->name ?? '—' }}
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -87,252 +121,107 @@
             margin-bottom: 2.5rem;
         }
 
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+        }
+
         .page-header h1 {
             font-size: 1.875rem;
             color: #111827;
             margin-bottom: 0.5rem;
         }
 
+        .history-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 12px 16px;
+            box-shadow: var(--shadow);
+            color: var(--primary);
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .history-count i {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
         .history-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 2rem;
+            gap: 24px;
         }
 
-        .timeline {
-            position: relative;
-            padding-left: 2rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #E5E7EB;
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 3rem;
-        }
-
-        .timeline-marker {
-            position: absolute;
-            left: -2.35rem;
-            top: 0.25rem;
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 0 2px #E5E7EB;
-            z-index: 1;
-        }
-
-        .bg-blue {
-            background: #3B82F6;
-            box-shadow: 0 0 0 2px #3B82F6;
-        }
-
-        .bg-green {
-            background: #10B981;
-            box-shadow: 0 0 0 2px #10B981;
-        }
-
-        .bg-purple {
-            background: #8B5CF6;
-            box-shadow: 0 0 0 2px #8B5CF6;
-        }
-
-        .timeline-content {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .timeline-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .date {
-            font-size: 0.875rem;
-            color: #184eb9;
-            font-weight: 500;
-        }
-
-        .type-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .laboratory {
-            background: #EFF6FF;
-            color: #1E40AF;
-        }
-
-        .prescription {
-            background: #ECFDF5;
-            color: #065F46;
-        }
-
-        .visit {
-            background: #F5F3FF;
-            color: #5B21B6;
-        }
-
-        .timeline-content h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 0.75rem;
-        }
-
-        .timeline-content p {
-            font-size: 0.9375rem;
-            color: #4B5563;
-            line-height: 1.6;
-        }
-
-        .attachments {
-            margin-top: 1.25rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .file-chip {
-            background: #F9FAFB;
-            border: 1px solid #E5E7EB;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .file-chip span {
-            font-size: 0.875rem;
-            color: #374151;
-            font-weight: 500;
-        }
-
-        .text-red {
-            color: #EF4444;
-        }
-
-        .file-chip button {
-            background: none;
-            border: none;
-            color: #9CA3AF;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .file-chip button:hover {
-            color: #0D9488;
-        }
-
-        .prescription-card {
-            margin-top: 1.25rem;
-            border: 1px dashed #D1D5DB;
-            border-radius: 0.75rem;
-            overflow: hidden;
-        }
-
-        .rx-header {
-            background: #F9FAFB;
-            padding: 0.5rem 1rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #6B7280;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            border-bottom: 1px dashed #D1D5DB;
-        }
-
-        .rx-body {
-            padding: 1rem;
-        }
-
-        .med {
-            font-size: 0.875rem;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-
-        .med:last-child {
-            margin-bottom: 0;
+        @media (max-width: 900px) {
+            .history-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .history-sidebar {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 16px;
         }
 
         .sidebar-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
         }
 
-        .sidebar-card h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 0.75rem;
+        .sidebar-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
         }
 
-        .sidebar-card p {
-            font-size: 0.875rem;
-            color: #6B7280;
-            margin-bottom: 1.25rem;
-        }
-
-        .btn-block-outline {
-            width: 100%;
-            padding: 0.75rem;
-            background: white;
-            color: #0D9488;
-            border: 1px solid #0D9488;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
+        .sidebar-card-header i {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            background: var(--primary-light);
+            color: var(--primary);
         }
 
-        .btn-block-outline:hover {
-            background: #F0FDFA;
-            scale: 1.02;
+        .sidebar-card-header h3 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin: 0;
         }
 
         .summary-list {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 16px;
         }
 
         .summary-item {
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid #F3F4F6;
-            padding-bottom: 0.75rem;
+            align-items: flex-start;
+            gap: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 12px;
         }
 
         .summary-item:last-child {
@@ -340,14 +229,109 @@
             padding-bottom: 0;
         }
 
-        .summary-item span {
-            font-size: 0.875rem;
-            color: #6B7280;
+        .summary-item>span {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 700;
         }
 
-        .summary-item strong {
-            font-size: 0.875rem;
-            color: #111827;
+        .summary-item>strong {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 800;
+            text-align: right;
+        }
+
+        .allergy-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+            max-width: 180px;
+        }
+
+        .allergy-pill {
+            background: #FEF2F2;
+            color: #DC2626;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            border: 1px solid #FBCACA;
+        }
+
+        .allergy-pill--none {
+            background: #F1F5F9;
+            color: #64748b;
+            border: 1px solid #E5E7EB;
+            font-weight: 700;
+        }
+
+        .timeline-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .empty-state {
+            background: #fff;
+            border: 1px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 28px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            box-shadow: var(--shadow);
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .empty-state i {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .latest-visit {
+            margin-top: 18px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .latest-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .latest-value {
+            margin-top: 6px;
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--text-main);
+        }
+
+        .latest-sub {
+            margin-top: 4px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 700;
         }
     </style>
 @endsection

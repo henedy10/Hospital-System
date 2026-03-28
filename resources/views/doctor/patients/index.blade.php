@@ -88,7 +88,7 @@
                             {{ $lastVisit ? \Carbon\Carbon::parse($lastVisit->appointment_date)->format('M d, Y') : '--' }}
                         </td>
                         <td style="padding: 16px 20px; text-align: right;">
-                            <a href="{{ route('doctor.patients.show', $patient->id) }}" class="btn-primary-sm" style="text-decoration: none; padding: 6px 12px; font-size: 0.8rem;">Profile</a>
+                            <a href="{{ route('doctor.patients.show', $patient->user_id) }}" class="btn-primary-sm" style="text-decoration: none; padding: 6px 12px; font-size: 0.8rem;">Profile</a>
                         </td>
                     </tr>
                 @empty

@@ -40,7 +40,7 @@ class AppointmentController extends Controller
         $doctor = Doctor::with('user')->findOrFail($request->doctor_id);
         $patient = Patient::where('user_id',Auth::id())->first();
 
-        Appointment::create([
+        $appointment = Appointment::create([
             'doctor_id' => $doctor->id,
             'patient_id' => $patient->id,
             'appointment_date' => $request->appointment_date,
@@ -48,6 +48,8 @@ class AppointmentController extends Controller
             'reason' => $request->reason,
             'status' => 'upcoming',
         ]);
+
+        $doctor->user->notify(new \App\Notifications\AppointmentBooked($appointment));
 
         return redirect()->back()->with('success', 'Appointment booked successfully.');
     }
@@ -60,6 +62,10 @@ class AppointmentController extends Controller
         }
 
         $appointment->update(['status' => 'cancelled']);
+        
+        if ($appointment->doctor && $appointment->doctor->user) {
+            $appointment->doctor->user->notify(new \App\Notifications\AppointmentCancelled($appointment));
+        }
 
         return redirect()->back()->with('success', 'Appointment cancelled successfully.');
     }

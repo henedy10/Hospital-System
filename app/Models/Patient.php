@@ -43,4 +43,8 @@ class Patient extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+    public function vitals()
+    {
+        return $this->hasMany(Vital::class,'user_id','user_id');
+    }
 }

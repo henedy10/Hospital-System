@@ -54,6 +54,7 @@ class ProfileController extends Controller
             'insurance_plan' => $data['insurance_plan'] ?? null,
             'weight' => $data['weight'] ?? null,
             'height' => $data['height'] ?? null,
+            'allergies' => $data['allergies'] ?? null,
         ];
 
         // Process allergies from string to array

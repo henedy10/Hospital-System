@@ -22,43 +22,43 @@
         <div style="display: flex; flex-direction: column; gap: 24px;">
             <div class="glass-card" style="padding: 32px; text-align: center;">
                 <div style="position: relative; display: inline-block; margin-bottom: 20px;">
-                    <img src="{{ $patient->profile_image ? asset('storage/' . $patient->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($patient->name) . '&background=0D9488&color=fff' }}"
+                    <img src="{{ $patient->user->profile_image ? asset('storage/' . $patient->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($patient->user->name) . '&background=0D9488&color=fff' }}"
                         alt="Patient"
                         style="width: 120px; height: 120px; border-radius: 32px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
-                    @if($patient->patient?->blood_type)
+                    @if($patient->blood_type)
                         <span
                             style="position: absolute; bottom: 8px; right: 0; background: var(--primary); color: #fff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #fff; font-size: 0.8rem; font-weight: 800;">
-                            {{ $patient->patient?->blood_type }}
+                            {{ $patient->blood_type }}
                         </span>
                     @endif
                 </div>
                 <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">
-                    {{ $patient->name }}
+                    {{ $patient->user->name }}
                 </h2>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Patient ID:
-                    #{{ $patient->patient?->patient_id ?? $patient->id }}</p>
+                    #{{ $patient->patient_id}}</p>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left;">
                     <div style="background: #f8fafc; padding: 12px; border-radius: 12px;">
                         <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Age</span>
                         <span
-                            style="font-weight: 700;">{{ $patient->patient?->dob ? \Carbon\Carbon::parse($patient->patient->dob)->age : '--' }}
+                            style="font-weight: 700;">{{ $patient->dob ? \Carbon\Carbon::parse($patient->dob)->age : '--' }}
                             Years</span>
                     </div>
                     <div style="background: #f8fafc; padding: 12px; border-radius: 12px;">
                         <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Gender</span>
-                        <span style="font-weight: 700;">{{ $patient->patient?->gender ? ucfirst($patient->patient->gender) : '--' }}</span>
+                        <span style="font-weight: 700;">{{ $patient->gender ? ucfirst($patient->gender) : '--' }}</span>
                     </div>
                     <div style="background: #f8fafc; padding: 12px; border-radius: 12px;">
                         <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Weight</span>
                         <span
-                            style="font-weight: 700;">{{ $patient->patient?->weight ?? ($patient->vitals->first()->weight ?? '--') }}
+                            style="font-weight: 700;">{{ $patient->weight ?? ($patient->vitals->first() ? $patient->vitals->first()->weight : '--') }}
                             kg</span>
                     </div>
                     <div style="background: #f8fafc; padding: 12px; border-radius: 12px;">
                         <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Height</span>
                         <span
-                            style="font-weight: 700;">{{ $patient->patient?->height ?? ($patient->vitals->first()->height ?? '--') }}
+                            style="font-weight: 700;">{{ $patient->height ?? ($patient->vitals->first() ? $patient->vitals->first()->height : '--') }}
                             cm</span>
                     </div>
                 </div>
@@ -67,8 +67,8 @@
             <div class="glass-card" style="padding: 24px;">
                 <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 20px;">Allergies ⚠️</h3>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    @if(is_array($patient->patient?->allergies) && count($patient->patient->allergies) > 0)
-                        @foreach($patient->patient->allergies as $allergy)
+                    @if(is_array($patient->allergies) && count($patient->allergies) > 0)
+                        @foreach($patient->allergies as $allergy)
                             <span
                                 style="background: #FEF2F2; color: #DC2626; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #FEE2E2;">
                                 {{ $allergy }}
@@ -83,13 +83,13 @@
 
         <!-- Main Profile Content -->
         <div style="display: flex; flex-direction: column; gap: 24px;">
-            <!-- Vitals Tracking -->
+
             <div class="glass-card" style="padding: 24px;">
                 <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 24px;">Vitals Progression 📈</h3>
                 <canvas id="vitalsChart" height="200"></canvas>
             </div>
 
-            <!-- Clinical Timeline (Medical History) -->
+
             <div class="glass-card" style="padding: 24px;">
                 <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 24px;">Medical History & Visits ⏳</h3>
                 <div class="timeline">
@@ -108,10 +108,7 @@
                                         View Report
                                     </a>
                                 </div>
-                                <div style="margin-top: 10px; font-size: 0.8rem; font-weight: 700; color: var(--primary);">
-                                    By: {{ $history->doctor_name }}
-                                </div>
-                                @if($history->doctor_name === Auth::user()->name)
+                                @if($history->doctor && $history->doctor->user_id === Auth::id())
                                     <div style="position: absolute; top: 0; right: 0; display: flex; gap: 8px;">
                                         <button type="button" class="btn-icon"
                                             onclick="openEditHistoryModal({{ $history->id }}, '{{ addslashes($history->condition) }}', '{{ $history->diagnosis_date }}', '{{ addslashes($history->treatment) }}')"
@@ -149,7 +146,7 @@
             <h3 style="margin-top: 0; margin-bottom: 24px; font-weight: 800;">Add New Medical Record</h3>
             <form action="{{ route('doctor.medical-history.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="user_id" value="{{ $patient->id }}">
+                <input type="hidden" name="patient_id" value="{{ $patient->id }}">
 
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">Medical
@@ -245,50 +242,50 @@
             document.getElementById('editHistoryModal').style.display = 'none';
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Vitals Chart
-            const vtCtx = document.getElementById('vitalsChart').getContext('2d');
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     // Vitals Chart
+        //     const vtCtx = document.getElementById('vitalsChart').getContext('2d');
 
-            const vitalsData = @json($patient->vitals->reverse()->values());
-            const labels = vitalsData.map(v => new Date(v.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
-            const weightData = vitalsData.map(v => v.weight);
-            const pulseData = vitalsData.map(v => v.pulse);
+        //     const vitalsData = @json($patient->vitals->reverse()->values());
+        //     const labels = vitalsData.map(v => new Date(v.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+        //     const weightData = vitalsData.map(v => v.weight);
+        //     const pulseData = vitalsData.map(v => v.pulse);
 
-            new Chart(vtCtx, {
-                type: 'line',
-                data: {
-                    labels: labels.length ? labels : ['No Data'],
-                    datasets: [
-                        {
-                            label: 'Weight (kg)',
-                            data: weightData.length ? weightData : [0],
-                            borderColor: '#0D9488',
-                            backgroundColor: 'rgba(13, 148, 136, 0.1)',
-                            fill: true,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Pulse Rate',
-                            data: pulseData.length ? pulseData : [0],
-                            borderColor: '#0EA5E9',
-                            backgroundColor: 'transparent',
-                            borderDash: [5, 5],
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 } } }
-                    },
-                    scales: {
-                        y: { beginAtZero: false, grid: { color: '#f1f5f9' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        });
+        //     new Chart(vtCtx, {
+        //         type: 'line',
+        //         data: {
+        //             labels: labels.length ? labels : ['No Data'],
+        //             datasets: [
+        //                 {
+        //                     label: 'Weight (kg)',
+        //                     data: weightData.length ? weightData : [0],
+        //                     borderColor: '#0D9488',
+        //                     backgroundColor: 'rgba(13, 148, 136, 0.1)',
+        //                     fill: true,
+        //                     tension: 0.4
+        //                 },
+        //                 {
+        //                     label: 'Pulse Rate',
+        //                     data: pulseData.length ? pulseData : [0],
+        //                     borderColor: '#0EA5E9',
+        //                     backgroundColor: 'transparent',
+        //                     borderDash: [5, 5],
+        //                     tension: 0.4
+        //                 }
+        //             ]
+        //         },
+        //         options: {
+        //             responsive: true,
+        //             maintainAspectRatio: false,
+        //             plugins: {
+        //                 legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 } } }
+        //             },
+        //             scales: {
+        //                 y: { beginAtZero: false, grid: { color: '#f1f5f9' } },
+        //                 x: { grid: { display: false } }
+        //             }
+        //         }
+        //     });
+        // });
     </script>
 @endsection

@@ -37,12 +37,8 @@ class AppointmentController extends Controller
         return view('doctor.appointments.index', compact('appointments'));
     }
 
-    public function updateStatus(Request $request, \App\Models\Appointment $appointment)
+    public function updateStatus(Request $request,Appointment $appointment)
     {
-        if ($appointment->doctor_id !== Auth::id()) {
-            abort(403);
-        }
-
         $request->validate([
             'status' => 'required|in:upcoming,completed,cancelled'
         ]);
@@ -50,6 +46,10 @@ class AppointmentController extends Controller
         $appointment->update([
             'status' => $request->status
         ]);
+
+        if ($appointment->patient && $appointment->patient->user) {
+            $appointment->patient->user->notify(new \App\Notifications\AppointmentStatusUpdated($appointment));
+        }
 
         return back()->with('success', 'Appointment status updated successfully');
     }
