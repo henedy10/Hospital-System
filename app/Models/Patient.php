@@ -22,6 +22,7 @@ class Patient extends Model
         'insurance_plan',
         'weight',
         'height',
+        'nurse_id',
     ];
 
     protected $casts = [
@@ -32,6 +33,11 @@ class Patient extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function nurse()
+    {
+        return $this->belongsTo(User::class, 'nurse_id');
     }
 
     public function medicalHistories()

@@ -3,96 +3,155 @@
 @section('title', 'Nursing Tasks')
 
 @section('content')
-    <div class="welcome-section" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">National Nursing Care Checklist</h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem;">Manage your clinical and administrative tasks for the current shift.</p>
+    <div class="tasks-wrapper" style="animation: fadeIn 0.8s ease-out;">
+        <div class="welcome-section" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h1 style="font-size: 1.85rem; font-weight: 850; color: #1e293b; margin-bottom: 8px; letter-spacing: -0.02em;">Task Management</h1>
+                <p style="color: #64748b; font-size: 1rem; font-weight: 500;">Organize and track your clinical responsibilities for the current shift.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <i class="fas fa-filter" style="font-size: 0.8rem;"></i> Filter
+                </button>
+                <button class="btn btn-primary" style="background: #0D9488; color: white; padding: 10px 24px; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.2);">
+                    + Create Task
+                </button>
+            </div>
         </div>
-        <div style="display: flex; gap: 12px;">
-             <button class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                <i class="fas fa-filter"></i> Filter
-            </button>
-            <button class="btn btn-primary" style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600;">
-                <i class="fas fa-plus"></i> Add Quick Task
-            </button>
-        </div>
-    </div>
 
-    <div class="grid-2-cols" style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
-        <div class="tasks-container">
-            <div class="glass-card" style="margin-bottom: 24px;">
-                <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="font-size: 1.1rem; font-weight: 700;">Remaining Tasks Today</h2>
-                    <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">{{ count(array_filter($tasks['today'], function($t){ return $t['status'] != 'completed'; })) }} Pending</span>
+        <div style="display: flex; flex-direction: column; gap: 32px;">
+            <!-- Today's Tasks -->
+            <section>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <h2 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin: 0;">Today's Priorities</h2>
+                    <span style="background: #0D9488; color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{{ count($tasks['today']) }} Tasks</span>
                 </div>
-                <div style="padding: 8px 0;">
+                
+                <div class="glass-card" style="padding: 0; border-radius: 24px; background: white; overflow: hidden; border: 1px solid #f1f5f9;">
                     @foreach($tasks['today'] as $task)
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: {{ $loop->last ? 'none' : '1px solid #f1f5f9' }}; {{ $task['status'] == 'completed' ? 'opacity: 0.6;' : '' }}">
-                            <div style="display: flex; gap: 16px; align-items: center;">
-                                <div style="width: 24px; height: 24px; border-radius: 6px; border: 2px solid {{ $task['status'] == 'completed' ? 'var(--primary)' : '#cbd5e1' }}; display: flex; align-items: center; justify-content: center; background: {{ $task['status'] == 'completed' ? 'var(--primary)' : 'transparent' }}; color: white;">
-                                    @if($task['status'] == 'completed') <i class="fas fa-check" style="font-size: 0.7rem;"></i> @endif
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: var(--text-main); {{ $task['status'] == 'completed' ? 'text-decoration: line-through;' : '' }}">{{ $task['title'] }}</div>
-                                    <div style="font-size: 0.8rem; color: #64748b;">{{ $task['time'] }} • <span style="color: {{ $task['category'] == 'Clinical' ? '#0ea5e9' : '#64748b' }}">{{ $task['category'] }}</span></div>
+                        <div class="task-row" style="display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; padding: 20px 28px; gap: 24px; border-bottom: 1px solid #f8fafc; transition: all 0.2s; {{ $task['status'] == 'completed' ? 'opacity: 0.6;' : '' }}">
+                            <!-- Checkbox -->
+                            <label class="custom-checkbox">
+                                <input type="checkbox" {{ $task['status'] == 'completed' ? 'checked' : '' }}>
+                                <span class="checkmark"></span>
+                            </label>
+                            
+                            <!-- Title & Info -->
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #1e293b; {{ $task['status'] == 'completed' ? 'text-decoration: line-through;' : '' }}">{{ $task['title'] }}</h3>
+                                <div style="display: flex; gap: 12px; align-items: center; margin-top: 4px;">
+                                    <span style="font-size: 0.8rem; font-weight: 600; color: #94a3b8;"><i class="far fa-clock" style="margin-right: 4px;"></i>{{ \Carbon\Carbon::parse($task['due_at'])->format('h:i A') }}</span>
+                                    @if($task['patient_id'])
+                                        <span style="width: 4px; height: 4px; border-radius: 50%; background: #cbd5e1;"></span>
+                                        <span style="font-size: 0.8rem; font-weight: 600; color: #64748b;"><i class="fas fa-user-circle" style="margin-right: 4px;"></i>Patient ID: #{{ $task['patient_id'] }}</span>
+                                    @endif
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 12px; align-items: center;">
-                                @if($task['status'] == 'pending')
-                                    <span style="padding: 4px 8px; background: #fffbeb; color: #b45309; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Due Now</span>
-                                @endif
-                                <button style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 1rem;"><i class="fas fa-ellipsis-v"></i></button>
+
+                            <!-- Category -->
+                            <div style="padding: 4px 12px; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; font-size: 0.75rem; font-weight: 700; color: #64748b;">{{ $task['category'] }}</div>
+
+                            <!-- Priority -->
+                            <div>
+                                <span style="padding: 4px 10px; background: {{ ($task['priority'] ?? 'Medium') == 'High' ? '#fef2f2' : (($task['priority'] ?? 'Medium') == 'Medium' ? '#fffbeb' : '#eff6ff') }}; color: {{ ($task['priority'] ?? 'Medium') == 'High' ? '#ef4444' : (($task['priority'] ?? 'Medium') == 'Medium' ? '#f59e0b' : '#3b82f6') }}; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1px solid rgba(0,0,0,0.05);">
+                                    {{ $task['priority'] ?? 'Medium' }} Priority
+                                </span>
                             </div>
+
+                            <!-- Action -->
+                            <button style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #f8fafc; color: #94a3b8; cursor: pointer; transition: all 0.2s;">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
                         </div>
                     @endforeach
                 </div>
-            </div>
+            </section>
 
-            <div class="glass-card">
-                <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0;">
-                    <h2 style="font-size: 1.1rem; font-weight: 700;">Upcoming (Next Shifts)</h2>
+            <!-- Upcoming Tasks -->
+            <section style="margin-bottom: 40px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <h2 style="font-size: 1.1rem; font-weight: 800; color: #64748b; margin: 0;">Scheduled Ahead</h2>
                 </div>
-                <div style="padding: 8px 0;">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     @foreach($tasks['upcoming'] as $task)
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: {{ $loop->last ? 'none' : '1px solid #f1f5f9' }};">
-                            <div style="display: flex; gap: 16px; align-items: center;">
-                                <div style="width: 24px; height: 24px; border-radius: 6px; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; color: white;">
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: var(--text-main);">{{ $task['title'] }}</div>
-                                    <div style="font-size: 0.8rem; color: #64748b;">{{ $task['time'] }} • {{ $task['category'] }}</div>
-                                </div>
+                        <div class="glass-card" style="padding: 20px; border-radius: 20px; background: white; border: 1px solid #f1f5f9; display: flex; gap: 16px; align-items: center;">
+                            <div style="width: 44px; height: 44px; border-radius: 12px; background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                <i class="far fa-calendar-alt"></i>
                             </div>
-                            <button style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 1rem;"><i class="fas fa-ellipsis-v"></i></button>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b;">{{ $task['title'] }}</h4>
+                                <span style="font-size: 0.8rem; font-weight: 600; color: #94a3b8;">Due {{ \Carbon\Carbon::parse($task['due_at'])->format('M d, h:i A') }}</span>
+                            </div>
                         </div>
                     @endforeach
                 </div>
-            </div>
-        </div>
-
-        <div class="tasks-sidebar">
-            <div class="glass-card" style="padding: 24px; margin-bottom: 24px; background: linear-gradient(135deg, #0d9488, #0ea5e9); color: white;">
-                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Productivity Tip 💡</h3>
-                <p style="font-size: 0.9rem; line-height: 1.5; opacity: 0.9;">Completing medication rounds on time reduces patient anxiety and improves clinical outcomes. Try to batch your administrative tasks for the last hour of your shift.</p>
-            </div>
-
-            <div class="glass-card" style="padding: 24px;">
-                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;">Task Categories</h3>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="display: flex; align-items: center; gap: 8px; font-size: 0.95rem;"><i class="fas fa-circle" style="font-size: 0.6rem; color: #0ea5e9;"></i> Clinical</span>
-                        <span style="font-weight: 600;">12</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="display: flex; align-items: center; gap: 8px; font-size: 0.95rem;"><i class="fas fa-circle" style="font-size: 0.6rem; color: #8b5cf6;"></i> Administrative</span>
-                        <span style="font-weight: 600;">5</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="display: flex; align-items: center; gap: 8px; font-size: 0.95rem;"><i class="fas fa-circle" style="font-size: 0.6rem; color: #f59e0b;"></i> General</span>
-                        <span style="font-weight: 600;">3</span>
-                    </div>
-                </div>
-            </div>
+            </section>
         </div>
     </div>
+
+    <style>
+        .task-row:hover {
+            background-color: #fafafa !important;
+        }
+        
+        /* Custom Checkbox Style */
+        .custom-checkbox {
+            position: relative;
+            padding-left: 28px;
+            cursor: pointer;
+            font-size: 22px;
+            user-select: none;
+            display: inline-block;
+            height: 24px;
+        }
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 24px;
+            width: 24px;
+            background-color: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .custom-checkbox:hover input ~ .checkmark {
+            border-color: #0D9488;
+        }
+        .custom-checkbox input:checked ~ .checkmark {
+            background-color: #0D9488;
+            border-color: #0D9488;
+            box-shadow: 0 4px 10px -2px rgba(13, 148, 136, 0.4);
+        }
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+        .custom-checkbox .checkmark:after {
+            left: 8px;
+            top: 4px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 @endsection

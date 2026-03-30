@@ -94,6 +94,7 @@ Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
     Route::get('/tasks', [NurseTaskController::class, 'index'])->name('nurse.tasks');
     Route::get('/settings', [NurseSettingController::class, 'index'])->name('nurse.settings');
     Route::post('/settings', [NurseSettingController::class, 'update'])->name('nurse.settings.update');
+    Route::post('/settings/password', [NurseSettingController::class, 'updatePassword'])->name('nurse.settings.password');
 });
 
 Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function () {

@@ -24,6 +24,8 @@ class User extends Authenticatable
         'password',
         'role',
         'profile_image',
+        'department',
+        'shift',
         'is_verified',
         'notification_settings',
     ];
@@ -122,6 +124,22 @@ class User extends Authenticatable
     public function vitals()
     {
         return $this->hasMany(Vital::class);
+    }
+
+    /**
+     * Get the tasks for the nurse.
+     */
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'user_id');
+    }
+
+    /**
+     * Get the patients assigned to the nurse.
+     */
+    public function assignedPatients()
+    {
+        return $this->hasMany(Patient::class, 'nurse_id');
     }
 }
 

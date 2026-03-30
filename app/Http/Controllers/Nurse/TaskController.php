@@ -4,23 +4,50 @@ namespace App\Http\Controllers\Nurse;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Task;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+
+        $todayTasks = $user->tasks()
+            ->whereDate('due_at', now()->today())
+            ->orderBy('due_at', 'asc')
+            ->get();
+
+        $upcomingTasks = $user->tasks()
+            ->whereDate('due_at', '>', now()->today())
+            ->orderBy('due_at', 'asc')
+            ->get();
+
         $tasks = [
-            'today' => [
-                ['id' => 1, 'title' => 'Shift Handover', 'time' => '08:00 AM', 'status' => 'completed', 'category' => 'Administrative'],
-                ['id' => 2, 'title' => 'Morning Medication Round', 'time' => '09:00 AM', 'status' => 'completed', 'category' => 'Clinical'],
-                ['id' => 3, 'title' => 'Wound Care - Room 104', 'time' => '10:30 AM', 'status' => 'pending', 'category' => 'Clinical'],
-                ['id' => 4, 'title' => 'Patient Assessment - Room 202', 'time' => '11:15 AM', 'status' => 'pending', 'category' => 'Clinical'],
-                ['id' => 5, 'title' => 'Lunch Distribution', 'time' => '12:00 PM', 'status' => 'upcoming', 'category' => 'General'],
-            ],
-            'upcoming' => [
-                ['id' => 6, 'title' => 'Afternoon Vitals Check', 'time' => '02:00 PM', 'status' => 'upcoming', 'category' => 'Clinical'],
-                ['id' => 7, 'title' => 'Discharge Paperwork - Room 101', 'time' => '03:30 PM', 'status' => 'upcoming', 'category' => 'Administrative'],
-            ]
+            'today' => $todayTasks->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'time' => $task->due_at->format('h:i AM'),
+                    'due_at' => $task->due_at,
+                    'status' => $task->status,
+                    'category' => $task->category,
+                    'priority' => $task->priority,
+                    'patient_id' => $task->patient_id,
+                ];
+            })->toArray(),
+            'upcoming' => $upcomingTasks->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'time' => $task->due_at->format('h:i AM'),
+                    'due_at' => $task->due_at,
+                    'status' => $task->status,
+                    'category' => $task->category,
+                    'priority' => $task->priority,
+                    'patient_id' => $task->patient_id,
+                ];
+            })->toArray()
         ];
 
         return view('nurse.tasks', compact('tasks'));
