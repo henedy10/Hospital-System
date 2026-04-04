@@ -31,7 +31,7 @@
                                 Blood Pressure
                                 <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Ref: 120/80 mmHg</span>
                             </label>
-                            <input type="text" name="bp" placeholder="e.g. 120/80"
+                            <input type="text" name="blood_pressure" placeholder="e.g. 120/80"
                                 style="width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; outline: none; font-weight: 600; font-family: inherit; transition: all 0.2s;"
                                 required>
                         </div>
@@ -40,7 +40,7 @@
                                 Pulse Rate
                                 <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Ref: 60-100 bpm</span>
                             </label>
-                            <input type="number" name="pulse" placeholder="e.g. 72"
+                            <input type="number" name="heart_rate" placeholder="e.g. 72"
                                 style="width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; outline: none; font-weight: 600; font-family: inherit; transition: all 0.2s;"
                                 required>
                         </div>
@@ -62,7 +62,7 @@
                                 Temperature
                                 <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Ref: 36.5-37.5 °C</span>
                             </label>
-                            <input type="number" step="0.1" name="temp" placeholder="e.g. 37.0"
+                            <input type="number" step="0.1" name="temperature" placeholder="e.g. 37.0"
                                 style="width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; outline: none; font-weight: 600; font-family: inherit; transition: all 0.2s;"
                                 required>
                         </div>
@@ -71,7 +71,7 @@
                                 SpO2 Saturation
                                 <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Ref: 95-100 %</span>
                             </label>
-                            <input type="number" name="oxygen" placeholder="e.g. 98"
+                            <input type="number" name="spo2" placeholder="e.g. 98"
                                 style="width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; outline: none; font-weight: 600; font-family: inherit; transition: all 0.2s;"
                                 required>
                         </div>

@@ -28,7 +28,30 @@
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Clinical Condition</div>
-                        <span style="padding: 6px 16px; background: #f0fdf4; color: #16a34a; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid rgba(22, 163, 74, 0.1);">Stable Condition</span>
+                        @php
+                            $statusColors = [
+                                'Critical' => ['bg' => '#fff1f2', 'text' => '#e11d48', 'dot' => '#e11d48'],
+                                'Stable' => ['bg' => '#f0fdf4', 'text' => '#16a34a', 'dot' => '#16a34a'],
+                                'Under Observation' => ['bg' => '#fffbeb', 'text' => '#d97706', 'dot' => '#d97706'],
+                                'Recovering' => ['bg' => '#f0f9ff', 'text' => '#0284c7', 'dot' => '#0284c7'],
+                                'Discharged' => ['bg' => '#f8fafc', 'text' => '#64748b', 'dot' => '#64748b'],
+                            ];
+                            $c = $statusColors[$patient['status']] ?? $statusColors['Stable'];
+                        @endphp
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                            <span style="padding: 6px 16px; background: {{ $c['bg'] }}; color: {{ $c['text'] }}; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid rgba(0,0,0,0.05);">
+                                {{ $patient['status'] }}
+                            </span>
+                            <form action="{{ route('nurse.patients.update-status', $patient['id']) }}" method="POST" style="display: flex; gap: 4px;">
+                                @csrf
+                                @method('PATCH')
+                                <select name="status" onchange="this.form.submit()" style="font-size: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 8px; font-weight: 600; color: #64748b; background: white; cursor: pointer;">
+                                    @foreach(array_keys($statusColors) as $status)
+                                        <option value="{{ $status }}" {{ $patient['status'] == $status ? 'selected' : '' }}>Set Status: {{ $status }}</option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 
@@ -64,6 +87,7 @@
                                     <th style="padding: 12px 16px; color: #94a3b8; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Temp</th>
                                     <th style="padding: 12px 16px; color: #94a3b8; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Pulse</th>
                                     <th style="padding: 12px 16px; color: #94a3b8; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">SpO2</th>
+                                    <th style="padding: 12px 16px; color: #94a3b8; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Recorded By</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -75,6 +99,12 @@
                                         <td style="padding: 16px; font-weight: 600; color: #475569;">{{ $record['pulse'] }} <span style="font-size: 0.75rem; color: #94a3b8;">bpm</span></td>
                                         <td style="padding: 16px; font-weight: 600; color: #475569;">
                                             <span style="padding: 4px 8px; background: #f0fdf4; color: #16a34a; border-radius: 6px; font-size: 0.85rem;">{{ $record['oxygen'] }}</span>
+                                        </td>
+                                        <td style="padding: 16px; font-size: 0.8rem; font-weight: 700; color: #64748b;">
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-user-nurse" style="color: #cbd5e1;"></i>
+                                                {{ $record['recorder'] }}
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach

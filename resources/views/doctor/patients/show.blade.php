@@ -85,8 +85,80 @@
         <div style="display: flex; flex-direction: column; gap: 24px;">
 
             <div class="glass-card" style="padding: 24px;">
-                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 24px;">Vitals Progression 📈</h3>
-                <canvas id="vitalsChart" height="200"></canvas>
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 24px;">Clinical Vitals Dashboard 🏥</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px;">
+                    <!-- BP & HR focused on circulation -->
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 16px; border: 1px solid #f1f5f9;">
+                        <h4 style="font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                             <i class="fas fa-heartbeat" style="color: #e11d48;"></i> Blood Pressure (mmHg)
+                        </h4>
+                        <div style="height: 180px; position: relative;">
+                            <canvas id="bpChart"></canvas>
+                        </div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 16px; border: 1px solid #f1f5f9;">
+                        <h4 style="font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-pulse" style="color: #be123c;"></i> Heart Rate (bpm)
+                        </h4>
+                        <div style="height: 180px; position: relative;">
+                            <canvas id="hrChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- SpO2 & Temp focused on metabolic/respiratory -->
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 16px; border: 1px solid #f1f5f9;">
+                        <h4 style="font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                             <i class="fas fa-lungs" style="color: #0284c7;"></i> SpO2 Saturation (%)
+                        </h4>
+                        <div style="height: 180px; position: relative;">
+                            <canvas id="spo2Chart"></canvas>
+                        </div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 16px; border: 1px solid #f1f5f9;">
+                        <h4 style="font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-thermometer-half" style="color: #d97706;"></i> Temperature (°C)
+                        </h4>
+                        <div style="height: 180px; position: relative;">
+                            <canvas id="tempChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 32px;">
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 16px; color: var(--text-muted);">Recent Readings</h4>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #f1f5f9; text-align: left;">
+                                    <th style="padding: 12px 8px; color: var(--text-muted);">Date</th>
+                                    <th style="padding: 12px 8px;">BP</th>
+                                    <th style="padding: 12px 8px;">HR</th>
+                                    <th style="padding: 12px 8px;">Temp</th>
+                                    <th style="padding: 12px 8px;">SpO2</th>
+                                    <th style="padding: 12px 8px;">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($patient->vitals as $v)
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 12px 8px; white-space: nowrap; color: var(--text-muted);">{{ $v->created_at->format('d M, H:i') }}</td>
+                                        <td style="padding: 12px 8px; font-weight: 600;">{{ $v->blood_pressure ?? '--' }}</td>
+                                        <td style="padding: 12px 8px;">{{ $v->heart_rate ?? '--' }} <small>bpm</small></td>
+                                        <td style="padding: 12px 8px;">{{ $v->temperature ?? '--' }}°C</td>
+                                        <td style="padding: 12px 8px;">{{ $v->spo2 ?? '--' }}%</td>
+                                        <td style="padding: 12px 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $v->notes }}">
+                                            {{ $v->notes ?? '--' }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" style="padding: 20px; text-align: center; color: var(--text-muted);">No vitals recorded yet.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
 
@@ -242,50 +314,71 @@
             document.getElementById('editHistoryModal').style.display = 'none';
         }
 
-        // document.addEventListener('DOMContentLoaded', function () {
-        //     // Vitals Chart
-        //     const vtCtx = document.getElementById('vitalsChart').getContext('2d');
+        document.addEventListener('DOMContentLoaded', function () {
+            const vitalsData = @json($patient->vitals->reverse()->values());
+            const labels = vitalsData.map(v => new Date(v.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+            
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                resizeDelay: 200,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                scales: {
+                    x: { display: true, grid: { display: false }, ticks: { font: { size: 9 } } },
+                    y: { beginAtZero: false, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } }
+                }
+            };
 
-        //     const vitalsData = @json($patient->vitals->reverse()->values());
-        //     const labels = vitalsData.map(v => new Date(v.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
-        //     const weightData = vitalsData.map(v => v.weight);
-        //     const pulseData = vitalsData.map(v => v.pulse);
+            // BP Chart
+            const bpCtx = document.getElementById('bpChart').getContext('2d');
+            const systolicData = vitalsData.map(v => (v.blood_pressure && v.blood_pressure.includes('/')) ? parseInt(v.blood_pressure.split('/')[0]) : null);
+            const diastolicData = vitalsData.map(v => (v.blood_pressure && v.blood_pressure.includes('/')) ? parseInt(v.blood_pressure.split('/')[1]) : null);
+            
+            new Chart(bpCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Sys', data: systolicData, borderColor: '#8b5cf6', backgroundColor: '#8b5cf60a', fill: true, tension: 0.3, spanGaps: true },
+                        { label: 'Dia', data: diastolicData, borderColor: '#c084fc', borderDash: [3, 3], tension: 0.3, spanGaps: true }
+                    ]
+                },
+                options: commonOptions
+            });
 
-        //     new Chart(vtCtx, {
-        //         type: 'line',
-        //         data: {
-        //             labels: labels.length ? labels : ['No Data'],
-        //             datasets: [
-        //                 {
-        //                     label: 'Weight (kg)',
-        //                     data: weightData.length ? weightData : [0],
-        //                     borderColor: '#0D9488',
-        //                     backgroundColor: 'rgba(13, 148, 136, 0.1)',
-        //                     fill: true,
-        //                     tension: 0.4
-        //                 },
-        //                 {
-        //                     label: 'Pulse Rate',
-        //                     data: pulseData.length ? pulseData : [0],
-        //                     borderColor: '#0EA5E9',
-        //                     backgroundColor: 'transparent',
-        //                     borderDash: [5, 5],
-        //                     tension: 0.4
-        //                 }
-        //             ]
-        //         },
-        //         options: {
-        //             responsive: true,
-        //             maintainAspectRatio: false,
-        //             plugins: {
-        //                 legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 } } }
-        //             },
-        //             scales: {
-        //                 y: { beginAtZero: false, grid: { color: '#f1f5f9' } },
-        //                 x: { grid: { display: false } }
-        //             }
-        //         }
-        //     });
-        // });
+            // HR Chart
+            const hrCtx = document.getElementById('hrChart').getContext('2d');
+            new Chart(hrCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'HR', data: vitalsData.map(v => v.heart_rate), borderColor: '#e11d48', backgroundColor: '#e11d480a', fill: true, tension: 0.3, spanGaps: true }]
+                },
+                options: commonOptions
+            });
+
+            // SpO2 Chart
+            const spo2Ctx = document.getElementById('spo2Chart').getContext('2d');
+            new Chart(spo2Ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'SpO2', data: vitalsData.map(v => v.spo2), borderColor: '#0284c7', backgroundColor: '#0284c70a', fill: true, tension: 0.3, spanGaps: true }]
+                },
+                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, min: 85, max: 100 } } }
+            });
+
+            // Temp Chart
+            const tempCtx = document.getElementById('tempChart').getContext('2d');
+            new Chart(tempCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Temp', data: vitalsData.map(v => v.temperature), borderColor: '#d97706', backgroundColor: '#d977060a', fill: true, tension: 0.3, spanGaps: true }]
+                },
+                options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, min: 35, max: 41 } } }
+            });
+        });
     </script>
 @endsection

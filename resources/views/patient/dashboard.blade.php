@@ -65,9 +65,13 @@
                 </div>
                 <div class="stats-info">
                     @if($latestVitals)
-                        <h3 style="font-size: 1rem;">{{ $latestVitals->blood_pressure ?? '—' }}</h3>
-                        <p>Latest vitals (BP)</p>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Temp {{ $latestVitals->temperature ?? '—' }}° · HR {{ $latestVitals->heart_rate ?? '—' }}</p>
+                        <h3 style="font-size: 1.1rem; color: var(--text-main); font-weight: 800;">{{ $latestVitals->blood_pressure ?? '—' }}</h3>
+                        <p style="font-weight: 600; color: #64748b; font-size: 0.8rem; margin-bottom: 4px;">Latest BP Registry</p>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 0.75rem; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; color: #475569;">Temp: {{ $latestVitals->temperature ?? '—' }}°</span>
+                            <span style="font-size: 0.75rem; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; color: #475569;">HR: {{ $latestVitals->heart_rate ?? '—' }}</span>
+                            <span style="font-size: 0.75rem; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; color: #475569;">SpO2: {{ $latestVitals->spo2 ?? '—' }}%</span>
+                        </div>
                     @else
                         <h3>—</h3>
                         <p>Latest vitals</p>

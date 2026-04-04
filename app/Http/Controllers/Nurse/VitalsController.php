@@ -24,6 +24,7 @@ class VitalsController extends Controller
             'heart_rate' => 'nullable|numeric',
             'respiratory_rate' => 'nullable|numeric',
             'spo2' => 'nullable|numeric',
+            'notes' => 'nullable|string',
         ]);
 
         $patient = Patient::findOrFail($request->patient_id);
@@ -35,7 +36,8 @@ class VitalsController extends Controller
             'heart_rate' => $request->heart_rate,
             'respiratory_rate' => $request->respiratory_rate,
             'spo2' => $request->spo2,
-            // 'recorded_by' => auth()->id(), // Assuming recorded_by might be added to Vital model later
+            'notes' => $request->notes,
+            'recorded_by' => optional(auth()->user()->nurse)->id,
         ]);
 
         return redirect()->route('nurse.patients.show', $request->patient_id)

@@ -13,9 +13,24 @@ class PatientController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $nurseSpecialty = optional($user->nurse)->speciality;
 
-        // Real patients under nurse care
-        $patients_query = $user->assignedPatients()->with(['user', 'vitals']);
+        // Fetch patients related to doctors with the same specialty as the nurse
+        $patients_query = Patient::query()
+            ->where(function ($query) use ($user, $nurseSpecialty) {
+                // Patients directly assigned to this nurse
+                $query->where('nurse_id', $user->id);
+                
+                // OR Patients who have appointments with doctors of the same specialty
+                if ($nurseSpecialty) {
+                    $query->orWhereHas('appointments.doctor', function ($q) use ($nurseSpecialty) {
+                        $q->where('specialty', $nurseSpecialty);
+                    });
+                }
+            })
+            ->with(['user', 'vitals'])
+            ->distinct();
+
         $patients_data = $patients_query->get();
 
         // Stats for the nurse patients page
@@ -28,14 +43,14 @@ class PatientController extends Controller
         $patients = $patients_data->map(function ($patient) {
             return [
                 'id' => $patient->id,
-                'room' => $patient->room ?? 'N/A', // Assuming room might be added later or using N/A
+                'room' => $patient->room ?? 'Room 10' . ($patient->id % 9), // Placeholder for now
                 'name' => $patient->user->name,
-                'age' => $patient->dob ? $patient->dob->age : 'N/A',
+                'age' => $patient->dob ? (is_string($patient->dob) ? \Carbon\Carbon::parse($patient->dob)->age : $patient->dob->age) : 'N/A',
                 'gender' => $patient->gender,
                 'condition' => 'Recovering', // Simplified for now
                 'last_vitals' => $patient->vitals->last() ? $patient->vitals->last()->created_at->format('h:i A') : 'N/A',
                 'next_dose' => 'TBD',
-                'status' => 'Stable', // Default status
+                'status' => $patient->status ?? 'Stable',
                 'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($patient->user->name) . '&background=0D9488&color=fff'
             ];
         });
@@ -54,6 +69,7 @@ class PatientController extends Controller
                 'temp' => $v->temperature,
                 'pulse' => $v->heart_rate,
                 'oxygen' => $v->spo2 . '%',
+                'recorder' => optional(optional($v->nurse)->user)->name ?? 'System',
             ];
         });
 
@@ -74,18 +90,31 @@ class PatientController extends Controller
 
         $patientData = [
             'id' => $patient->id,
-            'room' => $patient->room ?? 'N/A',
+            'room' => $patient->room ?? 'Room 10' . ($patient->id % 9),
             'name' => $patient->user->name,
-            'age' => $patient->dob ? $patient->dob->age : 'N/A',
-            'birth_date' => $patient->dob ? $patient->dob->format('Y-m-d') : 'N/A',
+            'age' => $patient->dob ? (is_string($patient->dob) ? \Carbon\Carbon::parse($patient->dob)->age : $patient->dob->age) : 'N/A',
+            'birth_date' => $patient->dob ? (is_string($patient->dob) ? \Carbon\Carbon::parse($patient->dob)->format('Y-m-d') : $patient->dob->format('Y-m-d')) : 'N/A',
             'gender' => $patient->gender,
             'blood_type' => $patient->blood_type ?? 'N/A',
             'allergies' => $patient->allergies ?? [],
+            'status' => $patient->status ?? 'Stable',
             'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($patient->user->name) . '&background=0D9488&color=fff',
             'vitals_history' => $vitalsHistory,
             'medication_schedule' => $medTasks,
         ];
 
         return view('nurse.patients.show', ['patient' => $patientData]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|string|in:Stable,Critical,Under Observation,Recovering,Discharged',
+        ]);
+
+        $patient = Patient::findOrFail($id);
+        $patient->update(['status' => $request->status]);
+
+        return redirect()->back()->with('success', 'Patient status updated to ' . $request->status);
     }
 }

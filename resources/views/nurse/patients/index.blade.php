@@ -57,16 +57,20 @@
                 <!-- Status -->
                 <div>
                     <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Care Status</div>
-                    @if($patient['status'] == 'Critical')
-                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #fff1f2; color: #e11d48; border-radius: 8px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(225, 29, 72, 0.1);">
-                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #e11d48; animation: pulse-red 2s infinite;"></div>
-                            Critical
-                        </div>
-                    @else
-                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #f0fdf4; color: #16a34a; border-radius: 8px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(22, 163, 74, 0.1);">
-                            Stable Condition
-                        </div>
-                    @endif
+                    @php
+                        $statusColors = [
+                            'Critical' => ['bg' => '#fff1f2', 'text' => '#e11d48', 'dot' => '#e11d48', 'pulse' => true],
+                            'Stable' => ['bg' => '#f0fdf4', 'text' => '#16a34a', 'dot' => '#16a34a', 'pulse' => false],
+                            'Under Observation' => ['bg' => '#fffbeb', 'text' => '#d97706', 'dot' => '#d97706', 'pulse' => true],
+                            'Recovering' => ['bg' => '#f0f9ff', 'text' => '#0284c7', 'dot' => '#0284c7', 'pulse' => false],
+                            'Discharged' => ['bg' => '#f8fafc', 'text' => '#64748b', 'dot' => '#64748b', 'pulse' => false],
+                        ];
+                        $c = $statusColors[$patient['status']] ?? $statusColors['Stable'];
+                    @endphp
+                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: {{ $c['bg'] }}; color: {{ $c['text'] }}; border-radius: 8px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(0,0,0,0.05);">
+                        <div style="width: 6px; height: 6px; border-radius: 50%; background: {{ $c['dot'] }}; {{ $c['pulse'] ? 'animation: pulse-dot 2s infinite;' : '' }}"></div>
+                        {{ $patient['status'] }}
+                    </div>
                 </div>
 
                 <!-- Last Vitals -->

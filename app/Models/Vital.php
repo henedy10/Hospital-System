@@ -12,12 +12,18 @@ class Vital extends Model
         'heart_rate',
         'temperature',
         'respiratory_rate',
-        'weight',
-        'height',
+        'recorded_by',
+        'spo2',
+        'notes',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function nurse()
+    {
+        return $this->belongsTo(Nurse::class, 'recorded_by', 'id');
     }
 }

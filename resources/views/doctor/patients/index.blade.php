@@ -53,6 +53,7 @@
                     <th style="padding: 16px 20px; font-weight: 600;">ID</th>
                     <th style="padding: 16px 20px; font-weight: 600;">Age & Gender</th>
                     <th style="padding: 16px 20px; font-weight: 600;">Blood</th>
+                    <th style="padding: 16px 20px; font-weight: 600;">Status</th>
                     <th style="padding: 16px 20px; font-weight: 600;">Last Visit</th>
                     <th style="padding: 16px 20px; font-weight: 600; text-align: right;">Action</th>
                 </tr>
@@ -81,6 +82,24 @@
                                 <span style="color: var(--text-muted); font-size: 0.9rem;">--</span>
                             @endif
                         </td>
+                        <td style="padding: 16px 20px;">
+                            <span class="status-badge" style="
+                                display: inline-flex; 
+                                align-items: center; 
+                                gap: 6px; 
+                                font-size: 0.75rem; 
+                                font-weight: 700; 
+                                padding: 4px 10px; 
+                                border-radius: 12px;
+                                {{ $patient->status === 'Critical' ? 'background: #FEE2E2; color: #DC2626;' : 
+                                   ($patient->status === 'Stable' ? 'background: #ECFDF5; color: #059669;' : 'background: #EFF6FF; color: #3B82F6;') }}
+                            ">
+                                <i class="fas {{ $patient->status === 'Critical' ? 'fa-exclamation-triangle' : 
+                                               ($patient->status === 'Stable' ? 'fa-check-circle' : 'fa-info-circle') }}" 
+                                   style="font-size: 0.65rem;"></i>
+                                {{ $patient->status ?? 'Stable' }}
+                            </span>
+                        </td>
                         <td style="padding: 16px 20px; color: var(--text-muted); font-size: 0.9rem;">
                             @php
                                 $lastVisit = $patient->appointments->first();
@@ -93,7 +112,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" style="color:red;text-align: center; padding: 40px; ">
+                        <td colspan="8" style="color:red;text-align: center; padding: 40px; ">
                             No patients with appointments yet. Patients will appear here after they book an appointment with you.
                         </td>
                     </tr>

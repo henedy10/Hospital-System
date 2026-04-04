@@ -89,6 +89,7 @@ Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
     Route::get('/dashboard', [NurseDashboardController::class, 'index'])->name('nurse.dashboard');
     Route::get('/patients', [NursePatientController::class, 'index'])->name('nurse.patients');
     Route::get('/patients/{id}', [NursePatientController::class, 'show'])->name('nurse.patients.show');
+    Route::patch('/patients/{id}/status', [NursePatientController::class, 'updateStatus'])->name('nurse.patients.update-status');
     Route::get('/patients/{id}/vitals/create', [VitalsController::class, 'create'])->name('nurse.vitals.create');
     Route::post('/vitals', [VitalsController::class, 'store'])->name('nurse.vitals.store');
     Route::get('/tasks', [NurseTaskController::class, 'index'])->name('nurse.tasks');

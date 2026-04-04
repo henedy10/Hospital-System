@@ -22,6 +22,8 @@ class SettingController extends Controller
             'department' => $authUser->department ?? 'General Ward',
             'employee_id' => 'NS-' . str_pad($authUser->id, 5, '0', STR_PAD_LEFT),
             'shift' => $authUser->shift ?? 'Morning (08:00 - 16:00)',
+            'speciality' => optional($authUser->nurse)->speciality,
+            'bio' => optional($authUser->nurse)->bio,
             'avatar' => $authUser->profile_image ? asset('storage/' . $authUser->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($authUser->name) . '&background=0D9488&color=fff'
         ];
 
@@ -38,6 +40,8 @@ class SettingController extends Controller
             'phone' => 'nullable|string|max:20',
             'shift' => 'nullable|string|max:255',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'speciality' => 'nullable|string|max:255',
+            'bio' => 'nullable|string|max:1000',
         ]);
 
         if ($request->hasFile('profile_image')) {
@@ -50,6 +54,15 @@ class SettingController extends Controller
         }
 
         $user->update($validated);
+
+        // Update or create nurse profile
+        $user->nurse()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'speciality' => $request->speciality,
+                'bio' => $request->bio,
+            ]
+        );
 
         return back()->with('success', 'Profile updated successfully.');
     }

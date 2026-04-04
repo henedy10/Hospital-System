@@ -87,6 +87,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the nurse profile for the user.
+     */
+    public function nurse()
+    {
+        return $this->hasOne(Nurse::class);
+    }
+
+    /**
      * Get the doctor profile for the user.
      */
     public function doctor()

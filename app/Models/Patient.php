@@ -23,6 +23,7 @@ class Patient extends Model
         'weight',
         'height',
         'nurse_id',
+        'status',
     ];
 
     protected $casts = [

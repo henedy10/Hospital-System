@@ -91,6 +91,20 @@
                             </div>
                         </div>
 
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                            <div>
+                                <label style="display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: var(--text-main);">Nursing Speciality</label>
+                                <input type="text" name="speciality" value="{{ old('speciality', $user['speciality']) }}" placeholder="e.g. ICU, Pediatrics, Emergency"
+                                    style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none; font-family: inherit;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: var(--text-main);">Professional Bio</label>
+                            <textarea name="bio" rows="3" placeholder="Briefly describe your professional background and experience..."
+                                style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none; font-family: inherit; resize: vertical;">{{ old('bio', $user['bio']) }}</textarea>
+                        </div>
+
                         <div style="margin-bottom: 32px; padding: 16px; background: #f0f9ff; border-radius: 8px; display: flex; gap: 12px;">
                             <i class="fas fa-info-circle" style="color: #0ea5e9; margin-top: 2px;"></i>
                             <p style="font-size: 0.85rem; color: #0369a1; margin: 0;">Department changes and Employee ID updates must be processed by the human resources department.</p>
