@@ -41,14 +41,18 @@ class PatientController extends Controller
         ];
 
         $patients = $patients_data->map(function ($patient) {
+            $lastVital = $patient->vitals->last();
             return [
                 'id' => $patient->id,
-                'room' => $patient->room ?? 'Room 10' . ($patient->id % 9), // Placeholder for now
+                'room' => $patient->room ?? 'Room 10' . ($patient->id % 9),
                 'name' => $patient->user->name,
                 'age' => $patient->dob ? (is_string($patient->dob) ? \Carbon\Carbon::parse($patient->dob)->age : $patient->dob->age) : 'N/A',
                 'gender' => $patient->gender,
-                'condition' => 'Recovering', // Simplified for now
-                'last_vitals' => $patient->vitals->last() ? $patient->vitals->last()->created_at->format('h:i A') : 'N/A',
+                'condition' => 'Recovering',
+                'last_vitals_time' => $lastVital ? $lastVital->created_at->format('h:i A') : 'N/A',
+                'last_bp' => $lastVital->blood_pressure ?? 'N/A',
+                'last_hr' => $lastVital->heart_rate ?? 'N/A',
+                'last_temp' => $lastVital->temperature ?? 'N/A',
                 'next_dose' => 'TBD',
                 'status' => $patient->status ?? 'Stable',
                 'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($patient->user->name) . '&background=0D9488&color=fff'
@@ -93,7 +97,7 @@ class PatientController extends Controller
             'room' => $patient->room ?? 'Room 10' . ($patient->id % 9),
             'name' => $patient->user->name,
             'age' => $patient->dob ? (is_string($patient->dob) ? \Carbon\Carbon::parse($patient->dob)->age : $patient->dob->age) : 'N/A',
-            'birth_date' => $patient->dob ? (is_string($patient->dob) ? \Carbon\Carbon::parse($patient->dob)->format('Y-m-d') : $patient->dob->format('Y-m-d')) : 'N/A',
+            'birth_date' => $patient->dob instanceof \Carbon\Carbon ? $patient->dob->format('Y-m-d') : ($patient->dob ? \Carbon\Carbon::parse($patient->dob)->format('Y-m-d') : 'N/A'),
             'gender' => $patient->gender,
             'blood_type' => $patient->blood_type ?? 'N/A',
             'allergies' => $patient->allergies ?? [],

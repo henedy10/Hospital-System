@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="welcome-section" style="margin-bottom: 32px; animation: fadeIn 0.8s ease-out;">
-        <h1 style="font-size: 1.85rem; font-weight: 850; color: #1e293b; margin-bottom: 8px; letter-spacing: -0.02em;">Welcome back, Nurse Joy! 👋</h1>
+        <h1 style="font-size: 1.85rem; font-weight: 850; color: #1e293b; margin-bottom: 8px; letter-spacing: -0.02em;">Welcome back, {{ explode(' ', Auth::user()->name)[0] }}! 👋</h1>
         <p style="color: #64748b; font-size: 1rem; font-weight: 500;">Monitor your assigned patients and upcoming clinical shifts.</p>
     </div>
 
@@ -18,7 +18,7 @@
                 <span style="font-size: 0.75rem; font-weight: 700; color: #0D9488; background: #f0fdfa; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(13, 148, 136, 0.1);">Active Care</span>
             </div>
             <h3 style="font-size: 2.25rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">{{ $assignedPatients }}</h3>
-            <p style="color: #64748b; font-size: 0.9rem; font-weight: 600;">Assigned Patients</p>
+            <p style="color: #64748b; font-size: 0.9rem; font-weight: 600;">{{ $assignedPatients > 0 ? 'Assigned Patients' : 'No patients assigned' }}</p>
         </div>
 
         <!-- Urgent Tasks -->
@@ -27,10 +27,10 @@
                 <div style="width: 48px; height: 48px; border-radius: 14px; background: #e11d48; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 8px 16px -4px rgba(225, 29, 72, 0.3);">
                     <i class="fas fa-bolt" style="font-size: 1.25rem;"></i>
                 </div>
-                <span style="font-size: 0.75rem; font-weight: 700; color: #e11d48; background: #fff1f2; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(225, 29, 72, 0.1);">Immediate</span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #e11d48; background: #fff1f2; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(225, 29, 72, 0.1);">{{ $urgentTasks > 0 ? 'Immediate' : 'All Clear' }}</span>
             </div>
             <h3 style="font-size: 2.25rem; font-weight: 800; color: #e11d48; margin-bottom: 4px;">{{ $urgentTasks }}</h3>
-            <p style="color: #64748b; font-size: 0.9rem; font-weight: 600;">Urgent Tasks</p>
+            <p style="color: #64748b; font-size: 0.9rem; font-weight: 600;">{{ $urgentTasks > 0 ? 'Urgent Tasks' : 'No urgent alerts' }}</p>
         </div>
 
         <!-- Medication Due -->
@@ -42,7 +42,7 @@
                 <span style="font-size: 0.75rem; font-weight: 700; color: #b45309; background: #fef3c7; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.1);">Adminstration</span>
             </div>
             <h3 style="font-size: 2.25rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">{{ $medicationDue }}</h3>
-            <p style="color: #64748b; font-size: 0.9rem; font-weight: 600;">Medication Rounds</p>
+            <p style="color: #64748b; font-size: 0.9rem; font-weight: 600;">{{ $medicationDue > 0 ? 'Medication Rounds' : 'Schedule complete' }}</p>
         </div>
     </div>
 
@@ -59,7 +59,7 @@
                 <canvas id="activitiesChart"></canvas>
                 <div style="position: absolute; text-align: center; pointer-events: none;">
                     <div id="totalActivitiesCount" style="font-size: 2.5rem; font-weight: 900; color: #1e293b; line-height: 1;">0</div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Tasks Logged</div>
+                    <div id="activityLabel" style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Tasks Logged</div>
                 </div>
             </div>
         </div>
@@ -71,34 +71,42 @@
                 <span style="font-size: 0.75rem; font-weight: 700; color: #0D9488; background: #f0fdfa; padding: 4px 10px; border-radius: 20px;">Live Updates</span>
             </div>
             <div class="timeline-container" style="display: flex; flex-direction: column; gap: 0;">
-                <div class="timeline-item" style="display: flex; gap: 20px; padding-bottom: 24px; position: relative;">
-                    <div style="position: absolute; left: 11px; top: 12px; bottom: -12px; width: 2px; background: linear-gradient(to bottom, #0D9488 0%, #e2e8f0 100%);"></div>
-                    <div style="z-index: 1; width: 24px; height: 24px; border-radius: 50%; background: white; border: 4px solid #0D9488; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px #f0fdfa;"></div>
-                    <div>
-                        <span style="font-size: 0.75rem; font-weight: 800; color: #0D9488;">08:00 AM • Completed</span>
-                        <p style="font-weight: 700; color: #1e293b; margin: 2px 0; font-size: 0.95rem;">Morning Shift Handover</p>
-                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Transition report from night shift completed for Ward A.</p>
+                @forelse($timeline as $index => $item)
+                    <div class="timeline-item" style="display: flex; gap: 20px; padding-bottom: 24px; position: relative;">
+                        @if(!$loop->last)
+                            <div style="position: absolute; left: 11px; top: 12px; bottom: -12px; width: 2px; background: {{ $item->status === 'completed' ? 'linear-gradient(to bottom, #0D9488 0%, #e2e8f0 100%)' : '#e2e8f0' }};"></div>
+                        @endif
+                        
+                        <div style="z-index: 1; width: 24px; height: 24px; border-radius: 50%; background: white; 
+                            border: 4px solid {{ $item->status === 'completed' ? '#0D9488' : ($item->priority === 'High' ? '#e11d48' : '#0ea5e9') }}; 
+                            display: flex; align-items: center; justify-content: center; 
+                            {{ $item->status === 'completed' ? 'box-shadow: 0 0 0 4px #f0fdfa;' : '' }}">
+                            @if($item->status === 'pending')
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ $item->priority === 'High' ? '#e11d48' : '#0ea5e9' }}; animation: pulse 2s infinite;"></div>
+                            @endif
+                        </div>
+
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 800; color: {{ $item->status === 'completed' ? '#0D9488' : ($item->priority === 'High' ? '#e11d48' : '#0ea5e9') }};">
+                                {{ $item->due_at->format('h:i A') }} • {{ ucfirst($item->status) }}
+                            </span>
+                            <p style="font-weight: 700; color: #1e293b; margin: 2px 0; font-size: 0.95rem;">{{ $item->title }}</p>
+                            <p style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+                                Patient: {{ $item->patient->user->name }}
+                                @if($item->description)
+                                    <br><span style="opacity: 0.8;">{{ Str::limit($item->description, 50) }}</span>
+                                @endif
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <div class="timeline-item" style="display: flex; gap: 20px; padding-bottom: 24px; position: relative;">
-                    <div style="position: absolute; left: 11px; top: 0; bottom: -12px; width: 2px; background: #e2e8f0;"></div>
-                    <div style="z-index: 1; width: 24px; height: 24px; border-radius: 50%; background: white; border: 4px solid #0ea5e9; display: flex; align-items: center; justify-content: center;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #0ea5e9; animation: pulse 2s infinite;"></div>
+                @empty
+                    <div style="text-align: center; padding: 40px 0;">
+                        <div style="width: 64px; height: 64px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                            <i class="fas fa-calendar-check" style="color: #94a3b8; font-size: 1.5rem;"></i>
+                        </div>
+                        <p style="color: #64748b; font-weight: 600;">No tasks scheduled for today</p>
                     </div>
-                    <div>
-                        <span style="font-size: 0.75rem; font-weight: 800; color: #0ea5e9;">10:30 AM • In Progress</span>
-                        <p style="font-weight: 700; color: #1e293b; margin: 2px 0; font-size: 0.95rem;">Standard Patient Rounds</p>
-                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Conducting vital checks and patient assessments.</p>
-                    </div>
-                </div>
-                <div class="timeline-item" style="display: flex; gap: 20px; position: relative;">
-                    <div style="z-index: 1; width: 24px; height: 24px; border-radius: 50%; background: white; border: 4px solid #f1f5f9; display: flex; align-items: center; justify-content: center;"></div>
-                    <div>
-                        <span style="font-size: 0.75rem; font-weight: 800; color: #94a3b8;">12:00 PM • Upcoming</span>
-                        <p style="font-weight: 700; color: #475569; margin: 2px 0; font-size: 0.95rem;">Lunch Medication Round</p>
-                        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Scheduled distribution for long-term patients.</p>
-                    </div>
-                </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -126,6 +134,9 @@
             const totalTasks = activityData.reduce((a, b) => a + b, 0);
             
             document.getElementById('totalActivitiesCount').textContent = totalTasks;
+            if (totalTasks === 0) {
+                document.getElementById('activityLabel').textContent = 'No data';
+            }
 
             new Chart(ctx, {
                 type: 'doughnut',

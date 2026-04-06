@@ -43,6 +43,25 @@ class DashboardController extends Controller
             ];
         }
 
-        return view('nurse.dashboard', compact('assignedPatients', 'urgentTasks', 'medicationDue', 'activityData'));
+        // Timeline items: Combination of recently completed and upcoming pending tasks
+        $timeline = $user->tasks()
+            ->with('patient.user')
+            ->where(function ($query) {
+                $query->where(function ($q) {
+                    $q->where('status', 'completed')
+                        ->where('updated_at', '>=', now()->subHours(24));
+                })->orWhere('status', 'pending');
+            })
+            ->orderBy('due_at', 'asc')
+            ->limit(5)
+            ->get();
+
+        return view('nurse.dashboard', compact(
+            'assignedPatients',
+            'urgentTasks',
+            'medicationDue',
+            'activityData',
+            'timeline'
+        ));
     }
 }
