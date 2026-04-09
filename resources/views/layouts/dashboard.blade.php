@@ -41,6 +41,9 @@
                         <li class="{{ request()->routeIs('doctor.reports*') ? 'active' : '' }}"><a
                                 href="{{ route('doctor.reports') }}"><i class="fas fa-file-medical"></i>
                                 <span>Reports</span></a></li>
+                        <li class="{{ request()->routeIs('doctor.tasks*') ? 'active' : '' }}"><a
+                                href="{{ route('doctor.tasks.index') }}"><i class="fas fa-clipboard-list"></i>
+                                <span>Nurse Tasks</span></a></li>
                         <li class="{{ request()->routeIs('chat') ? 'active' : '' }}"><a
                                 href="{{ route('chat') }}"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
                         <li class="{{ request()->routeIs('doctor.settings') ? 'active' : '' }}"><a

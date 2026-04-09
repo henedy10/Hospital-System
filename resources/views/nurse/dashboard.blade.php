@@ -92,7 +92,9 @@
                             </span>
                             <p style="font-weight: 700; color: #1e293b; margin: 2px 0; font-size: 0.95rem;">{{ $item->title }}</p>
                             <p style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
-                                Patient: {{ $item->patient->user->name }}
+                                @if($item->patient && $item->patient->user)
+                                    Patient: {{ $item->patient->user->name }}
+                                @endif
                                 @if($item->description)
                                     <br><span style="opacity: 0.8;">{{ Str::limit($item->description, 50) }}</span>
                                 @endif

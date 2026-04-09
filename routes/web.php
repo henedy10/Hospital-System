@@ -17,7 +17,8 @@ use App\Http\Controllers\Doctor\
     PatientController,
     MedicalHistoryController as DoctorMedicalHistoryController,
     ReportController,
-    SettingController
+    SettingController,
+    TaskController as DoctorTaskController
 };
 
 use App\Http\Controllers\Nurse\
@@ -83,6 +84,12 @@ Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function ()
     Route::delete('/settings/image', [SettingController::class, 'removeImage'])->name('doctor.settings.image.remove');
     Route::post('/settings/password', [SettingController::class, 'updatePassword'])->name('doctor.settings.password');
     Route::post('/settings/notifications', [SettingController::class, 'updateNotifications'])->name('doctor.settings.notifications');
+
+    // Task management (assign to nurses)
+    Route::get('/tasks', [DoctorTaskController::class, 'index'])->name('doctor.tasks.index');
+    Route::get('/tasks/create', [DoctorTaskController::class, 'create'])->name('doctor.tasks.create');
+    Route::post('/tasks', [DoctorTaskController::class, 'store'])->name('doctor.tasks.store');
+    Route::delete('/tasks/{task}', [DoctorTaskController::class, 'destroy'])->name('doctor.tasks.destroy');
 });
 
 Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
@@ -93,6 +100,7 @@ Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
     Route::get('/patients/{id}/vitals/create', [VitalsController::class, 'create'])->name('nurse.vitals.create');
     Route::post('/vitals', [VitalsController::class, 'store'])->name('nurse.vitals.store');
     Route::get('/tasks', [NurseTaskController::class, 'index'])->name('nurse.tasks');
+    Route::patch('/tasks/{task}/status', [NurseTaskController::class, 'updateStatus'])->name('nurse.tasks.update-status');
     Route::get('/settings', [NurseSettingController::class, 'index'])->name('nurse.settings');
     Route::post('/settings', [NurseSettingController::class, 'update'])->name('nurse.settings.update');
     Route::post('/settings/password', [NurseSettingController::class, 'updatePassword'])->name('nurse.settings.password');
