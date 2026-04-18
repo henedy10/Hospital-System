@@ -54,4 +54,14 @@ class Patient extends Model
     {
         return $this->hasMany(Vital::class,'user_id','user_id');
     }
+
+    public function symptomChecks()
+    {
+        return $this->hasMany(SymptomCheck::class);
+    }
+
+    public function feedback()
+    {
+        return $this->hasMany(DoctorFeedback::class);
+    }
 }

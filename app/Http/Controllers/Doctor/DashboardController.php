@@ -41,7 +41,7 @@ class DashboardController extends Controller
         $todayAppointments = Appointment::where('doctor_id',$doctor->id)
             ->whereDate('appointment_date', $today)
             ->where('status','!=','cancelled')
-            ->with('user:id,name,profile_image')
+            ->with('patient.user:id,name,profile_image')
             ->orderBy('appointment_time')
             ->get();
 

@@ -93,9 +93,47 @@
                                 </button>
                             </form>
                         @elseif($appointment->status === 'completed')
-                            <button class="btn-action-success" disabled>
-                                <i class="fas fa-check-circle"></i> Completed
-                            </button>
+                            @if($appointment->feedback)
+                                {{-- Already reviewed --}}
+                                <div class="existing-review-mini-wrapper">
+                                    <div class="existing-review-mini">
+                                        <div class="mini-stars">
+                                            @for($s=1;$s<=5;$s++)
+                                                <i class="fas fa-star {{ $s <= $appointment->feedback->rating ? 'star-f' : 'star-e' }}"></i>
+                                            @endfor
+                                        </div>
+                                        <div class="mini-review-actions">
+                                            <button class="btn-review-edit"
+                                                onclick="openEditReview({{ $appointment->feedback->id }}, {{ $appointment->feedback->rating }}, '{{ addslashes($appointment->feedback->comment) }}')"
+                                            ><i class="fas fa-pen"></i></button>
+                                            <form method="POST"
+                                                  action="{{ route('patient.feedback.destroy', $appointment->feedback) }}"
+                                                  onsubmit="return confirm('Delete your review?')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn-review-del"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    @if($appointment->feedback->doctor_reply)
+                                        <div class="doctor-reply-box animate-fade-in">
+                                            <div class="reply-header">
+                                                <i class="fas fa-reply fa-flip-horizontal"></i>
+                                                <span>Dr. {{ $appointment->doctor->user->name }}'s Response:</span>
+                                            </div>
+                                            <p class="reply-text">{{ $appointment->feedback->doctor_reply }}</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="review-prompt">
+                                    <span class="prompt-text">How was your visit?</span>
+                                    <button class="btn-leave-review"
+                                        onclick="openFeedbackModal({{ $appointment->id }}, '{{ addslashes($appointment->doctor->user->name) }}')"
+                                    >
+                                        <i class="fas fa-star"></i> Leave a Review
+                                    </button>
+                                </div>
+                            @endif
                         @else
                             <button class="btn-action-muted" disabled>
                                 <i class="fas fa-ban"></i> Cancelled
@@ -636,6 +674,206 @@
         }
     </style>
 
+    {{-- ────────── Feedback Modal (new) ────────── --}}
+    <div id="feedbackModal" class="modal-overlay">
+        <div class="modal-container glass-modal">
+            <div class="modal-header">
+                <div class="header-icon head-feedback">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="header-text">
+                    <h2>Rate Your Visit</h2>
+                    <p id="feedbackDoctorName">Leave a review for your doctor.</p>
+                </div>
+                <button class="close-modal" onclick="closeModal('feedbackModal')">&times;</button>
+            </div>
+            <form action="{{ route('patient.feedback.store') }}" method="POST" class="premium-form">
+                @csrf
+                <input type="hidden" name="appointment_id" id="feedbackAppointmentId">
+                <div class="form-grid">
+                    <div class="input-group full-width">
+                        <label><i class="fas fa-star"></i> Your Rating</label>
+                        <div class="star-picker" id="starPicker">
+                            @for($i = 1; $i <= 5; $i++)
+                                <button type="button" class="star-btn" data-value="{{ $i }}"
+                                    onclick="selectStar({{ $i }})"
+                                    onmouseenter="hoverStar({{ $i }})"
+                                    onmouseleave="resetStarHover()">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            @endfor
+                        </div>
+                        <input type="hidden" name="rating" id="feedbackRating" value="">
+                        @error('rating')
+                            <span class="field-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="input-group full-width">
+                        <label><i class="fas fa-comment"></i> Comment <span style="color:#94a3b8">(optional)</span></label>
+                        <textarea name="comment" class="premium-input" rows="4"
+                            placeholder="Share your experience…" maxlength="1000">{{ old('comment') }}</textarea>
+                        @error('comment')
+                            <span class="field-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('feedbackModal')">Cancel</button>
+                    <button type="submit" class="btn-premium">
+                        <i class="fas fa-paper-plane"></i> Submit Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ────────── Edit Feedback Modal ────────── --}}
+    <div id="editFeedbackModal" class="modal-overlay">
+        <div class="modal-container glass-modal">
+            <div class="modal-header">
+                <div class="header-icon head-edit">
+                    <i class="fas fa-pen"></i>
+                </div>
+                <div class="header-text">
+                    <h2>Edit Your Review</h2>
+                    <p>Update your rating or comment.</p>
+                </div>
+                <button class="close-modal" onclick="closeModal('editFeedbackModal')">&times;</button>
+            </div>
+            <form id="editFeedbackForm" method="POST" class="premium-form">
+                @csrf @method('PUT')
+                <div class="form-grid">
+                    <div class="input-group full-width">
+                        <label><i class="fas fa-star"></i> Your Rating</label>
+                        <div class="star-picker" id="editStarPicker">
+                            @for($i = 1; $i <= 5; $i++)
+                                <button type="button" class="star-btn" data-value="{{ $i }}"
+                                    onclick="selectEditStar({{ $i }})"
+                                    onmouseenter="hoverEditStar({{ $i }})"
+                                    onmouseleave="resetEditStarHover()">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            @endfor
+                        </div>
+                        <input type="hidden" name="rating" id="editFeedbackRating" value="">
+                    </div>
+                    <div class="input-group full-width">
+                        <label><i class="fas fa-comment"></i> Comment <span style="color:#94a3b8">(optional)</span></label>
+                        <textarea name="comment" id="editFeedbackComment" class="premium-input" rows="4"
+                            placeholder="Share your experience…" maxlength="1000"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('editFeedbackModal')">Cancel</button>
+                    <button type="submit" class="btn-premium">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        /* ── Star Picker ── */
+        .star-picker { display:flex; gap:.35rem; margin:.5rem 0; }
+        .star-btn {
+            background:none; border:none; font-size:2rem; cursor:pointer;
+            color:#e2e8f0; transition:color .15s, transform .15s;
+            padding:0;
+        }
+        .star-btn:hover, .star-btn.hovered, .star-btn.selected { color:#f59e0b; }
+        .star-btn.selected { transform:scale(1.15); }
+        .field-error { color:#ef4444; font-size:.78rem; margin-top:.25rem; display:block; }
+        .head-feedback { background: linear-gradient(135deg,#f59e0b,#f97316); }
+
+        /* ── Leave review button ── */
+        .btn-leave-review {
+            flex:1; padding:.625rem; border-radius:10px; font-weight:600;
+            background: linear-gradient(135deg,#f59e0b,#f97316);
+            color:white; border:none; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            gap:.375rem; font-size:.875rem; transition:all .2s;
+        }
+        .btn-leave-review:hover { transform:translateY(-1px); box-shadow:0 6px 12px rgba(245,158,11,.35); }
+
+        /* ── Existing mini review ── */
+        .existing-review-mini {
+            flex:1; display:flex; align-items:center;
+            justify-content:space-between; gap:.5rem;
+            background:#fffbeb; border:1px solid #fde68a;
+            border-radius:10px; padding:.5rem .75rem;
+        }
+        .existing-review-mini-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .doctor-reply-box {
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
+            border-radius: 12px;
+            padding: 0.875rem;
+            position: relative;
+            margin-top: 0.25rem;
+        }
+        .doctor-reply-box::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 20px;
+            width: 10px;
+            height: 10px;
+            background: #f0fdfa;
+            border-top: 1px solid #99f6e4;
+            border-left: 1px solid #99f6e4;
+            transform: rotate(45deg);
+        }
+        .reply-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.375rem;
+            color: #0d9488;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        .reply-text {
+            font-size: 0.875rem;
+            color: #334155;
+            line-height: 1.5;
+            font-style: italic;
+        }
+        .review-prompt {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .prompt-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-left: 0.25rem;
+        }
+        .mini-stars { display:flex; gap:2px; }
+        .star-f { color:#f59e0b; font-size:.9rem; }
+        .star-e { color:#e2e8f0; font-size:.9rem; }
+        .mini-review-actions { display:flex; gap:.35rem; align-items:center; }
+        .btn-review-edit, .btn-review-del {
+            background:none; border:1px solid #e2e8f0; border-radius:8px;
+            width:28px; height:28px; display:flex; align-items:center;
+            justify-content:center; cursor:pointer; font-size:.75rem;
+            transition:all .2s;
+        }
+        .btn-review-edit { color:#0d9488; }
+        .btn-review-edit:hover { background:rgba(13,148,136,.1); border-color:#0d9488; }
+        .btn-review-del { color:#ef4444; }
+        .btn-review-del:hover { background:rgba(239,68,68,.08); border-color:#ef4444; }
+    </style>
+
     <script>
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
@@ -663,6 +901,54 @@
             document.getElementById('edit_reason').value = appointment.reason;
 
             openModal('editModal');
+        }
+
+        /* ── Feedback modal helpers ── */
+        let currentRating = 0;
+        let editRating    = 0;
+
+        function openFeedbackModal(appointmentId, doctorName) {
+            document.getElementById('feedbackAppointmentId').value = appointmentId;
+            document.getElementById('feedbackDoctorName').textContent = 'Rate Dr. ' + doctorName;
+            currentRating = 0;
+            renderStars('starPicker', currentRating);
+            document.getElementById('feedbackRating').value = '';
+            openModal('feedbackModal');
+        }
+
+        function openEditReview(feedbackId, rating, comment) {
+            const form = document.getElementById('editFeedbackForm');
+            form.action = `/patient/feedback/${feedbackId}`;
+            editRating = rating;
+            renderStars('editStarPicker', editRating);
+            document.getElementById('editFeedbackRating').value = editRating;
+            document.getElementById('editFeedbackComment').value = comment;
+            openModal('editFeedbackModal');
+        }
+
+        function selectStar(val) {
+            currentRating = val;
+            document.getElementById('feedbackRating').value = val;
+            renderStars('starPicker', val);
+        }
+        function hoverStar(val)   { renderStars('starPicker', val, true); }
+        function resetStarHover() { renderStars('starPicker', currentRating); }
+
+        function selectEditStar(val) {
+            editRating = val;
+            document.getElementById('editFeedbackRating').value = val;
+            renderStars('editStarPicker', val);
+        }
+        function hoverEditStar(val)   { renderStars('editStarPicker', val, true); }
+        function resetEditStarHover() { renderStars('editStarPicker', editRating); }
+
+        function renderStars(pickerId, rating, isHover = false) {
+            const btns = document.querySelectorAll(`#${pickerId} .star-btn`);
+            btns.forEach(btn => {
+                const v = parseInt(btn.dataset.value);
+                btn.classList.toggle('selected', !isHover && v <= rating);
+                btn.classList.toggle('hovered',   isHover && v <= rating);
+            });
         }
 
         window.onclick = function (event) {

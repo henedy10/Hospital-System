@@ -29,4 +29,9 @@ class Appointment extends Model
     {
         return $this->belongsTo(Patient::class);
     }
+
+    public function feedback()
+    {
+        return $this->hasOne(DoctorFeedback::class);
+    }
 }

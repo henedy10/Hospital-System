@@ -93,13 +93,13 @@
                         @foreach($todayAppointments as $apt)
                             <li style="border-bottom: 1px solid #eef2f6; padding: 14px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
                                 <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-                                    <img src="{{ $apt->user->profile_image ? asset('storage/' . $apt->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($apt->user->name) . '&background=0D9488&color=fff' }}" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+                                    <img src="{{ $apt->patient->user->profile_image ? asset('storage/' . $apt->patient->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($apt->patient->user->name) . '&background=0D9488&color=fff' }}" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
                                     <div style="min-width: 0;">
-                                        <span style="font-weight: 600; color: var(--text-main); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $apt->user->name }}</span>
+                                        <span style="font-weight: 600; color: var(--text-main); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $apt->patient->user->name }}</span>
                                         <span style="font-size: 0.8rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($apt->appointment_time)->format('h:i A') }}</span>
                                     </div>
                                 </div>
-                                <a href="{{ route('doctor.patients.show', $apt->user_id) }}" class="btn-primary-sm" style="text-decoration: none; padding: 6px 12px; font-size: 0.75rem; white-space: nowrap;">Profile</a>
+                                <a href="{{ route('doctor.patients.show', $apt->patient->user_id) }}" class="btn-primary-sm" style="text-decoration: none; padding: 6px 12px; font-size: 0.75rem; white-space: nowrap;">Profile</a>
                             </li>
                         @endforeach
                     </ul>

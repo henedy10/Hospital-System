@@ -44,6 +44,9 @@
                         <li class="{{ request()->routeIs('doctor.tasks*') ? 'active' : '' }}"><a
                                 href="{{ route('doctor.tasks.index') }}"><i class="fas fa-clipboard-list"></i>
                                 <span>Nurse Tasks</span></a></li>
+                        <li class="{{ request()->routeIs('doctor.reviews*') ? 'active' : '' }}"><a
+                                href="{{ route('doctor.reviews.index') }}"><i class="fas fa-star"></i>
+                                <span>My Reviews</span></a></li>
                         <li class="{{ request()->routeIs('chat') ? 'active' : '' }}"><a
                                 href="{{ route('chat') }}"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
                         <li class="{{ request()->routeIs('doctor.settings') ? 'active' : '' }}"><a
@@ -79,6 +82,7 @@
                         <li class="{{ request()->routeIs('patient.profile') ? 'active' : '' }}"><a
                                 href="{{ route('patient.profile') }}"><i class="fas fa-user-circle"></i>
                                 <span>My Profile</span></a></li>
+
                     @elseif(Auth::user() && Auth::user()->isAdmin())
                         <li class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"><a
                                 href="{{ route('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i>

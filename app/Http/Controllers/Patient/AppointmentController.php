@@ -23,7 +23,7 @@ class AppointmentController extends Controller
         $appointments = Appointment::whereHas('patient' , function ($q){
             $q->where('user_id',Auth::id());
         })
-            ->with('doctor.user')
+            ->with(['doctor.user', 'feedback'])
             ->where('status', $status)
             ->orderBy('appointment_date', 'asc')
             ->orderBy('appointment_time', 'asc')

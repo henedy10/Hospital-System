@@ -18,7 +18,8 @@ use App\Http\Controllers\Doctor\
     MedicalHistoryController as DoctorMedicalHistoryController,
     ReportController,
     SettingController,
-    TaskController as DoctorTaskController
+    TaskController as DoctorTaskController,
+    FeedbackController as DoctorFeedbackController
 };
 
 use App\Http\Controllers\Nurse\
@@ -35,9 +36,11 @@ use App\Http\Controllers\Patient\
     DashboardController as PatientDashboardController,
     AppointmentController as PatientAppointmentController,
     MedicalHistoryController as PatientMedicalHistoryController,
-    ProfileController as PatientProfileController
+    ProfileController as PatientProfileController,
+    FeedbackController as PatientFeedbackController
 };
 
+use App\Http\Controllers\SymptomCheckController;
 
 use App\Http\Controllers\HomeController;
 
@@ -90,6 +93,10 @@ Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function ()
     Route::get('/tasks/create', [DoctorTaskController::class, 'create'])->name('doctor.tasks.create');
     Route::post('/tasks', [DoctorTaskController::class, 'store'])->name('doctor.tasks.store');
     Route::delete('/tasks/{task}', [DoctorTaskController::class, 'destroy'])->name('doctor.tasks.destroy');
+
+    // Doctor Reviews
+    Route::get('/reviews', [DoctorFeedbackController::class, 'index'])->name('doctor.reviews.index');
+    Route::post('/reviews/{feedback}/reply', [DoctorFeedbackController::class, 'reply'])->name('doctor.reviews.reply');
 });
 
 Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
@@ -118,6 +125,21 @@ Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function 
     Route::post('/profile', [PatientProfileController::class, 'update'])->name('patient.profile.update');
     Route::delete('/profile/image', [PatientProfileController::class, 'removeImage'])->name('patient.profile.image.remove');
     Route::post('/profile/password', [PatientProfileController::class, 'updatePassword'])->name('patient.profile.password');
+
+    // AI Symptom Checker
+    Route::get('/symptoms', [SymptomCheckController::class, 'index'])->name('symptoms.index');
+    Route::post('/symptoms/analyze', [SymptomCheckController::class, 'analyze'])->name('symptoms.analyze');
+    Route::get('/symptoms/result/{id}', [SymptomCheckController::class, 'result'])->name('symptoms.result');
+    Route::get('/symptoms/history', [SymptomCheckController::class, 'history'])->name('symptoms.history');
+
+    // AI Chatbot
+    Route::get('/ai-chat', [\App\Http\Controllers\ChatbotController::class, 'index'])->name('patient.ai-chat');
+    Route::post('/ai-chat/send', [\App\Http\Controllers\ChatbotController::class, 'sendMessage'])->name('patient.ai-chat.send');
+
+    // Doctor Feedback
+    Route::post('/feedback', [PatientFeedbackController::class, 'store'])->name('patient.feedback.store');
+    Route::put('/feedback/{feedback}', [PatientFeedbackController::class, 'update'])->name('patient.feedback.update');
+    Route::delete('/feedback/{feedback}', [PatientFeedbackController::class, 'destroy'])->name('patient.feedback.destroy');
 });
 
 
