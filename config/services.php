@@ -39,4 +39,8 @@ return [
         'api_key' => env('OPENAI_API_KEY'),
     ],
 
+    'ai_engine' => [
+        'url' => env('AI_ENGINE_URL', 'http://localhost:5005'),
+    ],
+
 ];

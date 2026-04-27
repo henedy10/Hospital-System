@@ -38,8 +38,12 @@
                                 {{ $check->created_at->format('M d, Y h:ia') }}
                             </td>
                             <td style="padding: 16px 24px; max-width: 250px;">
-                                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $check->symptoms_text }}">
-                                    "{{ $check->symptoms_text }}"
+                                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    @foreach($check->symptoms_json as $key => $symptom)
+                                        @if($symptom == 1)
+                                            {{ $key . " - " }}
+                                        @endif
+                                    @endforeach
                                 </div>
                             </td>
                             <td style="padding: 16px 24px; font-weight: 600;">
@@ -47,7 +51,7 @@
                             </td>
                             <td style="padding: 16px 24px;">
                                 @php
-                                    $urgency = strtolower($check->urgency_level);
+                                    $urgency = strtolower($check->urgency);
                                     if($urgency === 'high') {
                                         $badgeClass = 'badge-cancelled';
                                     } elseif($urgency === 'medium') {
@@ -57,7 +61,7 @@
                                     }
                                 @endphp
                                 <span class="badge {{ $badgeClass }}">
-                                    {{ strtoupper($urgency) }}
+                                    {{ strtoupper($check->urgency) }}
                                 </span>
                             </td>
                             <td style="padding: 16px 24px; text-align: right; white-space: nowrap;">

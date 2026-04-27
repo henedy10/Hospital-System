@@ -8,61 +8,42 @@ use Exception;
 
 class AISymptomCheckerService
 {
-    /**
-     * Analyze symptoms using OpenAI API
-     *
-     * @param string $symptoms Patient's entered symptoms
-     * @return array Returns structured array with possible_diseases, recommended_specialization, urgency_level, and medical_advice.
-     */
-    public function analyzeSymptoms(string $symptoms): array
+    protected string $apiUrl;
+
+    public function __construct()
     {
-        $prompt = "You are a medical AI assistant.
-                    Analyze patient symptoms and return structured JSON only.
-                    Do not provide a final diagnosis.
-                    Always include:
-                    - possible_diseases (max 3)
-                    - recommended_specialization
-                    - urgency_level (low, medium, high)
-                    - medical_advice (short advice)
+        // Local Flask API URL
+        $this->apiUrl = 'http://127.0.0.1:5005/predict';
+    }
 
-                    Patient Symptoms:
-                    \"$symptoms\" ";
-
+    /**
+     * Analyze symptoms using local Python Flask API
+     *
+     * @param array $symptoms Map of symptoms (e.g. ['fever' => 1, 'cough' => 0])
+     * @return array Predictions from the model
+     */
+    public function analyzeSymptoms(array $symptoms): array
+    {
         try {
-            $response = Http::withToken(config('services.openai.api_key'))
-                ->timeout(30)
-                ->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini', // gpt-4.1-mini isn't valid, but gpt-4o-mini is standard for affordable JSON now.
-                    'response_format' => ['type' => 'json_object'],
-                    'messages' => [
-                        ['role' => 'system', 'content' => $prompt],
-                        ['role' => 'user', 'content' => $symptoms]
-                    ],
-                    'temperature' => 0.1,
-                ]);
+            $response = Http::timeout(10)
+                ->post($this->apiUrl, $symptoms);
 
             if ($response->successful()) {
-                $content = $response->json('choices.0.message.content');
-                if ($content) {
-                    $decoded = json_decode($content, true);
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        return $decoded;
-                    }
-                }
+                return $response->json();
             }
             
-            Log::error('OpenAI API Error or invalid JSON returned', ['response' => $response->body()]);
+            Log::error('AI Flask API Error', ['body' => $response->body()]);
 
         } catch (Exception $e) {
-            Log::error('OpenAI Exception checking symptoms', ['error' => $e->getMessage()]);
+            Log::error('AI Flask Connection Exception', ['error' => $e->getMessage()]);
         }
 
-        // Fallback response if AI fails or returns invalid results
+        // Fallback response if API fails
         return [
-            'possible_diseases' => ['Unable to determine at this time'],
-            'recommended_specialization' => 'General Medicine',
-            'urgency_level' => 'medium',
-            'medical_advice' => 'System could not process symptoms. Please consult a doctor directly.'
+            'predicted_disease' => 'Unknown',
+            'specialization' => 'General Medicine',
+            'urgency' => 'medium',
+            'error' => 'Could not connect to AI service'
         ];
     }
 }

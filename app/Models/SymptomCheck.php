@@ -8,13 +8,14 @@ class SymptomCheck extends Model
 {
     protected $fillable = [
         'patient_id',
-        'symptoms_text',
-        'ai_response',
-        'urgency_level',
+        'symptoms_json',
+        'predicted_disease',
+        'specialization',
+        'urgency',
     ];
 
     protected $casts = [
-        'ai_response' => 'array',
+        'symptoms_json' => 'array',
     ];
 
     public function patient()

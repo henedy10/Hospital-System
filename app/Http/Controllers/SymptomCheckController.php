@@ -30,14 +30,17 @@ class SymptomCheckController extends Controller
             return redirect()->back()->with('error', 'Only registered patients can use the symptom checker.');
         }
 
-        $symptoms = $request->validated()['symptoms'];
-        $aiResponse = $this->aiService->analyzeSymptoms($symptoms);
+        $symptomsData = $request->validated();
+        
+        // Ensure all keys are present even if not checked (the Request takes care of this in prepareForValidation)
+        $aiResponse = $this->aiService->analyzeSymptoms($symptomsData);
 
         $symptomCheck = SymptomCheck::create([
             'patient_id' => $user->patient->id,
-            'symptoms_text' => $symptoms,
-            'ai_response' => $aiResponse,
-            'urgency_level' => $aiResponse['urgency_level'] ?? 'low',
+            'symptoms_json' => $symptomsData,
+            'predicted_disease' => $aiResponse['predicted_disease'] ?? 'Unknown',
+            'specialization' => $aiResponse['specialization'] ?? 'General Medicine',
+            'urgency' => $aiResponse['urgency'] ?? 'medium',
         ]);
 
         return redirect()->route('symptoms.result', $symptomCheck->id);
@@ -51,11 +54,10 @@ class SymptomCheckController extends Controller
             abort(403);
         }
 
-        $specialization = $symptomCheck->ai_response['recommended_specialization'] ?? null;
+        $specialization = $symptomCheck->specialization;
         
         $recommendedDoctors = collect();
-        if ($specialization && $symptomCheck->urgency_level !== 'high') { // Normally high urgency goes straight to emergencies!
-            // Assuming specialization is stored in 'specialty' in Doctor model
+        if ($specialization && $symptomCheck->urgency !== 'high') { 
             $recommendedDoctors = Doctor::with('user')
                 ->where('specialty', 'LIKE', '%' . $specialization . '%')
                 ->take(3)
