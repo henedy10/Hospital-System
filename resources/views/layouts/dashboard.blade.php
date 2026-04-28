@@ -38,7 +38,7 @@
                         <li class="{{ request()->routeIs('doctor.patients') ? 'active' : '' }}"><a
                                 href="{{ route('doctor.patients') }}"><i class="fas fa-user-injured"></i>
                                 <span>Patients</span></a></li>
-                        <li class="{{ request()->routeIs('doctor.reports*') ? 'active' : '' }}"><a
+                        <li class="{{ request()->routeIs('doctor.reports*') || request()->routeIs('doctor.prescriptions*') ? 'active' : '' }}"><a
                                 href="{{ route('doctor.reports') }}"><i class="fas fa-file-medical"></i>
                                 <span>Reports</span></a></li>
                         <li class="{{ request()->routeIs('doctor.tasks*') ? 'active' : '' }}"><a
@@ -47,6 +47,7 @@
                         <li class="{{ request()->routeIs('doctor.reviews*') ? 'active' : '' }}"><a
                                 href="{{ route('doctor.reviews.index') }}"><i class="fas fa-star"></i>
                                 <span>My Reviews</span></a></li>
+
                         <li class="{{ request()->routeIs('chat') ? 'active' : '' }}"><a
                                 href="{{ route('chat') }}"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
                         <li class="{{ request()->routeIs('doctor.settings') ? 'active' : '' }}"><a
@@ -74,7 +75,7 @@
                         <li class="{{ request()->routeIs('patient.appointments') ? 'active' : '' }}"><a
                                 href="{{ route('patient.appointments') }}"><i class="fas fa-calendar-check"></i>
                                 <span>My Appointments</span></a></li>
-                        <li class="{{ request()->routeIs('patient.history') ? 'active' : '' }}"><a
+                        <li class="{{ request()->routeIs('patient.history') || request()->routeIs('patient.prescriptions*') ? 'active' : '' }}"><a
                                 href="{{ route('patient.history') }}"><i class="fas fa-history"></i>
                                 <span>Medical History</span></a></li>
                         <li class="{{ request()->routeIs('chat') ? 'active' : '' }}"><a

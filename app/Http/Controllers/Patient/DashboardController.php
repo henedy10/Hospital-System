@@ -40,7 +40,8 @@ class DashboardController extends Controller
 
             // Recent medical history (for the list)
         $medicalRecordsCount  = MedicalHistory::where('patient_id',$user->patient->id)->count() ;
-        $recentMedicalHistory = MedicalHistory::where('patient_id',$user->patient->id)
+        $recentMedicalHistory = MedicalHistory::with(['prescription', 'doctor.user'])
+                                            ->where('patient_id',$user->patient->id)
                                             ->orderByDesc('diagnosis_date')
                                             ->limit(5)
                                             ->get();

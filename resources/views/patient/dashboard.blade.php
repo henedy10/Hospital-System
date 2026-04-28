@@ -156,6 +156,12 @@
 
                             </div>
 
+                            @if($record->prescription)
+                                <a href="{{ route('patient.prescriptions.explain', $record->prescription->id) }}" title="Analyze Prescription with AI" style="width:36px; height:36px; border-radius:10px; background:rgba(13,148,136,0.05); color:#0d9488; display:flex; align-items:center; justify-content:center; text-decoration:none; border:1px solid rgba(13,148,136,0.2);">
+                                    <i class="fas fa-robot"></i>
+                                </a>
+                            @endif
+
                         </li>
                     @endforeach
                 </ul>

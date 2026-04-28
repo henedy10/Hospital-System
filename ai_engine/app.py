@@ -59,8 +59,9 @@ def predict():
         
         features = [data.get(key, 0) for key in feature_keys]
         
-        # Make prediction
-        prediction = model.predict([features])[0]
+        # Make prediction using DataFrame to avoid feature name warnings
+        features_df = pd.DataFrame([features], columns=feature_keys)
+        prediction = model.predict(features_df)[0]
         
         # Get mapping
         mapping = MAPPING.get(prediction, {"specialization": "General Medicine", "urgency": "medium"}).copy()
@@ -122,5 +123,116 @@ def predict_load():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+
+# --------------------------------------------------------------------------
+# AI Prescription Explainer Endpoint
+# --------------------------------------------------------------------------
+
+# Arabic medicine knowledge base (mirrored from Laravel service)
+MEDICINE_KB = {
+    'paracetamol':   'مسكن للألم وخافض للحرارة يُستخدم لعلاج الألم الخفيف إلى المتوسط والحمى',
+    'acetaminophen': 'مسكن للألم وخافض للحرارة',
+    'ibuprofen':     'مضاد للالتهاب غير ستيرويدي، يُستخدم لتخفيف الألم والالتهاب والحمى',
+    'amoxicillin':   'مضاد حيوي من مجموعة البنسلين لعلاج العدوى البكتيرية',
+    'azithromycin':  'مضاد حيوي من مجموعة الماكروليد لعلاج التهابات الجهاز التنفسي',
+    'omeprazole':    'مثبط لمضخة البروتون يُستخدم لعلاج قرحة المعدة والحموضة',
+    'metformin':     'دواء سكري من النوع الثاني يُساعد على خفض مستوى السكر في الدم',
+    'amlodipine':    'مُوسِّع للأوعية الدموية لعلاج ضغط الدم المرتفع وذبحة صدرية',
+    'atorvastatin':  'دواء لخفض الكوليسترول والوقاية من أمراض القلب',
+    'cetirizine':    'مضاد للهستامين لعلاج الحساسية والحكة والطفح الجلدي',
+}
+
+def get_arabic_medicine_info(medicine_name):
+    key = medicine_name.lower().strip()
+    for kb_key, description in MEDICINE_KB.items():
+        if kb_key in key or key in kb_key:
+            return description
+    return 'دواء موصوف من قِبَل طبيبك — يُرجى استشارة طبيبك أو الصيدلاني لمزيد من التفاصيل'
+
+def arabic_frequency(freq):
+    freq = int(freq)
+    mapping = {1: 'مرة واحدة يومياً', 2: 'مرتين يومياً (كل 12 ساعة)',
+               3: 'ثلاث مرات يومياً (كل 8 ساعات)', 4: 'أربع مرات يومياً (كل 6 ساعات)'}
+    return mapping.get(freq, f'{freq} مرات يومياً')
+
+def arabic_duration(days):
+    days = int(days)
+    if days == 1: return 'ليوم واحد فقط'
+    if days == 7: return 'لمدة أسبوع'
+    if days == 14: return 'لمدة أسبوعين'
+    if days == 30: return 'لمدة شهر'
+    return f'لمدة {days} يوماً'
+
+@app.route('/explain-prescription', methods=['POST'])
+def explain_prescription():
+    try:
+        data         = request.json or {}
+        prescription = data.get('prescription', {})
+        notes        = prescription.get('notes', '')
+        items        = prescription.get('items', [])
+
+        if not items:
+            return jsonify({
+                'summary': 'لا تحتوي هذه الوصفة على أي أدوية.',
+                'items': []
+            })
+
+        explained_items = []
+        medicine_names  = []
+
+        for item in items:
+            name         = item.get('medicine_name', 'دواء غير معروف')
+            dosage       = item.get('dosage', '')
+            frequency    = item.get('frequency', 1)
+            duration     = item.get('duration', 1)
+            instructions = item.get('instructions', '')
+
+            purpose = get_arabic_medicine_info(name)
+            freq_text = arabic_frequency(frequency)
+            dur_text  = arabic_duration(duration)
+
+            lines = [
+                f'💊 {name} — {purpose}',
+                f'📌 الجرعة: {dosage}',
+                f'🕐 {freq_text}',
+                f'📅 {dur_text}',
+            ]
+            if instructions:
+                lines.append(f'📝 تعليمات: {instructions}')
+
+            medicine_names.append(name)
+            explained_items.append({
+                'medicine':     name,
+                'purpose':      purpose,
+                'dosage':       dosage,
+                'frequency':    frequency,
+                'duration':     duration,
+                'instructions': instructions,
+                'explanation':  '\n'.join(lines),
+                'warnings':     [],  # Warnings merged by Laravel
+                'is_unknown':   purpose.startswith('دواء موصوف'),
+                'category':     '',
+            })
+
+        # Build summary
+        count = len(explained_items)
+        med_list = '، '.join(medicine_names)
+        summary = f'تحتوي وصفتك على {count} {"دواء" if count == 1 else "أدوية"}: {med_list}.\n'
+        if notes:
+            summary += f'\nملاحظات الطبيب: {notes}\n'
+        summary += '\nيُرجى الالتزام بالجرعات والمواعيد المحددة، وإخبار طبيبك إذا ظهرت أي أعراض جانبية.'
+
+        return jsonify({'summary': summary, 'items': explained_items})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok', 'service': 'Hospital AI Engine'})
+
+
 if __name__ == '__main__':
     app.run(port=5005)
+

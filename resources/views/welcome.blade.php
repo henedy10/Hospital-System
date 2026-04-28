@@ -31,8 +31,9 @@
 
                 <div class="hidden md:flex items-center gap-8 text-sm font-medium">
                     <a href="#" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Home</a>
-                    <a href="#Services" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Services</a>
-                    <a href="#" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Doctors</a>
+                    <a href="#Services"
+                        class="text-medical-dark/70 hover:text-medical-primary transition-colors">Services</a>
+                    <!-- <a href="#" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Doctors</a> -->
                     <a href="#" class="text-medical-dark/70 hover:text-medical-primary transition-colors">Contact</a>
                 </div>
 
@@ -96,9 +97,11 @@
                         <div class="flex -space-x-4">
                             @foreach($doctors as $doctor)
                                 @if($doctor->profile_image)
-                                    <img src="{{ asset('storage/' . $doctor->profile_image) }}" alt="{{ $doctor->name }}" class="w-12 h-12 rounded-full border-4 border-white object-cover bg-gray-200">
+                                    <img src="{{ asset('storage/' . $doctor->profile_image) }}" alt="{{ $doctor->name }}"
+                                        class="w-12 h-12 rounded-full border-4 border-white object-cover bg-gray-200">
                                 @else
-                                    <div class="w-12 h-12 rounded-full border-4 border-white bg-medical-primary text-white flex items-center justify-center font-bold text-lg">
+                                    <div
+                                        class="w-12 h-12 rounded-full border-4 border-white bg-medical-primary text-white flex items-center justify-center font-bold text-lg">
                                         {{ strtoupper(substr($doctor->name, 0, 1)) }}
                                     </div>
                                 @endif
@@ -172,10 +175,12 @@
                             </svg>
                         </div>
                         <h4 class="text-xl font-bold mb-4 group-hover:text-white transition-colors">
-                            {{ $specialty->specialty }}</h4>
+                            {{ $specialty->specialty }}
+                        </h4>
                         <p class="text-medical-dark/50 group-hover:text-white/70 transition-colors mb-6">World-class
-                            {{ strtolower($specialty->specialty) }} care with advanced diagnostic and treatment options.</p>
-                        <a href="#"
+                            {{ strtolower($specialty->specialty) }} care with advanced diagnostic and treatment options.
+                        </p>
+                        <a href="{{ route('specialty.show', $specialty->specialty) }}"
                             class="text-medical-primary font-bold group-hover:text-white inline-flex items-center gap-2">
                             Learn More
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

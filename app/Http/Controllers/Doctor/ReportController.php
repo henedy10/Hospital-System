@@ -19,7 +19,7 @@ class ReportController extends Controller
     {
         $doctor = Doctor::where('user_id',Auth::id())->first();
 
-        $baseQuery = MedicalHistory::with(['patient.user'])->whereHas('doctor',function ($q) {
+        $baseQuery = MedicalHistory::with(['patient.user', 'prescription.items'])->whereHas('doctor',function ($q) {
             $q->where('user_id',Auth::id());
         });
 
@@ -96,7 +96,7 @@ class ReportController extends Controller
     public function show(Request $request, MedicalHistory $history)
     {
         $role = 'doctor';
-        $history->load(['patient.user', 'user.vitals','doctor.user']);
+        $history->load(['patient.user', 'user.vitals', 'doctor.user', 'prescription.items']);
 
         // $latestVital = $user->vitals()->latest()->first();
 
@@ -146,6 +146,7 @@ class ReportController extends Controller
                 ? preg_split("/\r\n|\n|\r/", $history->treatment)
                 : [],
             'doctor' => $history->doctor,
+            'prescription' => $history->prescription,
         ];
 
         return view('doctor.reports.show', compact('report','role'));

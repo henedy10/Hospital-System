@@ -19,7 +19,8 @@ use App\Http\Controllers\Doctor\
     ReportController,
     SettingController,
     TaskController as DoctorTaskController,
-    FeedbackController as DoctorFeedbackController
+    FeedbackController as DoctorFeedbackController,
+    PrescriptionController as DoctorPrescriptionController
 };
 
 use App\Http\Controllers\Nurse\
@@ -37,7 +38,8 @@ use App\Http\Controllers\Patient\
     AppointmentController as PatientAppointmentController,
     MedicalHistoryController as PatientMedicalHistoryController,
     ProfileController as PatientProfileController,
-    FeedbackController as PatientFeedbackController
+    FeedbackController as PatientFeedbackController,
+    PrescriptionController as PatientPrescriptionController
 };
 
 use App\Http\Controllers\SymptomCheckController;
@@ -45,6 +47,7 @@ use App\Http\Controllers\SymptomCheckController;
 use App\Http\Controllers\HomeController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/specialty/{specialty}', [HomeController::class, 'showSpecialty'])->name('specialty.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -97,6 +100,13 @@ Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function ()
     // Doctor Reviews
     Route::get('/reviews', [DoctorFeedbackController::class, 'index'])->name('doctor.reviews.index');
     Route::post('/reviews/{feedback}/reply', [DoctorFeedbackController::class, 'reply'])->name('doctor.reviews.reply');
+
+    // Prescriptions
+    Route::get('/prescriptions', [DoctorPrescriptionController::class, 'index'])->name('doctor.prescriptions.index');
+    Route::get('/prescriptions/create', [DoctorPrescriptionController::class, 'create'])->name('doctor.prescriptions.create');
+    Route::post('/prescriptions', [DoctorPrescriptionController::class, 'store'])->name('doctor.prescriptions.store');
+    Route::get('/prescriptions/{prescription}', [DoctorPrescriptionController::class, 'show'])->name('doctor.prescriptions.show');
+    Route::delete('/prescriptions/{prescription}', [DoctorPrescriptionController::class, 'destroy'])->name('doctor.prescriptions.destroy');
 });
 
 Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
@@ -140,6 +150,11 @@ Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function 
     Route::post('/feedback', [PatientFeedbackController::class, 'store'])->name('patient.feedback.store');
     Route::put('/feedback/{feedback}', [PatientFeedbackController::class, 'update'])->name('patient.feedback.update');
     Route::delete('/feedback/{feedback}', [PatientFeedbackController::class, 'destroy'])->name('patient.feedback.destroy');
+
+    // Prescriptions
+    Route::get('/prescriptions', [PatientPrescriptionController::class, 'index'])->name('patient.prescriptions.index');
+    Route::get('/prescriptions/{prescription}', [PatientPrescriptionController::class, 'show'])->name('patient.prescriptions.show');
+    Route::get('/prescriptions/{prescription}/explain', [PatientPrescriptionController::class, 'explain'])->name('patient.prescriptions.explain');
 });
 
 

@@ -28,6 +28,11 @@ class Doctor extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    public function prescriptions()
+    {
+        return $this->hasMany(Prescription::class);
+    }
+
     /**
      * Average star rating (null if no reviews yet).
      */

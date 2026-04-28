@@ -44,7 +44,12 @@
                                     <i class="fas fa-calendar-day"></i>
                                     {{ $record->diagnosis_date ? \Carbon\Carbon::parse($record->diagnosis_date)->format('F d, Y') : $record->created_at->format('F d, Y') }}
                                 </div>
-                                <div class="action-buttons">
+                                <div class="action-buttons" style="display:flex; gap:8px;">
+                                    @if($record->prescription)
+                                        <a href="{{ route('patient.prescriptions.explain', $record->prescription->id) }}" class="btn-icon-glass" title="Analyze Prescription with AI" style="color:#0d9488; border-color:rgba(13,148,136,0.3);">
+                                            <i class="fas fa-robot"></i>
+                                        </a>
+                                    @endif
                                     <a href="{{ route('patient.history.show', $record->id) }}" class="btn-icon-glass" title="View Full Report">
                                         <i class="fas fa-expand-alt"></i>
                                     </a>

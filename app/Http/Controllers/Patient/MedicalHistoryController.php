@@ -14,7 +14,7 @@ class MedicalHistoryController extends Controller
     {
         $patient = Patient::with('user')->where('user_id' , Auth::id())->first();
 
-        $history = MedicalHistory::with(['patient.user','doctor.user'])
+        $history = MedicalHistory::with(['patient.user','doctor.user', 'prescription'])
             ->where('patient_id',$patient->id)
             ->orderBy('diagnosis_date', 'desc')
             ->get();
@@ -25,7 +25,7 @@ class MedicalHistoryController extends Controller
 
     public function show(Request $request, MedicalHistory $history)
     {
-            $history->load(['patient.user', 'user.vitals','doctor.user']);
+            $history->load(['patient.user', 'user.vitals', 'doctor.user', 'prescription.items']);
 
         // $latestVital = $user->vitals()->latest()->first();
 
@@ -75,6 +75,7 @@ class MedicalHistoryController extends Controller
                 ? preg_split("/\r\n|\n|\r/", $history->treatment)
                 : [],
             'doctor' => $history->doctor,
+            'prescription' => $history->prescription,
         ];
 
         return view('doctor.reports.show', compact('report','role'));

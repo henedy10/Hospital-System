@@ -25,4 +25,17 @@ class HomeController extends Controller
 
         return view('welcome', compact('totalDoctors', 'totalPatients', 'specialties', 'doctors'));
     }
+
+    public function showSpecialty($specialty)
+    {
+        $doctors = Doctor::with(['user', 'feedback.patient.user'])->where('specialty', $specialty)->get();
+        $otherSpecialties = Doctor::select('specialty')
+            ->whereNotNull('specialty')
+            ->where('specialty', '!=', $specialty)
+            ->distinct()
+            ->take(4)
+            ->get();
+
+        return view('specialty', compact('specialty', 'doctors', 'otherSpecialties'));
+    }
 }
