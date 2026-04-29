@@ -42,6 +42,7 @@ use App\Http\Controllers\Patient\
     PrescriptionController as PatientPrescriptionController
 };
 
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\SymptomCheckController;
 
 use App\Http\Controllers\HomeController;
@@ -143,8 +144,8 @@ Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function 
     Route::get('/symptoms/history', [SymptomCheckController::class, 'history'])->name('symptoms.history');
 
     // AI Chatbot
-    Route::get('/ai-chat', [\App\Http\Controllers\ChatbotController::class, 'index'])->name('patient.ai-chat');
-    Route::post('/ai-chat/send', [\App\Http\Controllers\ChatbotController::class, 'sendMessage'])->name('patient.ai-chat.send');
+    Route::get('/ai-chat', [ChatbotController::class, 'index'])->name('patient.ai-chat');
+    Route::post('/ai-chat/send', [ChatbotController::class, 'sendMessage'])->name('patient.ai-chat.send');
 
     // Doctor Feedback
     Route::post('/feedback', [PatientFeedbackController::class, 'store'])->name('patient.feedback.store');

@@ -31,41 +31,46 @@ Rules:
         // Fetch last 5 messages for context
         $history = ChatMessage::where('user_id', $userId)
             ->orderBy('id', 'desc')
-            ->take(5)
             ->get()
             ->reverse();
 
-        $messages = [
-            ['role' => 'system', 'content' => $systemPrompt]
-        ];
+        $messages = [];
 
         foreach ($history as $chat) {
-            $messages[] = ['role' => 'user', 'content' => $chat->message];
-            $messages[] = ['role' => 'assistant', 'content' => $chat->response];
+            $messages[] = [
+                'role' => 'user',
+                'parts' => [['text' => $chat->message]]
+            ];
+            $messages[] = [
+                'role' => 'model',
+                'parts' => [['text' => $chat->response]]
+            ];
         }
 
-        $messages[] = ['role' => 'user', 'content' => $message];
+        $messages[] = [
+            'role' => 'user',
+            'parts' => [['text' => $message]]
+        ];
 
         try {
-            $response = Http::withToken(config('services.openai.api_key'))
-                ->timeout(30)
-                ->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini',
-                    'messages' => $messages,
-                    'temperature' => 0.5,
-                ]);
+            $response = Http::timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . env('GEMINI_API_KEY'), [
+                'contents' => $messages,
+                'system_instruction' => [
+                    'parts' => [['text' => $systemPrompt]]
+                ]
+            ]);
 
             if ($response->successful()) {
-                $content = $response->json('choices.0.message.content');
+                $content = $response->json('candidates.0.content.parts.0.text');
                 if ($content) {
                     return trim($content);
                 }
             }
 
-            Log::error('OpenAI Chat Error: ', ['body' => $response->body()]);
+            Log::error('Chat Error: ', ['body' => $response->body()]);
 
         } catch (Exception $e) {
-            Log::error('OpenAI Chat Exception: ', ['error' => $e->getMessage()]);
+            Log::error('Chat Exception: ', ['error' => $e->getMessage()]);
         }
 
         return "I'm sorry, I'm having trouble connecting to my medical database right now. Please consult a doctor for immediate advice.";

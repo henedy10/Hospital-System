@@ -25,13 +25,10 @@
             </div>
             <div>
                 <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main); line-height: 1.2;">Dr. AI</h3>
-                <span style="font-size: 0.75rem; color: #10B981; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                    <span style="width: 8px; height: 8px; background: #10B981; border-radius: 50%; display: inline-block;"></span> Online
-                </span>
             </div>
         </div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); background: #f1f5f9; padding: 4px 10px; border-radius: 12px; font-weight: 500;">
-            This is an AI. Not for medical emergencies.
+        <div style="font-size: 0.8rem; color: #d11212ff; background: #f9f1f1ff; padding: 4px 10px; border-radius: 12px; font-weight: 500;">
+            This is an AI assistant. Not to replace a professional medical advice.
         </div>
     </div>
 
@@ -80,7 +77,7 @@
 
     <!-- Chat Input Form -->
     <div style="padding: 16px 24px; background: white; border-top: 1px solid #e2e8f0;">
-        <form id="aiChatForm" style="display: flex; gap: 12px;">
+        <form action="{{ route('patient.ai-chat.send') }}" method="POST" id="aiChatForm" style="display: flex; gap: 12px;">
             @csrf
             <input type="text" id="messageInput" name="message" class="form-control" autocomplete="off" placeholder="Type your medical question here..." required style="flex: 1; border-radius: 20px; background: #f8fafc; padding: 12px 24px;">
             <button type="submit" id="sendBtn" class="btn-primary" style="border-radius: 50%; width: 48px; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
