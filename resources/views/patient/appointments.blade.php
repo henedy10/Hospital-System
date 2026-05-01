@@ -156,49 +156,51 @@
 
     <!-- Booking Modal -->
     <div id="bookModal" class="modal-overlay">
-        <div class="modal-container glass-modal">
-            <div class="modal-header">
-                <div class="header-icon head-book">
-                    <i class="fas fa-calendar-plus"></i>
-                </div>
+        <div class="glass-modal">
+            <div class="modal-header-premium">
                 <div class="header-text">
                     <h2>Book Appointment</h2>
-                    <p>Select your doctor and preferred time.</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Choose your specialist and preferred time.</p>
                 </div>
-                <button class="close-modal" onclick="closeModal('bookModal')">&times;</button>
+                <button class="btn-close-modal" onclick="closeModal('bookModal')">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <form action="{{ route('patient.appointments.store') }}" method="POST" class="premium-form">
+            <form action="{{ route('patient.appointments.store') }}" method="POST" class="premium-form" style="padding: 30px;">
                 @csrf
                 <div class="form-grid">
-                    <div class="input-group full-width">
-                        <label><i class="fas fa-user-md"></i> Choose Specialist</label>
-                        <select name="doctor_id" class="premium-select" required>
+                    <div class="input-group full-width" style="margin-bottom: 20px;">
+                        <label class="form-label-premium"><i class="fas fa-user-md"></i> Choose Specialist</label>
+                        <select name="doctor_id" id="book_doctor_id" class="form-control" required onchange="fetchAvailableSlots('book')">
                             <option value="" disabled selected>Select a Doctor</option>
                             @foreach($doctors as $doctor)
                                 <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }} - {{ $doctor->specialty ?? 'General' }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-calendar-alt"></i> Preferred Date</label>
-                        <input type="date" name="appointment_date" class="premium-input" required min="{{ date('Y-m-d') }}">
+                    <div class="input-group" style="margin-bottom: 20px;">
+                        <label class="form-label-premium"><i class="fas fa-calendar-alt"></i> Preferred Date</label>
+                        <input type="date" name="appointment_date" id="book_appointment_date" class="form-control" required min="{{ date('Y-m-d') }}" onchange="fetchAvailableSlots('book')">
                     </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-clock"></i> Preferred Time</label>
-                        <select name="appointment_time" class="premium-select" required>
-                            <option value="" disabled selected>Select Time</option>
-                            @for($i = 9; $i <= 17; $i++)
-                                <option value="{{ sprintf('%02d:00', $i) }}">{{ date('h:i A', strtotime($i . ':00')) }}</option>
-                                <option value="{{ sprintf('%02d:30', $i) }}">{{ date('h:i A', strtotime($i . ':30')) }}</option>
-                            @endfor
-                        </select>
+                    
+                    <div class="input-group full-width" style="margin-bottom: 20px;">
+                        <label class="form-label-premium"><i class="fas fa-clock"></i> Available Slots</label>
+                        <div class="time-slots-container" id="book_slots_container">
+                            <div class="time-slots-grid" id="book_appointment_time_grid">
+                                <div style="grid-column: span 3; text-align: center; padding: 20px; color: var(--text-muted);">
+                                    Please select a doctor and date first.
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="appointment_time" id="book_appointment_time" required>
                     </div>
+
                     <div class="input-group full-width">
-                        <label><i class="fas fa-comment-medical"></i> Reason for Visit</label>
-                        <textarea name="reason" class="premium-input" rows="3" required placeholder="Describe your symptoms or reason for the visit..."></textarea>
+                        <label class="form-label-premium"><i class="fas fa-comment-medical"></i> Reason for Visit</label>
+                        <textarea name="reason" class="form-control" rows="3" required placeholder="Describe your symptoms..."></textarea>
                     </div>
                 </div>
-                <div class="modal-actions">
+                <div class="modal-actions" style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
                     <button type="button" class="btn-secondary" onclick="closeModal('bookModal')">Cancel</button>
                     <button type="submit" class="btn-premium">Confirm Booking</button>
                 </div>
@@ -208,48 +210,49 @@
 
     <!-- Edit Modal -->
     <div id="editModal" class="modal-overlay">
-        <div class="modal-container glass-modal">
-            <div class="modal-header">
-                <div class="header-icon head-edit">
-                    <i class="fas fa-edit"></i>
-                </div>
+        <div class="glass-modal">
+            <div class="modal-header-premium">
                 <div class="header-text">
-                    <h2>Reschedule</h2>
-                    <p>Adjust your appointment details below.</p>
+                    <h2>Reschedule Appointment</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Adjust your visit details below.</p>
                 </div>
-                <button class="close-modal" onclick="closeModal('editModal')">&times;</button>
+                <button class="btn-close-modal" onclick="closeModal('editModal')">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <form id="editForm" method="POST" class="premium-form">
+            <form id="editForm" method="POST" class="premium-form" style="padding: 30px;">
                 @csrf
                 @method('PUT')
                 <div class="form-grid">
-                    <div class="input-group full-width">
-                        <label><i class="fas fa-user-md"></i> Specialist</label>
-                        <select name="doctor_id" id="edit_doctor_id" class="premium-select" required>
+                    <div class="input-group full-width" style="margin-bottom: 20px;">
+                        <label class="form-label-premium"><i class="fas fa-user-md"></i> Specialist</label>
+                        <select name="doctor_id" id="edit_doctor_id" class="form-control" required onchange="fetchAvailableSlots('edit')">
                             @foreach($doctors as $doctor)
                                 <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }} - {{ $doctor->specialty ?? 'General' }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-calendar-alt"></i> New Date</label>
-                        <input type="date" name="appointment_date" id="edit_appointment_date" class="premium-input" required min="{{ date('Y-m-d') }}">
+                    <div class="input-group" style="margin-bottom: 20px;">
+                        <label class="form-label-premium"><i class="fas fa-calendar-alt"></i> New Date</label>
+                        <input type="date" name="appointment_date" id="edit_appointment_date" class="form-control" required min="{{ date('Y-m-d') }}" onchange="fetchAvailableSlots('edit')">
                     </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-clock"></i> New Time</label>
-                        <select name="appointment_time" id="edit_appointment_time" class="premium-select" required>
-                            @for($i = 9; $i <= 17; $i++)
-                                <option value="{{ sprintf('%02d:00', $i) }}">{{ date('h:i A', strtotime($i . ':00')) }}</option>
-                                <option value="{{ sprintf('%02d:30', $i) }}">{{ date('h:i A', strtotime($i . ':30')) }}</option>
-                            @endfor
-                        </select>
+                    
+                    <div class="input-group full-width" style="margin-bottom: 20px;">
+                        <label class="form-label-premium"><i class="fas fa-clock"></i> Available Slots</label>
+                        <div class="time-slots-container" id="edit_slots_container">
+                            <div class="time-slots-grid" id="edit_appointment_time_grid">
+                                {{-- Will be populated by JS --}}
+                            </div>
+                        </div>
+                        <input type="hidden" name="appointment_time" id="edit_appointment_time" required>
                     </div>
+
                     <div class="input-group full-width">
-                        <label><i class="fas fa-comment-medical"></i> Reason</label>
-                        <textarea name="reason" id="edit_reason" class="premium-input" rows="3" required></textarea>
+                        <label class="form-label-premium"><i class="fas fa-comment-medical"></i> Reason</label>
+                        <textarea name="reason" id="edit_reason" class="form-control" rows="3" required></textarea>
                     </div>
                 </div>
-                <div class="modal-actions">
+                <div class="modal-actions" style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
                     <button type="button" class="btn-secondary" onclick="closeModal('editModal')">Cancel</button>
                     <button type="submit" class="btn-premium">Update Appointment</button>
                 </div>
@@ -879,6 +882,9 @@
             const modal = document.getElementById(modalId);
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+            if (modalId === 'bookModal') {
+                document.getElementById('book_appointment_time').innerHTML = '<option value="" disabled selected>Select Time</option>';
+            }
         }
 
         function closeModal(modalId) {
@@ -887,18 +893,35 @@
             document.body.style.overflow = 'auto';
         }
 
-        function openEditModal(appointment) {
+        async function openEditModal(appointment) {
             const form = document.getElementById('editForm');
             form.action = `/patient/appointments/${appointment.id}`;
 
             document.getElementById('edit_doctor_id').value = appointment.doctor_id;
             document.getElementById('edit_appointment_date').value = appointment.appointment_date;
-
-            // Format time to HH:MM for select
-            const time = appointment.appointment_time.substring(0, 5);
-            document.getElementById('edit_appointment_time').value = time;
-
             document.getElementById('edit_reason').value = appointment.reason;
+
+            // Fetch available slots and THEN set the current time
+            await fetchAvailableSlots('edit');
+            
+            // Add the current appointment time as an option if it's not already there
+            const time = appointment.appointment_time.substring(0, 5);
+            const timeSelect = document.getElementById('edit_appointment_time');
+            let exists = false;
+            for (let i = 0; i < timeSelect.options.length; i++) {
+                if (timeSelect.options[i].value === time) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                const formattedTime = new Date(`2000-01-01T${time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const option = document.createElement('option');
+                option.value = time;
+                option.textContent = formattedTime + ' (Current)';
+                timeSelect.appendChild(option);
+            }
+            timeSelect.value = time;
 
             openModal('editModal');
         }
@@ -949,6 +972,50 @@
                 btn.classList.toggle('selected', !isHover && v <= rating);
                 btn.classList.toggle('hovered',   isHover && v <= rating);
             });
+        }
+
+        async function fetchAvailableSlots(prefix) {
+            const doctorId = document.getElementById(prefix + '_doctor_id').value;
+            const date = document.getElementById(prefix + '_appointment_date').value;
+            const grid = document.getElementById(prefix + '_appointment_time_grid');
+            const hiddenInput = document.getElementById(prefix + '_appointment_time');
+
+            if (!doctorId || !date) return;
+
+            grid.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading slots...</div>';
+
+            try {
+                const response = await fetch(`{{ route('patient.appointments.available-slots') }}?doctor_id=${doctorId}&date=${date}`);
+                const slots = await response.json();
+
+                grid.innerHTML = '';
+                if (slots.length === 0) {
+                    grid.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 20px; color: #ef4444;"><i class="fas fa-exclamation-circle"></i> No slots available for this date.</div>';
+                } else {
+                    slots.forEach(time => {
+                        const formattedTime = new Date(`2000-01-01T${time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const label = document.createElement('label');
+                        label.className = 'time-slot-pill';
+                        label.innerHTML = `
+                            <input type="radio" name="${prefix}_slot_radio" value="${time}" onchange="selectSlot('${prefix}', '${time}', this)">
+                            <i class="fas fa-clock"></i> ${formattedTime}
+                        `;
+                        grid.appendChild(label);
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching slots:', error);
+                grid.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 20px; color: #ef4444;">Error loading slots.</div>';
+            }
+        }
+
+        function selectSlot(prefix, time, input) {
+            document.getElementById(prefix + '_appointment_time').value = time;
+            
+            const grid = document.getElementById(prefix + '_appointment_time_grid');
+            grid.querySelectorAll('.time-slot-pill').forEach(pill => pill.classList.remove('selected'));
+            
+            input.parentElement.classList.add('selected');
         }
 
         window.onclick = function (event) {

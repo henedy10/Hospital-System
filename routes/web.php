@@ -77,6 +77,7 @@ Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function ()
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('doctor.dashboard');
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('doctor.appointments');
     Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('doctor.appointments.update-status');
+    Route::post('/appointments/available', [AppointmentController::class, 'storeAvailableSlots'])->name('doctor.appointments.store-available');
     Route::get('/patients', [PatientController::class, 'index'])->name('doctor.patients');
     Route::get('/patients/{id}', [PatientController::class, 'show'])->name('doctor.patients.show');
 
@@ -130,6 +131,7 @@ Route::middleware(['auth', 'role:patient'])->prefix('/patient')->group(function 
     Route::post('/appointments', [PatientAppointmentController::class, 'store'])->name('patient.appointments.store');
     Route::put('/appointments/{appointment}', [PatientAppointmentController::class, 'update'])->name('patient.appointments.update');
     Route::post('/appointments/{appointment}/cancel', [PatientAppointmentController::class, 'cancel'])->name('patient.appointments.cancel');
+    Route::get('/appointments/available-slots', [PatientAppointmentController::class, 'getAvailableSlots'])->name('patient.appointments.available-slots');
     Route::get('/history', [PatientMedicalHistoryController::class, 'index'])->name('patient.history');
     Route::get('/history/{history}', [PatientMedicalHistoryController::class, 'show'])->name('patient.history.show');
     Route::get('/profile', [PatientProfileController::class, 'index'])->name('patient.profile');

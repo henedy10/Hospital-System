@@ -1107,3 +1107,173 @@ input:checked+.slider:before {
         opacity: 1;
     }
 }
+
+/* Enhanced Appointment & Availability UI */
+.appointment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+}
+
+.btn-premium {
+    background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%);
+    color: white !important;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(13, 148, 136, 0.4);
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.glass-modal {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 28px;
+    width: 100%;
+    max-width: 550px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-header-premium {
+    padding: 24px 30px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to right, #f8fafc, #ffffff);
+}
+
+.modal-header-premium h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--text-main) 0%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+
+.time-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.time-slot-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f8fafc;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    color: var(--text-muted);
+}
+
+.time-slot-pill:hover {
+    background: #f1f5f9;
+    color: var(--text-main);
+}
+
+.time-slot-pill input[type="checkbox"],
+.time-slot-pill input[type="radio"] {
+    display: none;
+}
+
+.time-slot-pill.selected {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.time-slot-pill.selected i {
+    color: var(--primary);
+}
+
+.form-label-premium {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-label-premium i {
+    color: var(--primary);
+}
+
+.btn-close-modal {
+    background: #f1f5f9;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.btn-close-modal:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    transform: rotate(90deg);
+}
+
+.time-slots-container {
+    padding: 10px;
+    background: #fcfdfd;
+    border-radius: 20px;
+    border: 1px solid #f1f5f9;
+}

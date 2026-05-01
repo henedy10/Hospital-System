@@ -40,11 +40,19 @@ class AppointmentController extends Controller
         $doctor = Doctor::with('user')->findOrFail($request->doctor_id);
         $patient = Patient::where('user_id',Auth::id())->first();
 
-        $appointment = Appointment::create([
-            'doctor_id' => $doctor->id,
+        // Find an available slot
+        $appointment = Appointment::where('doctor_id', $doctor->id)
+            ->where('appointment_date', $request->appointment_date)
+            ->where('appointment_time', $request->appointment_time)
+            ->where('status', 'available')
+            ->first();
+
+        if (!$appointment) {
+            return redirect()->back()->with('error', 'This slot is no longer available.');
+        }
+
+        $appointment->update([
             'patient_id' => $patient->id,
-            'appointment_date' => $request->appointment_date,
-            'appointment_time' => $request->appointment_time,
             'reason' => $request->reason,
             'status' => 'upcoming',
         ]);
@@ -57,11 +65,17 @@ class AppointmentController extends Controller
     public function cancel(Appointment $appointment)
     {
         $patient = Patient::with('user')->where('user_id',Auth::id())->first();
-        if ($patient->user->id !== Auth::id()) {
+        if ($appointment->patient_id !== $patient->id) {
             abort(403);
         }
 
-        $appointment->update(['status' => 'cancelled']);
+        // Instead of marking as 'cancelled', we make it 'available' again for other patients
+        // as per requirements: "show this appointment if cancelled"
+        $appointment->update([
+            'status' => 'available',
+            'patient_id' => null,
+            'reason' => null
+        ]);
         
         if ($appointment->doctor && $appointment->doctor->user) {
             $appointment->doctor->user->notify(new \App\Notifications\AppointmentCancelled($appointment));
@@ -72,20 +86,58 @@ class AppointmentController extends Controller
 
     public function update(AppointmentRequest $request, Appointment $appointment)
     {
-        $patient = Patient::with('user')->where('user_id',Auth::id())->first();
-        if ($patient->user->id !== Auth::id()) {
+        $patient = Patient::where('user_id',Auth::id())->first();
+        if ($appointment->patient_id !== $patient->id) {
             abort(403);
         }
 
-        $doctor = Doctor::findOrFail($request->doctor_id);
+        // If date or time changed, we need to swap slots
+        if ($appointment->appointment_date != $request->appointment_date || $appointment->appointment_time != $request->appointment_time) {
+            $newSlot = Appointment::where('doctor_id', $request->doctor_id)
+                ->where('appointment_date', $request->appointment_date)
+                ->where('appointment_time', $request->appointment_time)
+                ->where('status', 'available')
+                ->first();
 
-        $appointment->update([
-            'doctor_id' => $doctor->id,
-            'appointment_date' => $request->appointment_date,
-            'appointment_time' => $request->appointment_time,
-            'reason' => $request->reason,
-        ]);
+            if (!$newSlot) {
+                return redirect()->back()->with('error', 'The new slot is not available.');
+            }
+
+            // Make old slot available
+            $appointment->update([
+                'status' => 'available',
+                'patient_id' => null,
+                'reason' => null
+            ]);
+
+            // Take new slot
+            $newSlot->update([
+                'patient_id' => $patient->id,
+                'reason' => $request->reason,
+                'status' => 'upcoming'
+            ]);
+        } else {
+            // Only update reason or doctor if time/date is same (though doctor change usually implies new slot)
+            $appointment->update([
+                'reason' => $request->reason,
+                'doctor_id' => $request->doctor_id
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Appointment updated successfully.');
+    }
+    public function getAvailableSlots(Request $request)
+    {
+        $request->validate([
+            'doctor_id' => 'required|exists:doctors,id',
+            'date' => 'required|date'
+        ]);
+
+        $slots = Appointment::where('doctor_id', $request->doctor_id)
+            ->whereDate('appointment_date', $request->date)
+            ->where('status', 'available')
+            ->pluck('appointment_time');
+
+        return response()->json($slots);
     }
 }

@@ -11,6 +11,10 @@
             <p style="color: var(--text-muted); font-size: 0.95rem;">Manage your appointments and daily review sessions
                 effectively.</p>
         </div>
+        <button class="btn-premium" onclick="openModal('availabilityModal')">
+            <i class="fas fa-calendar-plus"></i>
+            Manage Availability
+        </button>
     </div>
 
     <div class="glass-card">
@@ -22,7 +26,8 @@
                     value="{{ request('search') }}">
             </div>
             <select name="status" class="select-control" onchange="this.form.submit()">
-                <option value="">All Statuses</option>
+                <option value="">Booked Appointments</option>
+                <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available Slots</option>
                 <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
                 <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                 <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
@@ -55,9 +60,16 @@
                         <tr style="border-bottom: 1px solid #eef2f6; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
                             <td style="padding: 16px 20px;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
-                                    <img src="{{ $appointment->patient->user->profile_image ? asset('storage/' . $appointment->patient->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($appointment->patient->user->name) . '&background=0D9488&color=fff' }}"
-                                        alt="Patient" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                                    <span style="font-weight: 700; color: var(--text-main);">{{ $appointment->patient->user->name }}</span>
+                                    @if($appointment->patient)
+                                        <img src="{{ $appointment->patient->user->profile_image ? asset('storage/' . $appointment->patient->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($appointment->patient->user->name) . '&background=0D9488&color=fff' }}"
+                                            alt="Patient" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                        <span style="font-weight: 700; color: var(--text-main);">{{ $appointment->patient->user->name }}</span>
+                                    @else
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                                            <i class="fas fa-user-slash"></i>
+                                        </div>
+                                        <span style="font-weight: 600; color: #94a3b8; font-style: italic;">No Patient</span>
+                                    @endif
                                 </div>
                             </td>
                             <td style="padding: 16px 20px; font-weight: 600; color: var(--text-main);">
@@ -70,7 +82,11 @@
                                 {{ $appointment->reason }}
                             </td>
                             <td style="padding: 16px 20px;">
-                                @if($appointment->status == 'upcoming')
+                                @if($appointment->status == 'available')
+                                    <span style="background: #E0F2FE; color: #0284C7; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid #BAE6FD; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-check-circle"></i> Available
+                                    </span>
+                                @elseif($appointment->status == 'upcoming')
                                     <span style="background: #FEF3C7; color: #D97706; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid #FDE68A; display: inline-flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-clock"></i> Upcoming
                                     </span>
@@ -130,4 +146,88 @@
             {{ $appointments->links() }}
         </div>
     </div>
+    <!-- Availability Modal -->
+    <div id="availabilityModal" class="modal-overlay">
+        <div class="glass-modal">
+            <div class="modal-header-premium">
+                <div>
+                    <h2>Define Available Slots</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Set your schedule for patient bookings.</p>
+                </div>
+                <button class="btn-close-modal" onclick="closeModal('availabilityModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form action="{{ route('doctor.appointments.store-available') }}" method="POST" style="padding: 30px;">
+                @csrf
+                <div style="margin-bottom: 24px;">
+                    <label class="form-label-premium">
+                        <i class="fas fa-calendar-day"></i> Select Date
+                    </label>
+                    <input type="date" name="appointment_date" class="form-control" required min="{{ date('Y-m-d') }}">
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <label class="form-label-premium">
+                        <i class="fas fa-clock"></i> Select Time Slots
+                    </label>
+                    <div class="time-slots-container">
+                        <div class="time-slots-grid">
+                            @for($i = 9; $i <= 17; $i++)
+                                @php 
+                                    $time1 = sprintf('%02d:00', $i);
+                                    $time2 = sprintf('%02d:30', $i);
+                                @endphp
+                                <label class="time-slot-pill" onclick="togglePill(this)">
+                                    <input type="checkbox" name="appointment_times[]" value="{{ $time1 }}">
+                                    <i class="fas fa-plus"></i> {{ date('h:i A', strtotime($time1)) }}
+                                </label>
+                                <label class="time-slot-pill" onclick="togglePill(this)">
+                                    <input type="checkbox" name="appointment_times[]" value="{{ $time2 }}">
+                                    <i class="fas fa-plus"></i> {{ date('h:i A', strtotime($time2)) }}
+                                </label>
+                            @endfor
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 10px;">
+                    <button type="button" class="btn-secondary" onclick="closeModal('availabilityModal')">Cancel</button>
+                    <button type="submit" class="btn-premium">
+                        <i class="fas fa-save"></i> Create Slots
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        function togglePill(label) {
+            const checkbox = label.querySelector('input');
+            const icon = label.querySelector('i');
+            
+            // Note: click on label fires twice (once for label, once for input)
+            // But if input is display:none, it might be different.
+            // Let's rely on the checkbox state.
+            setTimeout(() => {
+                if (checkbox.checked) {
+                    label.classList.add('selected');
+                    icon.className = 'fas fa-check';
+                } else {
+                    label.classList.remove('selected');
+                    icon.className = 'fas fa-plus';
+                }
+            }, 10);
+        }
+    </script>
 @endsection
