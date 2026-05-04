@@ -14,7 +14,7 @@
         <div style="flex:1;">
             <h1 style="font-size:1.5rem; font-weight:700; color:#0f172a; margin:0;">وصفة طبية #{{ $prescription->id }}</h1>
             <p style="color:#64748b; margin:3px 0 0 0; font-size:.88rem;">
-                د. {{ $prescription->doctor->user->name ?? 'N/A' }} &nbsp;·&nbsp; {{ $prescription->created_at->format('d M Y') }}
+                Dr. {{ $prescription->doctor->user->name ?? 'N/A' }} &nbsp;·&nbsp; {{ $prescription->created_at->format('d M Y') }}
             </p>
         </div>
         <a href="{{ route('patient.prescriptions.explain', $prescription) }}"

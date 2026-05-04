@@ -37,17 +37,21 @@
                                 <i class="far fa-clock" style="margin-right: 6px;"></i>
                                 {{ $check->created_at->format('M d, Y h:ia') }}
                             </td>
-                            <td style="padding: 16px 24px; max-width: 250px;">
-                                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                    @foreach($check->symptoms_json as $key => $symptom)
-                                        @if($symptom == 1)
-                                            {{ $key . " - " }}
-                                        @endif
-                                    @endforeach
+                            <td style="padding: 16px 24px; max-width: 300px;">
+                                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); font-weight: 500;">
+                                    @if(isset($check->symptoms_json['text']))
+                                        {{ $check->symptoms_json['text'] }}
+                                    @else
+                                        @foreach($check->symptoms_json as $key => $symptom)
+                                            @if($symptom == 1)
+                                                {{ ucwords(str_replace('_', ' ', $key)) }}{{ !$loop->last ? ', ' : '' }}
+                                            @endif
+                                        @endforeach
+                                    @endif
                                 </div>
                             </td>
-                            <td style="padding: 16px 24px; font-weight: 600;">
-                                {{ $check->ai_response['recommended_specialization'] ?? 'N/A' }}
+                            <td style="padding: 16px 24px; font-weight: 600; color: var(--primary);">
+                                {{ $check->specialization ?? 'General Medicine' }}
                             </td>
                             <td style="padding: 16px 24px;">
                                 @php

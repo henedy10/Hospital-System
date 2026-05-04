@@ -77,12 +77,27 @@
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;">
+        <!-- Original Description -->
+        @if(isset($symptomCheck->symptoms_json['text']))
+        <div style="grid-column: 1 / -1; background: #f8fafc; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
+            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-quote-left" style="color: var(--primary);"></i> Your Description
+            </h4>
+            <p style="font-style: italic; color: var(--text-main); line-height: 1.6; font-size: 1.05rem;">
+                "{{ $symptomCheck->symptoms_json['text'] }}"
+            </p>
+        </div>
+        @endif
+
         <!-- Symptom Analysis -->
         <div>
-            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Symptoms Processed</h4>
+            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Extracted Symptom Patterns</h4>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                @foreach($symptomCheck->symptoms_json as $key => $value)
-                    @if($value)
+                @php
+                    $features = isset($symptomCheck->symptoms_json['features']) ? $symptomCheck->symptoms_json['features'] : $symptomCheck->symptoms_json;
+                @endphp
+                @foreach($features as $key => $value)
+                    @if($value && $key !== 'text' && $key !== 'features')
                         <span style="background: white; border: 2px solid #f1f5f9; padding: 10px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; color: var(--text-main); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#f1f5f9'">
                             <i class="fas fa-check-circle" style="color: var(--primary);"></i>
                             {{ ucwords(str_replace('_', ' ', $key)) }}

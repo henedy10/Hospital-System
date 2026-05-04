@@ -49,7 +49,14 @@
             <!-- User Message -->
             <div style="display: flex; gap: 12px; max-width: 80%; align-self: flex-end; flex-direction: row-reverse;">
                 <div style="background: var(--primary); padding: 12px 16px; border-radius: 16px; border-top-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: white; font-size: 0.95rem; line-height: 1.5;">
-                    {{ $msg->message }}
+                    @if($msg->attachment_path)
+                        <div style="margin-bottom: 8px;">
+                            <img src="{{ asset($msg->attachment_path) }}" alt="Attachment" style="max-width: 100%; border-radius: 8px; cursor: pointer;" onclick="window.open(this.src)">
+                        </div>
+                    @endif
+                    @if($msg->message)
+                        {{ $msg->message }}
+                    @endif
                 </div>
             </div>
 
@@ -75,11 +82,25 @@
         </div>
     </div>
 
+    <!-- Image Preview Area -->
+    <div id="imagePreviewContainer" style="display: none; padding: 12px 24px; background: white; border-top: 1px solid #e2e8f0; position: relative;">
+        <div style="position: relative; display: inline-block;">
+            <img id="imagePreview" src="" alt="Preview" style="max-height: 100px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <button type="button" id="removeImageBtn" style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- Chat Input Form -->
     <div style="padding: 16px 24px; background: white; border-top: 1px solid #e2e8f0;">
-        <form action="{{ route('patient.ai-chat.send') }}" method="POST" id="aiChatForm" style="display: flex; gap: 12px;">
+        <form action="{{ route('patient.ai-chat.send') }}" method="POST" id="aiChatForm" enctype="multipart/form-data" style="display: flex; gap: 12px; align-items: center;">
             @csrf
-            <input type="text" id="messageInput" name="message" class="form-control" autocomplete="off" placeholder="Type your medical question here..." required style="flex: 1; border-radius: 20px; background: #f8fafc; padding: 12px 24px;">
+            <input type="file" id="attachmentInput" name="attachment" accept="image/*" style="display: none;">
+            <button type="button" id="attachBtn" class="btn-light" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #f1f5f9; border: none; color: #64748b;">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <input type="text" id="messageInput" name="message" class="form-control" autocomplete="off" placeholder="Type your medical question here..." style="flex: 1; border-radius: 20px; background: #f8fafc; padding: 12px 24px;">
             <button type="submit" id="sendBtn" class="btn-primary" style="border-radius: 50%; width: 48px; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <i class="fas fa-paper-plane" style="margin-left: -2px;"></i>
             </button>
@@ -108,20 +129,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendBtn = document.getElementById('sendBtn');
     const typingIndicator = document.getElementById('typingIndicator');
 
+    const attachmentInput = document.getElementById('attachmentInput');
+    const attachBtn = document.getElementById('attachBtn');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+
     // Scroll to bottom immediately
     chatHistory.scrollTop = chatHistory.scrollHeight;
+
+    // Handle attachment button click
+    attachBtn.addEventListener('click', () => attachmentInput.click());
+
+    // Handle image selection
+    attachmentInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreviewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Handle image removal
+    removeImageBtn.addEventListener('click', function() {
+        attachmentInput.value = '';
+        imagePreviewContainer.style.display = 'none';
+        imagePreview.src = '';
+    });
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const message = input.value.trim();
-        if (!message) return;
+        const hasFile = attachmentInput.files && attachmentInput.files[0];
+        
+        if (!message && !hasFile) return;
+
+        // Create FormData
+        const formData = new FormData();
+        if (message) formData.append('message', message);
+        if (hasFile) formData.append('attachment', attachmentInput.files[0]);
 
         // Append user message immediately
-        appendMessage(message, 'user');
+        appendMessage(message, 'user', hasFile ? imagePreview.src : null);
+        
+        // Clear input and preview
         input.value = '';
+        attachmentInput.value = '';
+        imagePreviewContainer.style.display = 'none';
+        
         input.disabled = true;
         sendBtn.disabled = true;
+        attachBtn.disabled = true;
         sendBtn.style.opacity = '0.5';
         
         // Show typing indicator
@@ -132,11 +194,10 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('{{ route("patient.ai-chat.send") }}', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ message: message })
+            body: formData
         })
         .then(response => {
             if(!response.ok) {
@@ -157,17 +218,25 @@ document.addEventListener('DOMContentLoaded', function() {
         .finally(() => {
             input.disabled = false;
             sendBtn.disabled = false;
+            attachBtn.disabled = false;
             sendBtn.style.opacity = '1';
             input.focus();
         });
     });
 
-    function appendMessage(text, role) {
+    function appendMessage(text, role, imageUrl = null) {
         const div = document.createElement('div');
         
         if (role === 'user') {
             div.style.cssText = 'display: flex; gap: 12px; max-width: 80%; align-self: flex-end; flex-direction: row-reverse;';
-            div.innerHTML = `<div style="background: var(--primary); padding: 12px 16px; border-radius: 16px; border-top-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: white; font-size: 0.95rem; line-height: 1.5; word-break: break-word;">${escapeHTML(text)}</div>`;
+            let content = '';
+            if (imageUrl) {
+                content += `<div style="margin-bottom: 8px;"><img src="${imageUrl}" style="max-width: 100%; border-radius: 8px; cursor: pointer;" onclick="window.open(this.src)"></div>`;
+            }
+            if (text) {
+                content += `<div>${escapeHTML(text)}</div>`;
+            }
+            div.innerHTML = `<div style="background: var(--primary); padding: 12px 16px; border-radius: 16px; border-top-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: white; font-size: 0.95rem; line-height: 1.5; word-break: break-word;">${content}</div>`;
         } else {
             div.style.cssText = 'display: flex; gap: 12px; max-width: 80%;';
             div.innerHTML = `

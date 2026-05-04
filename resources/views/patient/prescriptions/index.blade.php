@@ -36,7 +36,7 @@
                     </div>
                     <div style="color:#64748b; font-size:.86rem; margin-bottom:8px;">
                         <i class="fas fa-user-md" style="color:#0d9488; margin-right:5px;"></i>
-                        د. {{ $prescription->doctor->user->name ?? 'N/A' }}
+                        Dr. {{ $prescription->doctor->user->name ?? 'N/A' }}
                         &nbsp;·&nbsp;
                         <i class="fas fa-calendar" style="color:#94a3b8; margin-right:4px;"></i>
                         {{ $prescription->created_at->format('d M Y') }}

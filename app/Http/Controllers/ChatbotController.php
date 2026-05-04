@@ -37,23 +37,40 @@ class ChatbotController extends Controller
     public function sendMessage(Request $request)
     {
         $request->validate([
-            'message' => 'required|string|max:1000',
+            'message' => 'nullable|string|max:1000',
+            'attachment' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120', // Max 5MB
         ]);
+
+        if (!$request->message && !$request->hasFile('attachment')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Please provide a message or an image.'
+            ], 422);
+        }
 
         $user = Auth::user();
         $userMessage = $request->input('message');
+        $attachmentPath = null;
+        $attachmentType = null;
 
-        // Throttle/Rate limit check logic can be added in routes or via rate limiter
-        // Let's rely on standard Laravel rate limiter defined in routes if needed
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $attachmentType = $file->getClientMimeType();
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/chat_attachments'), $fileName);
+            $attachmentPath = 'storage/chat_attachments/' . $fileName;
+        }
 
         // Call AI Service
-        $aiResponse = $this->chatbotService->getResponse($user->id, $userMessage);
+        $aiResponse = $this->chatbotService->getResponse($user->id, $userMessage, $attachmentPath);
 
         // Store standard conversation
         $chatMessage = ChatMessage::create([
             'user_id' => $user->id,
             'message' => $userMessage,
             'response' => $aiResponse,
+            'attachment_path' => $attachmentPath,
+            'attachment_type' => $attachmentType,
         ]);
 
         return response()->json([
@@ -61,6 +78,7 @@ class ChatbotController extends Controller
             'chat_id' => $chatMessage->id,
             'user_message' => $chatMessage->message,
             'ai_response' => $chatMessage->response,
+            'attachment_url' => $attachmentPath ? asset($attachmentPath) : null,
             'created_at' => $chatMessage->created_at->format('M d, h:i A')
         ]);
     }

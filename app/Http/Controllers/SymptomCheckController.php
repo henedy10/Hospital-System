@@ -30,14 +30,17 @@ class SymptomCheckController extends Controller
             return redirect()->back()->with('error', 'Only registered patients can use the symptom checker.');
         }
 
-        $symptomsData = $request->validated();
+        $symptomsText = $request->input('symptoms_text');
         
-        // Ensure all keys are present even if not checked (the Request takes care of this in prepareForValidation)
-        $aiResponse = $this->aiService->analyzeSymptoms($symptomsData);
+        // Analyze using Gemini + Local Flask API
+        $aiResponse = $this->aiService->analyzeSymptoms($symptomsText);
 
         $symptomCheck = SymptomCheck::create([
             'patient_id' => $user->patient->id,
-            'symptoms_json' => $symptomsData,
+            'symptoms_json' => [
+                'text' => $symptomsText,
+                'features' => array_diff_key($aiResponse, array_flip(['predicted_disease', 'specialization', 'urgency', 'original_text', 'error']))
+            ],
             'predicted_disease' => $aiResponse['predicted_disease'] ?? 'Unknown',
             'specialization' => $aiResponse['specialization'] ?? 'General Medicine',
             'urgency' => $aiResponse['urgency'] ?? 'medium',

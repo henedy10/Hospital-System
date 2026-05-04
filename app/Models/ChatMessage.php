@@ -9,7 +9,9 @@ class ChatMessage extends Model
     protected $fillable = [
         'user_id',
         'message',
-        'response'
+        'response',
+        'attachment_path',
+        'attachment_type'
     ];
 
     public function user()

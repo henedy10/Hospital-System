@@ -22,9 +22,6 @@
             <a href="{{ route('symptoms.index') }}" class="btn-primary" style="width: auto; padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0d9488, #0891b2); border: none; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.2);">
                 <i class="fas fa-stethoscope"></i> AI Symptom Checker
             </a>
-            <a href="{{ route('patient.appointments') }}" class="btn-primary" style="width: auto; padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fas fa-calendar-plus"></i> Book appointment
-            </a>
         </div>
     </div>
 
