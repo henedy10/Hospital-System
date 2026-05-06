@@ -69,19 +69,5 @@ class SettingController extends Controller
         return back()->with('success', 'Password changed successfully');
     }
 
-    public function updateNotifications(Request $request)
-    {
-        $user = Auth::user();
-        $user->update([
-            'notification_settings' => [
-                'email' => $request->has('email'),
-                'sms' => $request->has('sms'),
-                'reports' => $request->has('reports'),
-                'appointments' => $request->has('appointments'),
-                'system' => $request->has('system'),
-            ]
-        ]);
 
-        return back()->with('success', 'Notification settings updated successfully');
-    }
 }

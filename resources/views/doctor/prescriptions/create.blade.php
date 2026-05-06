@@ -49,7 +49,6 @@
                     <label style="display:block; font-size:.85rem; font-weight:600; color:#374151; margin-bottom:6px;">Patient <span style="color:#e11d48;">*</span></label>
                     <select name="patient_id" required {{ isset($medical_history) ? 'readonly style=pointer-events:none;background:#f1f5f9;' : '' }}
                             style="width:100%; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:.9rem; color:#1e293b; background:#f8fafc; outline:none; appearance:none;">
-                        <option value="">-- Select Patient --</option>
                         @foreach($patients as $patient)
                             @php
                                 $selected = false;

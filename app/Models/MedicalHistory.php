@@ -14,6 +14,10 @@ class MedicalHistory extends Model
         'doctor_id',
     ];
 
+    protected $casts = [
+        'diagnosis_date' => 'date',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

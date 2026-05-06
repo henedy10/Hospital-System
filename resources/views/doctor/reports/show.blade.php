@@ -115,11 +115,6 @@
         <section class="content-block">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <div class="doc-section-title" style="margin-bottom:0;"><i class="fas fa-prescription-bottle-alt"></i> Prescription</div>
-                    @if($role === 'doctor')
-                        <a href="{{ route('doctor.prescriptions.create', ['report_id' => $report['id']]) }}" class="btn-outline" style="text-decoration:none; display:flex; align-items:center; gap:6px; color:#0d9488; border-color:#0d9488;">
-                            <i class="fas fa-plus"></i> Add Prescription
-                        </a>
-                    @endif
             </div>
 
             @if($report['prescription'])

@@ -9,12 +9,6 @@
             style="text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">
             <i class="fas fa-arrow-left"></i> Back to Patients List
         </a>
-        <div style="display: flex; gap: 12px;">
-            <button class="btn-primary" style="width: auto; padding: 10px 24px; margin-top: 0;"
-                onclick="openHistoryModal()">
-                <i class="fas fa-plus"></i> Add Medical Record
-            </button>
-        </div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 32px;">
@@ -182,11 +176,6 @@
                                 </div>
                                 @if($history->doctor && $history->doctor->user_id === Auth::id())
                                     <div style="position: absolute; top: 0; right: 0; display: flex; gap: 8px;">
-                                        <button type="button" class="btn-icon"
-                                            onclick="openEditHistoryModal({{ $history->id }}, '{{ addslashes($history->condition) }}', '{{ $history->diagnosis_date }}', '{{ addslashes($history->treatment) }}')"
-                                            style="color: var(--primary); background: transparent; border: none; cursor: pointer;">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
                                         <form action="{{ route('doctor.medical-history.destroy', $history->id) }}" method="POST"
                                             onsubmit="return confirm('Are you sure you want to delete this record?');"
                                             style="display: inline;">

@@ -1,18 +1,17 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Account Settings')
+@section('title', 'My Profile')
 
 @section('content')
-    <div class="welcome-section" style="margin-bottom: 32px;">
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">System Settings ⚙️
-        </h1>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">Manage your profile, security settings, and system
-            preferences.</p>
+    <div class="page-header">
+        <h1>My Profile</h1>
+        <p class="text-muted">Manage your professional information and security settings.</p>
     </div>
 
     @if ($errors->any())
-        <div class="alert alert-error" style="margin-bottom: 24px;">
-            <ul style="margin: 0; padding-left: 20px;">
+        <div class="alert alert-error" style="background:#fff1f2; border-left:4px solid #e11d48; border-radius:10px; padding:14px 18px; margin-bottom:22px;">
+            <div style="font-weight:600; color:#be123c; margin-bottom:6px;"><i class="fas fa-exclamation-circle"></i> Please fix the following errors:</div>
+            <ul style="margin:0; padding-left:18px; color:#9f1239; font-size:.88rem;">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -20,415 +19,213 @@
         </div>
     @endif
 
-    <div class="glass-card" style="padding: 40px;">
-        <!-- Tabs Navigation -->
-        <nav class="settings-tabs">
-            <div class="tab-item active" onclick="switchTab('profile')">Profile</div>
-            <div class="tab-item" onclick="switchTab('security')">Security & Privacy</div>
-            <div class="tab-item" onclick="switchTab('notifications')">Notifications</div>
-        </nav>
-
-        <!-- Profile Tab -->
-        <div id="profile" class="tab-content active">
-            <div class="settings-grid">
-                <div class="settings-sidebar">
-                    <h3>Account Information</h3>
-                    <p>Update your profile picture and professional account details.</p>
-                </div>
-                <div class="settings-main">
-
-
-                    <div class="form-section">
-                        <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 32px;">
-                            @if($user->profile_image)
-                                <form action="{{ route('doctor.settings.image.remove') }}" method="POST" enctype="multipart/form-data"
-                                    style="display: inline-block; margin-left: 8px;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-secondary"
-                                        style="padding: 8px 16px; font-size: 0.85rem; color: #EF4444; border-color: #FECACA; background: #FEF2F2;"
-                                        title="Remove Photo"
-                                        onclick="return confirm('Are you sure you want to remove your profile picture?')">
-                                        <i class="fas fa-trash"></i> Remove
-                                    </button>
-                                </form>
-                            @endif
-                            <img src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0D9488&color=fff' }}"
-                            alt="Avatar" id="profile-preview"
-                            style="width: 80px; height: 80px; border-radius: 20px; object-fit: cover;">
-                            <form action="{{ route('doctor.settings.update') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <div>
-                                    <input type="file" name="profile_image" id="profile_image" style="display: none;"
-                                        onchange="previewImage(this)">
-                                    <button type="button" class="btn-secondary"
-                                        style="padding: 8px 16px; font-size: 0.85rem;"
-                                        onclick="document.getElementById('profile_image').click()">
-                                        <i class="fas fa-camera"></i> Change Photo
-                                    </button>
-                                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">JPG, GIF or
-                                        PNG. Max 800 KB.</p>
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                                <div class="form-group">
-                                    <label class="input-label">Full Name</label>
-                                    <input type="text" name="name" class="form-control" style="padding-left: 16px;"
-                                        value="{{ old('name', $user->name) }}" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="input-label">Email Address</label>
-                                    <input type="email" name="email" class="form-control" style="padding-left: 16px;"
-                                        value="{{ old('email', $user->email) }}" required>
-                                </div>
-                            </div>
-
-                            <div class="form-group" style="margin-bottom: 20px;">
-                                <label class="input-label">Medical Specialization</label>
-                                <input type="text" name="specialist" disabled class="form-control" style="padding-left: 16px;"
-                                    value="{{$user->doctor->specialty}}">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="input-label">Bio</label>
-                                <textarea name="bio" class="form-control"
-                                    style="padding-left: 16px; height: 100px; resize: none;">{{ old('bio', $user->doctor?->bio) }}</textarea>
-                            </div>
-                        </div>
-                        <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                            <button type="reset" class="btn-secondary">
-                                <i class="fas fa-undo"></i> Discard
-                            </button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-check-circle"></i> Save Changes
-                            </button>
-                        </div>
+    <div class="profile-container">
+        <div class="profile-header-card">
+            <div class="profile-cover"></div>
+            <div class="profile-user-block">
+                <div class="avatar-wrapper">
+                    <img id="profile-preview"
+                        src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0ea5e9&color=fff&size=128' }}"
+                        alt="Profile" class="profile-avatar">
+                    <button type="button" class="edit-avatar"
+                        onclick="document.getElementById('profile_image').click()"><i
+                            class="fas fa-camera"></i></button>
+                    @if($user->profile_image)
+                    <form action="{{ route('doctor.settings.image.remove') }}" method="POST" style="position: absolute; bottom: -8px; left: -8px; margin: 0;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="remove-avatar btn-icon" style="width: 36px; height: 36px; border-radius: 50%; background: #EF4444; color: white; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: scale 0.2s;" title="Remove Photo" onclick="return confirm('Are you sure you want to remove your profile picture?')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </form>
+                    @endif
+                    <input type="file" id="profile_image" name="profile_image" form="profile-update-form"
+                        class="hidden" accept="image/*" onchange="previewImage(this)">
+                </div>
+                <div class="user-meta">
+                    <h2>Dr. {{ $user->name }}</h2>
+                    <p>Specialization: <span class="user-status active">{{ $user->doctor->specialty ?? 'General' }}</span></p>
                 </div>
             </div>
         </div>
 
-        <!-- Security Tab -->
-        <div id="security" class="tab-content" style="display: none;">
-            <div class="settings-grid">
-                <div class="settings-sidebar">
+        <div class="profile-main">
+            <div class="form-card">
+                <div class="card-title">
+                    <i class="fas fa-user-md"></i>
+                    <h3>Professional Information</h3>
+                </div>
+                <form action="{{ route('doctor.settings.update') }}" method="POST" enctype="multipart/form-data"
+                    id="profile-update-form">
+                    @csrf
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" name="name" value="{{ old('name', $user->name) }}"
+                                class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" name="email" value="{{ old('email', $user->email) }}"
+                                class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Professional Bio</label>
+                        <textarea name="bio" class="form-control" rows="4" placeholder="Write a short bio about your professional background...">{{ old('bio', $user->doctor?->bio) }}</textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save">Update Profile</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="form-card mt-2">
+                <div class="card-title">
+                    <i class="fas fa-shield-alt"></i>
                     <h3>Security</h3>
-                    <p>Manage your password and protect your account.</p>
                 </div>
-                <div class="settings-main">
-                    <form action="{{ route('doctor.settings.password') }}" method="POST">
-                        @csrf
-                        <div class="settings-card" style="margin-bottom: 24px;">
-                            <div class="form-group" style="margin-bottom: 20px;">
-                                <label class="input-label">Current Password</label>
-                                <input type="password" name="current_password" class="form-control"
-                                    style="padding-left: 16px;" placeholder="••••••••" required>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                                <div class="form-group">
-                                    <label class="input-label">New Password</label>
-                                    <input type="password" name="password" class="form-control" style="padding-left: 16px;"
-                                        required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="input-label">Confirm New Password</label>
-                                    <input type="password" name="password_confirmation" class="form-control"
-                                        style="padding-left: 16px;" required>
-                                </div>
-                            </div>
+                <form action="{{ route('doctor.settings.password') }}" method="POST">
+                    @csrf
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <input type="password" name="current_password" class="form-control" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" name="password" class="form-control" required>
                         </div>
-                        <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                            <button type="reset" class="btn-secondary">
-                                <i class="fas fa-undo"></i> Discard
-                            </button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-shield-alt"></i> Update Password
-                            </button>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" name="password_confirmation" class="form-control" required>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Notifications Tab -->
-        <div id="notifications" class="tab-content" style="display: none;">
-            <div class="settings-grid">
-                <div class="settings-sidebar">
-                    <h3>Notifications</h3>
-                    <p>Choose how and when you would like to receive notifications from the system.</p>
-                </div>
-                <div class="settings-main">
-                    <form action="{{ route('doctor.settings.notifications') }}" method="POST">
-                        @csrf
-                        @php
-                            $nSettings = $user->notification_settings ?? [
-                                'email' => true,
-                                'sms' => false,
-                                'reports' => true,
-                                'appointments' => true,
-                                'system' => true
-                            ];
-                        @endphp
-
-                        <div class="settings-section-header"
-                            style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-light);">
-                            <h4 style="font-size: 1rem; color: var(--primary);"><i class="fas fa-envelope-open-text"
-                                    style="margin-right: 8px;"></i> Communication Channels</h4>
-                        </div>
-                        <div class="settings-card" style="margin-bottom: 32px;">
-                            <div class="switch-wrapper">
-                                <div class="switch-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-                                        <i class="fas fa-at" style="color: #6366f1;"></i>
-                                        <h4 style="margin: 0;">Email Notifications</h4>
-                                    </div>
-                                    <p>Receive summaries, newsletters and important clinical updates via email.</p>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" name="email" {{ ($nSettings['email'] ?? false) ? 'checked' : '' }}>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="switch-wrapper">
-                                <div class="switch-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-                                        <i class="fas fa-sms" style="color: #10b981;"></i>
-                                        <h4 style="margin: 0;">SMS Notifications</h4>
-                                    </div>
-                                    <p>Get instant text alerts for urgent patient messages and critical cases.</p>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" name="sms" {{ ($nSettings['sms'] ?? false) ? 'checked' : '' }}>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="settings-section-header"
-                            style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-light);">
-                            <h4 style="font-size: 1rem; color: var(--primary);"><i class="fas fa-bell"
-                                    style="margin-right: 8px;"></i> Activity & Alerts</h4>
-                        </div>
-                        <div class="settings-card">
-                            <div class="switch-wrapper">
-                                <div class="switch-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-                                        <i class="fas fa-calendar-check" style="color: #f59e0b;"></i>
-                                        <h4 style="margin: 0;">Appointment Reminders</h4>
-                                    </div>
-                                    <p>Be notified of upcoming appointments and schedule changes.</p>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" name="appointments" {{ ($nSettings['appointments'] ?? false) ? 'checked' : '' }}>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="switch-wrapper">
-                                <div class="switch-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-                                        <i class="fas fa-file-medical-alt" style="color: #3b82f6;"></i>
-                                        <h4 style="margin: 0;">Report Updates</h4>
-                                    </div>
-                                    <p>Get alerted when new medical reports are submitted or reviewed.</p>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" name="reports" {{ ($nSettings['reports'] ?? false) ? 'checked' : '' }}>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="switch-wrapper">
-                                <div class="switch-info">
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-                                        <i class="fas fa-microchip" style="color: #8b5cf6;"></i>
-                                        <h4 style="margin: 0;">System Updates</h4>
-                                    </div>
-                                    <p>Stay informed about new features and scheduled maintenance.</p>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" name="system" {{ ($nSettings['system'] ?? false) ? 'checked' : '' }}>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
-                            <button type="reset" class="btn-secondary" style="padding: 12px 32px;">
-                                <i class="fas fa-undo"></i> Discard
-                            </button>
-                            <button type="submit" class="btn-primary"
-                                style="width: auto; padding: 12px 40px; border-radius: 12px; font-weight: 700;">
-                                <i class="fas fa-save" style="margin-right: 8px;"></i> Save Preferences
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save">Update Password</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <script>
-        function switchTab(tabId) {
-            // Hide all contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
-                content.classList.remove('active');
-            });
-
-            // Remove active class from tabs
-            document.querySelectorAll('.tab-item').forEach(tab => {
-                tab.classList.remove('active');
-            });
-
-            // Show selected tab content
-            const activeContent = document.getElementById(tabId);
-            activeContent.style.display = 'block';
-            setTimeout(() => activeContent.classList.add('active'), 10);
-
-            // Add active class to clicked tab
-            event.currentTarget.classList.add('active');
-        }
-
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('profile-preview').src = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-    </script>
-
     <style>
-        .settings-tabs {
+        .hidden { display: none; }
+
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { font-size: 1.875rem; color: #111827; margin-bottom: 0.5rem; }
+
+        .profile-header-card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .profile-cover {
+            height: 160px;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        }
+
+        .profile-user-block {
+            padding: 0 2rem 2rem 2rem;
             display: flex;
-            gap: 32px;
-            margin-bottom: 40px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 16px;
+            align-items: flex-end;
+            gap: 2rem;
+            margin-top: -64px;
         }
 
-        .tab-item {
-            color: var(--text-muted);
-            font-weight: 500;
-            cursor: pointer;
-            position: relative;
-            padding-bottom: 16px;
-            transition: all 0.3s ease;
+        .avatar-wrapper { position: relative; }
+        .profile-avatar {
+            width: 128px;
+            height: 128px;
+            border-radius: 1rem;
+            border: 4px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
         }
 
-        .tab-item.active {
-            color: var(--primary-color);
-        }
-
-        .tab-item.active::after {
-            content: '';
+        .edit-avatar {
             position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--primary-color);
-        }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 48px;
-        }
-
-        .settings-sidebar h3 {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .settings-sidebar p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        .settings-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid var(--border-color);
-        }
-
-        .switch-wrapper {
+            bottom: -8px;
+            right: -8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #0ea5e9;
+            color: white;
+            border: 2px solid white;
+            cursor: pointer;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-color);
+            justify-content: center;
+            transition: scale 0.2s;
+        }
+        .edit-avatar:hover { scale: 1.1; }
+
+        .user-meta h2 { font-size: 1.5rem; font-weight: 700; color: #111827; margin-bottom: 0.25rem; }
+        .user-meta p { font-size: 0.875rem; color: #6B7280; margin-bottom: 0.5rem; }
+        
+        .user-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .active { background: #f0f9ff; color: #0284c7; }
+
+        .profile-main { width: 100%; max-width: 800px; margin: 0 auto; }
+
+        .form-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .switch-wrapper:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
+        .card-title {
+            display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #F3F4F6;
         }
+        .card-title i { color: #0ea5e9; font-size: 1.125rem; }
+        .card-title h3 { font-size: 1.125rem; font-weight: 600; color: #111827; }
 
-        .switch-wrapper:first-child {
-            padding-top: 0;
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
+        .form-control {
+            width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; font-size: 0.875rem; transition: border-color 0.2s, box-shadow 0.2s;
         }
+        .form-control:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1); }
 
-        .switch-info h4 {
-            font-size: 0.95rem;
-            margin-bottom: 4px;
+        .form-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
+        .btn-save {
+            background: #0ea5e9; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
         }
+        .btn-save:hover { background: #0284c7; }
 
-        .switch-info p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        <style>.tab-content {
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .mt-2 { margin-top: 2rem; }
+        
+        @media (max-width: 768px) {
+            .profile-user-block { flex-direction: column; align-items: center; text-align: center; }
+            .user-meta h2 { margin-top: 1rem; }
         }
     </style>
 
     <script>
-        function switchTab(tabId) {
-            // Hide all contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
-                content.classList.remove('active');
-            });
-
-            // Remove active class from tabs
-            document.querySelectorAll('.tab-item').forEach(tab => {
-                tab.classList.remove('active');
-            });
-
-            // Show selected tab content
-            const activeContent = document.getElementById(tabId);
-            activeContent.style.display = 'block';
-            setTimeout(() => activeContent.classList.add('active'), 10);
-
-            // Add active class to clicked tab
-            event.currentTarget.classList.add('active');
-        }
-
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     document.getElementById('profile-preview').src = e.target.result;
-                }
+                    const sidebarAvatar = document.querySelector('.sidebar-avatar');
+                    if (sidebarAvatar) {
+                        sidebarAvatar.src = e.target.result;
+                    }
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }

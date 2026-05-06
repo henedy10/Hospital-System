@@ -86,12 +86,13 @@ Route::middleware(['auth', 'role:doctor'])->prefix('/doctor')->group(function ()
     Route::put('/medical-history/{history}', [DoctorMedicalHistoryController::class, 'update'])->name('doctor.medical-history.update');
     Route::delete('/medical-history/{history}', [DoctorMedicalHistoryController::class, 'destroy'])->name('doctor.medical-history.destroy');
     Route::get('/reports', [ReportController::class, 'index'])->name('doctor.reports');
+    Route::get('/reports/{history}/edit', [ReportController::class, 'edit'])->name('doctor.reports.edit');
     Route::get('/reports/{history}', [ReportController::class, 'show'])->name('doctor.reports.show');
     Route::get('/settings', [SettingController::class, 'index'])->name('doctor.settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('doctor.settings.update');
     Route::delete('/settings/image', [SettingController::class, 'removeImage'])->name('doctor.settings.image.remove');
     Route::post('/settings/password', [SettingController::class, 'updatePassword'])->name('doctor.settings.password');
-    Route::post('/settings/notifications', [SettingController::class, 'updateNotifications'])->name('doctor.settings.notifications');
+
 
     // Task management (assign to nurses)
     Route::get('/tasks', [DoctorTaskController::class, 'index'])->name('doctor.tasks.index');

@@ -151,4 +151,22 @@ class ReportController extends Controller
 
         return view('doctor.reports.show', compact('report','role'));
     }
+
+    /**
+     * Show the form for editing the specified report.
+     */
+    public function edit(MedicalHistory $history)
+    {
+        $role = 'doctor';
+        $history->load(['patient.user', 'prescription.items']);
+        
+        $patientsForSelect = Patient::with('user')->whereHas('appointments', function ($q) {
+            $doctor = Doctor::where('user_id', Auth::id())->first();
+            $q->where('doctor_id', $doctor->id);
+        })
+        ->orderBy('user:name')
+        ->get();
+
+        return view('doctor.reports.edit', compact('history', 'patientsForSelect', 'role'));
+    }
 }

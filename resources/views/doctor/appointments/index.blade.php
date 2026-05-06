@@ -52,7 +52,6 @@
                         <th style="padding: 16px 20px; font-weight: 600;">Date</th>
                         <th style="padding: 16px 20px; font-weight: 600;">Reason</th>
                         <th style="padding: 16px 20px; font-weight: 600;">Status</th>
-                        <th style="padding: 16px 20px; font-weight: 600; text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -120,9 +119,6 @@
                                             </button>
                                         </form>
                                     @endif
-                                    <a href="#" class="btn-icon" title="Patient Profile" style="color: var(--primary); background: #f0fdfa; padding: 8px; border-radius: 12px;">
-                                        <i class="fas fa-user"></i>
-                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -142,7 +138,7 @@
         </div>
 
         <!-- Pagination -->
-        <div style="margin-top: 30px; display: flex; justify-content: center; padding-bottom: 10px;">
+        <div style="display: flex; justify-content: center; align-items: left; margin: 2rem auto;">
             {{ $appointments->links() }}
         </div>
     </div>
