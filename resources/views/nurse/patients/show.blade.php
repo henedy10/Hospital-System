@@ -59,12 +59,12 @@
                     <a href="{{ route('nurse.vitals.create', $patient['id']) }}" class="btn btn-primary" style="background: #0D9488; color: white; padding: 10px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; transition: all 0.2s;">
                         <i class="fas fa-plus"></i> Record Vitals
                     </a>
-                    <button class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 24px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; color: #475569;">
-                        Nursing Notes
-                    </button>
-                    <button class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 24px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; color: #475569;">
-                        Lab Results
-                    </button>
+                    <a href="#nursing-notes" class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 24px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; color: #475569; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-notes-medical"></i> Nursing Notes
+                    </a>
+                    <a href="#lab-results" class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 10px 24px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; color: #475569; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-flask"></i> Lab Results
+                    </a>
                 </div>
             </div>
         </div>
@@ -102,54 +102,93 @@
                     </div>
                 </div>
 
-                <!-- Vitals Monitoring History -->
-                <div class="glass-card" style="padding: 32px; border-radius: 24px; background: white; border: 1px solid #f1f5f9;">
+                <!-- Nursing Notes -->
+                <div id="nursing-notes" class="glass-card" style="padding: 32px; border-radius: 24px; background: white; border: 1px solid #f1f5f9;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                         <div>
-                            <h2 style="font-size: 1.2rem; font-weight: 850; color: #0f172a; margin: 0;">Clinical Monitoring History</h2>
-                            <p style="color: #64748b; font-size: 0.85rem; font-weight: 500; margin-top: 4px;">Past observation records from active shift.</p>
+                            <h2 style="font-size: 1.2rem; font-weight: 850; color: #0f172a; margin: 0;">Nursing Care Notes</h2>
+                            <p style="color: #64748b; font-size: 0.85rem; font-weight: 500; margin-top: 4px;">Record daily observations and shift handovers.</p>
                         </div>
-                        <button class="btn" style="padding: 8px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.8rem; font-weight: 700; color: #64748b; cursor: pointer;">
-                            <i class="fas fa-filter" style="margin-right: 6px;"></i> Last 24H
+                        <button onclick="document.getElementById('note-form').style.display = 'block'; this.style.display='none'" class="btn" style="padding: 10px 20px; background: #f0f9ff; color: #0284c7; border: 1px solid #e0f2fe; border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer;">
+                            <i class="fas fa-pen-nib" style="margin-right: 8px;"></i> Add Note
                         </button>
                     </div>
-                    
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
-                            <thead>
-                                <tr style="text-align: left;">
-                                    <th style="padding: 16px; color: #94a3b8; font-size: 0.7rem; font-weight: 850; text-transform: uppercase; border-bottom: 1px solid #f1f5f9;">Timestamp</th>
-                                    <th style="padding: 16px; color: #94a3b8; font-size: 0.7rem; font-weight: 850; text-transform: uppercase; border-bottom: 1px solid #f1f5f9;">Blood Pressure</th>
-                                    <th style="padding: 16px; color: #94a3b8; font-size: 0.7rem; font-weight: 850; text-transform: uppercase; border-bottom: 1px solid #f1f5f9;">Temp</th>
-                                    <th style="padding: 16px; color: #94a3b8; font-size: 0.7rem; font-weight: 850; text-transform: uppercase; border-bottom: 1px solid #f1f5f9;">HR/Pulse</th>
-                                    <th style="padding: 16px; color: #94a3b8; font-size: 0.7rem; font-weight: 850; text-transform: uppercase; border-bottom: 1px solid #f1f5f9;">Oxygen</th>
-                                    <th style="padding: 16px; color: #94a3b8; font-size: 0.7rem; font-weight: 850; text-transform: uppercase; border-bottom: 1px solid #f1f5f9;">Nurse</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($patient['vitals_history'] as $record)
-                                    <tr class="table-row-hover" style="transition: all 0.2s;">
-                                        <td style="padding: 16px; font-weight: 800; color: #1e293b; font-size: 0.9rem; border-bottom: 1px solid #f8fafc;">{{ $record['time'] }}</td>
-                                        <td style="padding: 16px; font-weight: 700; color: #475569; border-bottom: 1px solid #f8fafc;">{{ $record['bp'] }}</td>
-                                        <td style="padding: 16px; font-weight: 700; color: #475569; border-bottom: 1px solid #f8fafc;">{{ $record['temp'] }}°C</td>
-                                        <td style="padding: 16px; font-weight: 700; color: #475569; border-bottom: 1px solid #f8fafc;">{{ $record['pulse'] }} <span style="font-size: 0.7rem; color: #94a3b8;">bpm</span></td>
-                                        <td style="padding: 16px; border-bottom: 1px solid #f8fafc;">
-                                            <span style="padding: 4px 10px; background: #f0fdf4; color: #16a34a; border-radius: 6px; font-size: 0.8rem; font-weight: 800;">{{ $record['oxygen'] }}</span>
-                                        </td>
-                                        <td style="padding: 16px; font-size: 0.8rem; font-weight: 700; color: #64748b; border-bottom: 1px solid #f8fafc;">
-                                            <div style="display: flex; align-items: center; gap: 8px;">
-                                                <div style="width: 24px; height: 24px; background: #ccfbf1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #0D9488;">{{ substr($record['recorder'], 0, 1) }}</div>
-                                                {{ $record['recorder'] }}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" style="padding: 40px; text-align: center; color: #94a3b8; font-weight: 600;">No observations recorded yet.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+
+                    <div id="note-form" style="display: none; margin-bottom: 32px; padding: 24px; background: #f8fafc; border-radius: 20px; border: 1px solid #e2e8f0;">
+                        <form action="{{ route('nurse.patients.notes.store', $patient['id']) }}" method="POST">
+                            @csrf
+                            <label style="display: block; font-size: 0.85rem; font-weight: 800; color: #475569; margin-bottom: 12px;">NEW OBSERVATION NOTE</label>
+                            <textarea name="content" rows="4" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.95rem; margin-bottom: 16px; outline: none; focus: border-color: #0ea5e9;" placeholder="Describe patient status, changes, or treatments administered..."></textarea>
+                            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                                <button type="button" onclick="document.getElementById('note-form').style.display = 'none'; document.querySelector('[onclick*=\'note-form\']').style.display='block'" style="padding: 8px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; color: #64748b; font-weight: 700; cursor: pointer;">Cancel</button>
+                                <button type="submit" style="padding: 8px 24px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Save Note</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        @forelse($patient['nursing_notes'] as $note)
+                            <div style="padding: 24px; border-radius: 20px; background: #f8fafc; border: 1px solid #f1f5f9; position: relative;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 32px; height: 32px; background: #e0f2fe; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #0284c7; font-weight: 800;">
+                                            {{ substr($note['nurse'], 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 800; color: #1e293b; font-size: 0.9rem;">{{ $note['nurse'] }}</div>
+                                            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Registered Nurse</div>
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8;">{{ $note['time'] }}</div>
+                                </div>
+                                <p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin: 0; font-weight: 500;">
+                                    {{ $note['content'] }}
+                                </p>
+                            </div>
+                        @empty
+                            <div style="text-align: center; padding: 40px; color: #94a3b8; font-weight: 600; background: #f8fafc; border-radius: 20px; border: 1px dashed #e2e8f0;">
+                                No nursing notes recorded for this patient.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- Lab Results -->
+                <div id="lab-results" class="glass-card" style="padding: 32px; border-radius: 24px; background: white; border: 1px solid #f1f5f9;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 1.2rem; font-weight: 850; color: #0f172a; margin: 0;">Laboratory Investigations</h2>
+                            <p style="color: #64748b; font-size: 0.85rem; font-weight: 500; margin-top: 4px;">Latest diagnostic reports and blood work.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        @forelse($patient['lab_results'] as $lab)
+                            <div style="padding: 20px 24px; border-radius: 16px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; cursor: pointer; background: #fcfcfc;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fcfcfc'">
+                                <div style="display: flex; align-items: center; gap: 16px;">
+                                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #fff7ed; color: #c2410c; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                        <i class="fas fa-vial"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 800; color: #1e293b; font-size: 1rem;">{{ $lab['test'] }}</div>
+                                        <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Report Date: {{ $lab['date'] }}</div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 1.1rem; font-weight: 900; color: #0f172a;">{{ $lab['result'] }}</div>
+                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Ref Range: {{ $lab['range'] }}</div>
+                                </div>
+                                <div style="margin-left: 24px;">
+                                    <span style="padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; background: {{ $lab['status'] == 'Final' ? '#f0fdf4' : '#fffbeb' }}; color: {{ $lab['status'] == 'Final' ? '#16a34a' : '#d97706' }};">
+                                        {{ $lab['status'] }}
+                                    </span>
+                                </div>
+                            </div>
+                        @empty
+                            <div style="text-align: center; padding: 40px; color: #94a3b8; font-weight: 600; background: #f8fafc; border-radius: 20px; border: 1px dashed #e2e8f0;">
+                                No laboratory results available.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>

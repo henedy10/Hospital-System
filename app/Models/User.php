@@ -24,8 +24,6 @@ class User extends Authenticatable
         'password',
         'role',
         'profile_image',
-        'department',
-        'shift',
         'is_verified',
         'notification_settings',
     ];
@@ -150,4 +148,3 @@ class User extends Authenticatable
         return $this->hasMany(Patient::class, 'nurse_id');
     }
 }
-

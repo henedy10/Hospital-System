@@ -93,9 +93,6 @@
                                 <span>Manage Users</span></a></li>
                         <li class="{{ request()->routeIs('chat') ? 'active' : '' }}"><a
                                 href="{{ route('chat') }}"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
-                        <li class="{{ request()->routeIs('admin.appointments') ? 'active' : '' }}"><a
-                                href="{{ route('admin.appointments') }}"><i class="fas fa-calendar-alt"></i>
-                                <span>Appointments</span></a></li>
                     @endif
                 </ul>
             </nav>

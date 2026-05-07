@@ -7,10 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Patient;
 use App\Models\Task;
+use App\Models\NursingNote;
+use App\Models\LabResult;
 
 class PatientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $nurseSpecialty = optional($user->nurse)->speciality;
@@ -30,6 +32,21 @@ class PatientController extends Controller
             })
             ->with(['user', 'vitals'])
             ->distinct();
+
+        // Filter by Status
+        if ($request->filled('status') && $request->status !== 'All') {
+            $patients_query->where('status', $request->status);
+        }
+
+        // Filter by Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $patients_query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($u) use ($search) {
+                    $u->where('name', 'LIKE', "%{$search}%");
+                })->orWhere('room', 'LIKE', "%{$search}%");
+            });
+        }
 
         $patients_data = $patients_query->get();
 
@@ -59,12 +76,15 @@ class PatientController extends Controller
             ];
         });
 
-        return view('nurse.patients.index', compact('patients', 'stats'));
+        $currentFilter = $request->status ?? 'All';
+        $searchTerm = $request->search;
+
+        return view('nurse.patients.index', compact('patients', 'stats', 'currentFilter', 'searchTerm'));
     }
 
     public function show($id)
     {
-        $patient = Patient::with(['user', 'vitals'])->findOrFail($id);
+        $patient = Patient::with(['user', 'vitals', 'nursingNotes.user', 'labResults'])->findOrFail($id);
 
         $vitalsHistory = $patient->vitals->sortByDesc('created_at')->map(function ($v) {
             return [
@@ -105,9 +125,41 @@ class PatientController extends Controller
             'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($patient->user->name) . '&background=0D9488&color=fff',
             'vitals_history' => $vitalsHistory,
             'medication_schedule' => $medTasks,
+            'nursing_notes' => $patient->nursingNotes->sortByDesc('created_at')->map(function($n) {
+                return [
+                    'id' => $n->id,
+                    'content' => $n->content,
+                    'time' => $n->created_at->format('M d, h:i A'),
+                    'nurse' => $n->user->name,
+                ];
+            }),
+            'lab_results' => $patient->labResults->sortByDesc('test_date')->map(function($l) {
+                return [
+                    'test' => $l->test_name,
+                    'result' => $l->result_value . ' ' . $l->unit,
+                    'range' => $l->reference_range,
+                    'status' => $l->status,
+                    'date' => \Carbon\Carbon::parse($l->test_date)->format('M d, Y'),
+                ];
+            }),
         ];
 
         return view('nurse.patients.show', ['patient' => $patientData]);
+    }
+
+    public function storeNote(Request $request, $id)
+    {
+        $request->validate([
+            'content' => 'required|string|max:2000',
+        ]);
+
+        NursingNote::create([
+            'patient_id' => $id,
+            'user_id' => Auth::id(),
+            'content' => $request->content,
+        ]);
+
+        return redirect()->back()->with('success', 'Nursing note added successfully.');
     }
 
     public function updateStatus(Request $request, $id)

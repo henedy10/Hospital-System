@@ -116,6 +116,7 @@ Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
     Route::get('/dashboard', [NurseDashboardController::class, 'index'])->name('nurse.dashboard');
     Route::get('/patients', [NursePatientController::class, 'index'])->name('nurse.patients');
     Route::get('/patients/{id}', [NursePatientController::class, 'show'])->name('nurse.patients.show');
+    Route::post('/patients/{id}/notes', [NursePatientController::class, 'storeNote'])->name('nurse.patients.notes.store');
     Route::patch('/patients/{id}/status', [NursePatientController::class, 'updateStatus'])->name('nurse.patients.update-status');
     Route::get('/patients/{id}/vitals/create', [VitalsController::class, 'create'])->name('nurse.vitals.create');
     Route::post('/vitals', [VitalsController::class, 'store'])->name('nurse.vitals.store');
@@ -123,6 +124,7 @@ Route::middleware(['auth', 'role:nurse'])->prefix('/nurse')->group(function () {
     Route::patch('/tasks/{task}/status', [NurseTaskController::class, 'updateStatus'])->name('nurse.tasks.update-status');
     Route::get('/settings', [NurseSettingController::class, 'index'])->name('nurse.settings');
     Route::post('/settings', [NurseSettingController::class, 'update'])->name('nurse.settings.update');
+    Route::delete('/settings/image', [NurseSettingController::class, 'removeImage'])->name('nurse.settings.image.remove');
     Route::post('/settings/password', [NurseSettingController::class, 'updatePassword'])->name('nurse.settings.password');
 });
 
@@ -172,7 +174,4 @@ Route::middleware(['auth', 'role:admin'])->prefix('/admin')->group(function () {
     Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('admin.users.edit');
     Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
-
-    // Appointments overview
-    Route::get('/appointments', [AdminAppointmentController::class, 'index'])->name('admin.appointments');
 });

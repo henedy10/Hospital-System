@@ -8,28 +8,28 @@
             <h1 style="font-size: 1.85rem; font-weight: 850; color: #1e293b; margin-bottom: 8px; letter-spacing: -0.02em;">Patient Care Center</h1>
             <p style="color: #64748b; font-size: 1rem; font-weight: 500;">Monitor health status and manage active duty patients in your ward.</p>
         </div>
-        <div style="display: flex; gap: 12px;">
-            <button class="btn" style="background: white; border: 1px solid #e2e8f0; padding: 12px 20px; border-radius: 12px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-file-export"></i> Export Report
-            </button>
-            <button class="btn btn-primary" style="background: #0D9488; color: white; padding: 12px 24px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.2); transition: all 0.3s ease;">
-                <i class="fas fa-plus"></i> Admit New Patient
-            </button>
-        </div>
     </div>
 
     <!-- Search and Filter Bar -->
     <div class="glass-card" style="padding: 16px 24px; border-radius: 20px; background: white; border: 1px solid #f1f5f9; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; gap: 24px;">
         <div style="flex: 1; position: relative;">
-            <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
-            <input type="text" placeholder="Search patients by name, room, or condition..." 
-                style="width: 100%; padding: 12px 12px 12px 48px; border-radius: 12px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.95rem; outline: none; transition: all 0.2s;">
+            <form action="{{ route('nurse.patients') }}" method="GET">
+                <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                <input type="text" name="search" value="{{ $searchTerm }}" placeholder="Search patients by name, room, or condition..." 
+                    style="width: 100%; padding: 12px 12px 12px 48px; border-radius: 12px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.95rem; outline: none; transition: all 0.2s;">
+                @if(request('status'))
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                @endif
+            </form>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
             <span style="font-size: 0.85rem; font-weight: 700; color: #64748b; margin-right: 8px;">Filter:</span>
-            <button style="padding: 8px 16px; border-radius: 10px; background: #0f172a; color: white; border: none; font-size: 0.85rem; font-weight: 700; cursor: pointer;">All</button>
-            <button style="padding: 8px 16px; border-radius: 10px; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 700; cursor: pointer;">Critical</button>
-            <button style="padding: 8px 16px; border-radius: 10px; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 700; cursor: pointer;">Stable</button>
+            <a href="{{ route('nurse.patients', ['status' => 'All', 'search' => $searchTerm]) }}" 
+               style="padding: 8px 16px; border-radius: 10px; background: {{ $currentFilter == 'All' ? '#0f172a' : '#f8fafc' }}; color: {{ $currentFilter == 'All' ? 'white' : '#64748b' }}; border: {{ $currentFilter == 'All' ? 'none' : '1px solid #e2e8f0' }}; font-size: 0.85rem; font-weight: 700; text-decoration: none;">All</a>
+            <a href="{{ route('nurse.patients', ['status' => 'Critical', 'search' => $searchTerm]) }}" 
+               style="padding: 8px 16px; border-radius: 10px; background: {{ $currentFilter == 'Critical' ? '#0f172a' : '#f8fafc' }}; color: {{ $currentFilter == 'Critical' ? 'white' : '#64748b' }}; border: {{ $currentFilter == 'Critical' ? 'none' : '1px solid #e2e8f0' }}; font-size: 0.85rem; font-weight: 700; text-decoration: none;">Critical</a>
+            <a href="{{ route('nurse.patients', ['status' => 'Stable', 'search' => $searchTerm]) }}" 
+               style="padding: 8px 16px; border-radius: 10px; background: {{ $currentFilter == 'Stable' ? '#0f172a' : '#f8fafc' }}; color: {{ $currentFilter == 'Stable' ? 'white' : '#64748b' }}; border: {{ $currentFilter == 'Stable' ? 'none' : '1px solid #e2e8f0' }}; font-size: 0.85rem; font-weight: 700; text-decoration: none;">Stable</a>
         </div>
     </div>
 

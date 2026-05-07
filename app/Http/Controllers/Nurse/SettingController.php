@@ -19,9 +19,9 @@ class SettingController extends Controller
             'name' => $authUser->name,
             'email' => $authUser->email,
             'phone' => $authUser->phone,
-            'department' => $authUser->department ?? 'General Ward',
+            'department' => optional($authUser->nurse)->department ?? 'General Ward',
             'employee_id' => 'NS-' . str_pad($authUser->id, 5, '0', STR_PAD_LEFT),
-            'shift' => $authUser->shift ?? 'Morning (08:00 - 16:00)',
+            'shift' => optional($authUser->nurse)->shift ?? 'Morning (08:00 - 16:00)',
             'speciality' => optional($authUser->nurse)->speciality,
             'bio' => optional($authUser->nurse)->bio,
             'avatar' => $authUser->profile_image ? asset('storage/' . $authUser->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($authUser->name) . '&background=0D9488&color=fff'
@@ -53,7 +53,8 @@ class SettingController extends Controller
             $validated['profile_image'] = $path;
         }
 
-        $user->update($validated);
+        // Update user (excluding nurse-specific fields)
+        $user->update(collect($validated)->only(['name', 'email', 'phone', 'profile_image'])->toArray());
 
         // Update or create nurse profile
         $user->nurse()->updateOrCreate(
@@ -61,10 +62,21 @@ class SettingController extends Controller
             [
                 'speciality' => $request->speciality,
                 'bio' => $request->bio,
+                'shift' => $request->shift,
             ]
         );
 
         return back()->with('success', 'Profile updated successfully.');
+    }
+
+    public function removeImage()
+    {
+        $user = Auth::user();
+        if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
+            Storage::disk('public')->delete($user->profile_image);
+        }
+        $user->update(['profile_image' => null]);
+        return redirect()->back()->with('success', 'Profile image removed successfully.');
     }
 
     public function updatePassword(Request $request)

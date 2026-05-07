@@ -48,101 +48,42 @@
                 </div>
             </div>
         </div>
-        {{-- Today's Appointments --}}
-        <div class="glass-card">
-            <div class="stats-card">
-                <div class="icon-box bg-amber">
-                    <i class="fas fa-calendar-day"></i>
-                </div>
-                <div class="stats-info">
-                    <h3>{{ $todayAppointments }}</h3>
-                    <p>Today's Appts</p>
-                </div>
-            </div>
-        </div>
-        {{-- Pending Appointments --}}
-        <div class="glass-card">
-            <div class="stats-card">
-                <div class="icon-box bg-teal">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stats-info">
-                    <h3>{{ $pendingAppointments }}</h3>
-                    <p>Pending Appts</p>
-                </div>
-            </div>
-        </div>
-        {{-- Total Appointments --}}
-        <div class="glass-card">
-            <div class="stats-card">
-                <div class="icon-box" style="background: linear-gradient(135deg, #10b981, #059669);">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <div class="stats-info">
-                    <h3 style="color: #10b981;">{{ $totalAppointments }}</h3>
-                    <p>Total Appts</p>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-        {{-- Chart --}}
-        <div class="glass-card chart-container" style="grid-column: 1 / -1;">
+        {{-- Recent Users --}}
+        <div class="glass-card" style="grid-column: 1 / -1;">
             <div class="chart-header">
-                <h2>Monthly Appointments ({{ date('Y') }})</h2>
+                <h2>Recently Registered Users</h2>
             </div>
-            <canvas id="appointmentsChart" height="90"></canvas>
+            <div class="table-responsive" style="margin-top: 16px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="text-align: left; border-bottom: 1px solid #e2e8f0;">
+                            <th style="padding: 12px; color: #64748b;">User</th>
+                            <th style="padding: 12px; color: #64748b;">Role</th>
+                            <th style="padding: 12px; color: #64748b;">Joined At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($recentUsers as $user)
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 12px; display: flex; align-items: center; gap: 12px;">
+                                <img src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                <div>
+                                    <div style="font-weight: 600;">{{ $user->name }}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">{{ $user->email }}</div>
+                                </div>
+                            </td>
+                            <td style="padding: 12px;">
+                                <span class="badge" style="text-transform: capitalize;">{{ $user->role }}</span>
+                            </td>
+                            <td style="padding: 12px; color: #64748b;">{{ $user->created_at->diffForHumans() }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const ctx = document.getElementById('appointmentsChart').getContext('2d');
-            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
-            gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: @json($monthlyData['labels']),
-                    datasets: [{
-                        label: 'Appointments',
-                        data: @json($monthlyData['data']),
-                        backgroundColor: gradient,
-                        borderColor: '#6366f1',
-                        borderWidth: 2,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1e293b',
-                            padding: 12,
-                            cornerRadius: 8,
-                            displayColors: false,
-                            titleFont: { size: 14, weight: 'bold' },
-                            bodyFont: { size: 13 }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(226,232,240,0.6)', drawBorder: false },
-                            ticks: { font: { size: 12 }, color: '#64748b' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { size: 12 }, color: '#64748b' }
-                        }
-                    }
-                }
-            });
-        });
-    </script>
 @endsection
