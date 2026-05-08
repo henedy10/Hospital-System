@@ -41,6 +41,7 @@ class DashboardController extends Controller
         $todayAppointments = Appointment::where('doctor_id',$doctor->id)
             ->whereDate('appointment_date', $today)
             ->where('status','!=','cancelled')
+            ->whereHas('patient.user')
             ->with('patient.user:id,name,profile_image')
             ->orderBy('appointment_time')
             ->get();
@@ -49,6 +50,7 @@ class DashboardController extends Controller
         $upcomingAppointments = Appointment::where('doctor_id',$doctor->id)
             ->where('status', 'upcoming')
             ->whereDate('appointment_date', '>=', $today)
+            ->whereHas('patient.user')
             ->with('patient.user:id,name,profile_image')
             ->orderBy('appointment_date')
             ->orderBy('appointment_time')
