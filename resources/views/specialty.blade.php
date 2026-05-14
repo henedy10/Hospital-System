@@ -58,7 +58,7 @@
                 <i class="fas fa-hand-holding-medical text-4xl text-medical-primary"></i>
             </div>
             <h1 class="text-6xl md:text-8xl font-bold text-medical-dark mb-8 tracking-tight scroll-reveal" style="transition-delay: 100ms">
-                {{ $specialty }} <span class="text-gradient">Department</span>
+                {{ ucfirst($specialty) }} <span class="text-gradient">Department</span>
             </h1>
             <p class="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed font-medium scroll-reveal" style="transition-delay: 200ms">
                 Experience world-class {{ strtolower($specialty) }} care with advanced diagnostic and treatment options. Our highly trained specialists are dedicated to your health.
@@ -69,21 +69,57 @@
     <!-- Doctors Grid -->
     <section class="py-32">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row justify-between items-end mb-24 gap-12 scroll-reveal">
+            <div class="flex flex-col lg:flex-row justify-between items-end mb-12 gap-12 scroll-reveal">
                 <div class="space-y-6">
                     <h2 class="text-medical-primary font-bold text-sm tracking-[0.3em] uppercase">Department Specialists</h2>
                     <h3 class="text-4xl lg:text-6xl font-bold text-medical-dark tracking-tight leading-tight">Meet Our Expert Team</h3>
                 </div>
-                <div class="flex items-center gap-5 bg-white p-3 rounded-[1.5rem] shadow-premium">
-                    <div class="w-14 h-14 bg-medical-primary/10 rounded-2xl flex items-center justify-center text-medical-primary font-bold text-xl">
+                <div class="flex items-center gap-4 bg-white p-4 rounded-[1.5rem] shadow-premium border border-gray-100 flex-shrink-0">
+                    <div class="w-14 h-14 shrink-0 bg-medical-primary/10 rounded-2xl flex items-center justify-center text-medical-primary font-bold text-xl">
                         {{ $doctors->count() }}
                     </div>
-                    <div class="pr-8">
-                        <div class="text-sm font-bold text-medical-dark">Top Specialists</div>
+                    <div class="pr-4">
+                        <div class="text-sm font-bold text-medical-dark whitespace-nowrap">Specialists Found</div>
                         <div class="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Ready to help you</div>
                     </div>
                 </div>
             </div>
+
+            <!-- Filters -->
+            <form method="GET" action="{{ route('specialty.show', $specialty) }}" class="bg-white p-4 sm:p-6 rounded-[2rem] shadow-premium mb-16 scroll-reveal flex flex-col md:flex-row gap-4 sm:gap-6 items-center border border-gray-50">
+                <div class="flex-1 w-full relative">
+                    <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by doctor name..." class="w-full pl-14 pr-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-medical-primary/50 text-medical-dark font-medium placeholder-gray-400 transition-all">
+                </div>
+                <div class="w-full md:w-48 relative">
+                    <i class="fas fa-briefcase absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 z-10"></i>
+                    <select name="experience" class="w-full pl-12 pr-6 py-4 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-medical-primary/50 text-medical-dark font-medium appearance-none cursor-pointer relative transition-all hover:bg-slate-100">
+                        <option value="">Any Experience</option>
+                        <option value="1-5" {{ request('experience') == '1-5' ? 'selected' : '' }}>1-5 Years</option>
+                        <option value="6-10" {{ request('experience') == '6-10' ? 'selected' : '' }}>6-10 Years</option>
+                        <option value="10+" {{ request('experience') == '10+' ? 'selected' : '' }}>10+ Years</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                </div>
+                <div class="w-full md:w-48 relative">
+                    <i class="fas fa-star absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 z-10"></i>
+                    <select name="rating" class="w-full pl-12 pr-6 py-4 bg-slate-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-medical-primary/50 text-medical-dark font-medium appearance-none cursor-pointer relative transition-all hover:bg-slate-100">
+                        <option value="">Any Rating</option>
+                        <option value="4" {{ request('rating') == '4' ? 'selected' : '' }}>4.0+ Stars</option>
+                        <option value="4.5" {{ request('rating') == '4.5' ? 'selected' : '' }}>4.5+ Stars</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                </div>
+                <button type="submit" class="w-full md:w-auto px-8 py-4 bg-medical-primary text-white font-bold rounded-2xl hover:bg-medical-primary/90 shadow-lg shadow-medical-primary/20 hover:shadow-medical-primary/40 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1">
+                    <i class="fas fa-filter text-sm"></i>
+                    Filter
+                </button>
+                @if(request()->hasAny(['search', 'experience', 'rating']) && (request('search') || request('experience') || request('rating')))
+                <a href="{{ route('specialty.show', $specialty) }}" class="w-full md:w-auto px-8 py-4 bg-slate-100 text-medical-dark font-bold rounded-2xl hover:bg-slate-200 transition-all flex items-center justify-center">
+                    Clear
+                </a>
+                @endif
+            </form>
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10 scroll-reveal" style="transition-delay: 300ms">
                 @forelse ($doctors as $doctor)
