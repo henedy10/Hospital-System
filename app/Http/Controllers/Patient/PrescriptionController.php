@@ -12,6 +12,7 @@ class PrescriptionController extends Controller
 {
     public function __construct(
         protected PrescriptionExplainerService $explainerService
+        
     ) {}
 
     /**
@@ -50,8 +51,6 @@ class PrescriptionController extends Controller
     public function explain(Prescription $prescription)
     {
         $patient = Auth::user()->patient;
-
-        abort_if($prescription->patient_id !== $patient->id, 403);
 
         $prescription->load(['doctor.user', 'patient.user', 'items']);
 

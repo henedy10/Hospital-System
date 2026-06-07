@@ -251,17 +251,29 @@
                 <div>
                     <h5 class="text-lg font-bold mb-8">Newsletter</h5>
                     <p class="text-white/40 mb-6 font-medium">Get the latest health tips and news.</p>
-                    <div class="relative">
-                        <input type="email" placeholder="Email Address"
-                            class="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 focus:outline-none focus:border-medical-primary transition-colors">
-                        <button
+                    @if(session('success'))
+                        <div class="mb-4 text-green-400 text-sm font-medium">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @error('email')
+                        <div class="mb-4 text-red-400 text-sm font-medium">
+                            {{ $message }}
+                        </div>
+                    @enderror
+
+                    <form action="{{ route('newsletter.subscribe') }}" method="POST" class="relative">
+                        @csrf
+                        <input type="email" name="email" placeholder="Email Address" required
+                            class="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 focus:outline-none focus:border-medical-primary transition-colors text-white">
+                        <button type="submit"
                             class="absolute right-2 top-2 bottom-2 bg-medical-primary px-4 rounded-full hover:bg-medical-primary/90 transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                             </svg>
                         </button>
-                    </div>
+                    </form>
                 </div>
             </div>
 

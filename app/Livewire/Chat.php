@@ -21,10 +21,21 @@ class Chat extends Component
     public $search = '';
     public $attachment;
     public $audioData; // Base64 audio string
+    public $showNewConversation = false;
 
     public function render()
     {
-        $query = User::where('id', '!=', Auth::id());
+        $authId = Auth::id();
+        $query = User::query();
+
+        if ($this->showNewConversation) {
+            $query->where('id', '!=', $authId);
+        } else {
+            $contactIds = Message::where('sender_id', $authId)->pluck('receiver_id')
+                ->merge(Message::where('receiver_id', $authId)->pluck('sender_id'))
+                ->unique();
+            $query->whereIn('id', $contactIds);
+        }
         
         if (!empty($this->search)) {
             $query->where('name', 'like', '%' . $this->search . '%');
@@ -37,17 +48,17 @@ class Chat extends Component
         if ($this->selectedUserId) {
             $selectedUser = User::find($this->selectedUserId);
             if ($selectedUser) {
-                $messages = Message::where(function($q) use ($selectedUser) {
-                    $q->where('sender_id', Auth::id())
+                $messages = Message::where(function($q) use ($selectedUser, $authId) {
+                    $q->where('sender_id', $authId)
                       ->where('receiver_id', $selectedUser->id);
-                })->orWhere(function($q) use ($selectedUser) {
+                })->orWhere(function($q) use ($selectedUser, $authId) {
                     $q->where('sender_id', $selectedUser->id)
-                      ->where('receiver_id', Auth::id());
+                      ->where('receiver_id', $authId);
                 })->orderBy('created_at', 'asc')->get();
                 
                 // Mark unread messages as read
                 Message::where('sender_id', $selectedUser->id)
-                    ->where('receiver_id', Auth::id())
+                    ->where('receiver_id', $authId)
                     ->where('is_read', false)
                     ->update(['is_read' => true]);
             }
@@ -63,6 +74,8 @@ class Chat extends Component
     public function selectUser($userId)
     {
         $this->selectedUserId = $userId;
+        $this->showNewConversation = false;
+        $this->search = '';
     }
     
     public function removeAttachment()

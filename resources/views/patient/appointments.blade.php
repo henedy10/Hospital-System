@@ -10,7 +10,7 @@
                 <p class="text-muted">Manage your health journey and upcoming visits.</p>
             </div>
             <button class="btn-premium" onclick="openModal('bookModal')">
-                <i class="fas fa-plus"></i> 
+                <i class="fas fa-plus"></i>
                 <span>Book New Appointment</span>
             </button>
         </div>
@@ -47,7 +47,7 @@
                             <span class="specialty-badge">{{ $appointment->doctor->specialty ?? 'General Practitioner' }}</span>
                         </div>
                     </div>
-                    
+
                     <div class="appointment-details">
                         <div class="detail-row">
                             <div class="detail-item">
@@ -82,9 +82,6 @@
 
                     <div class="appointment-actions">
                         @if($appointment->status === 'upcoming')
-                            <button class="btn-action-outline edit-btn" onclick="openEditModal({{ json_encode($appointment) }})">
-                                <i class="fas fa-edit"></i> Reschedule
-                            </button>
                             <form action="{{ route('patient.appointments.cancel', $appointment) }}" method="POST"
                                 onsubmit="return confirm('Are you sure you want to cancel this appointment?')">
                                 @csrf
@@ -182,7 +179,7 @@
                         <label class="form-label-premium"><i class="fas fa-calendar-alt"></i> Preferred Date</label>
                         <input type="date" name="appointment_date" id="book_appointment_date" class="form-control" required min="{{ date('Y-m-d') }}" onchange="fetchAvailableSlots('book')">
                     </div>
-                    
+
                     <div class="input-group full-width" style="margin-bottom: 20px;">
                         <label class="form-label-premium"><i class="fas fa-clock"></i> Available Slots</label>
                         <div class="time-slots-container" id="book_slots_container">
@@ -236,7 +233,7 @@
                         <label class="form-label-premium"><i class="fas fa-calendar-alt"></i> New Date</label>
                         <input type="date" name="appointment_date" id="edit_appointment_date" class="form-control" required min="{{ date('Y-m-d') }}" onchange="fetchAvailableSlots('edit')">
                     </div>
-                    
+
                     <div class="input-group full-width" style="margin-bottom: 20px;">
                         <label class="form-label-premium"><i class="fas fa-clock"></i> Available Slots</label>
                         <div class="time-slots-container" id="edit_slots_container">
@@ -561,6 +558,9 @@
             overflow: hidden;
             animation: modalPop 0.3s ease-out;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
         }
 
         @keyframes modalPop {
@@ -568,13 +568,15 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        .modal-header {
+        .modal-header, .modal-header-premium {
             padding: 1.5rem;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 1rem;
             border-bottom: 1px solid #f1f5f9;
             position: relative;
+            flex-shrink: 0;
         }
 
         .header-icon {
@@ -610,7 +612,7 @@
             justify-content: center;
         }
 
-        .premium-form { padding: 1.5rem; }
+        .premium-form { padding: 1.5rem; overflow-y: auto; flex: 1; min-height: 0; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .full-width { grid-column: span 2; }
 
@@ -903,7 +905,7 @@
 
             // Fetch available slots and THEN set the current time
             await fetchAvailableSlots('edit');
-            
+
             // Add the current appointment time as an option if it's not already there
             const time = appointment.appointment_time.substring(0, 5);
             const timeSelect = document.getElementById('edit_appointment_time');
@@ -1011,10 +1013,10 @@
 
         function selectSlot(prefix, time, input) {
             document.getElementById(prefix + '_appointment_time').value = time;
-            
+
             const grid = document.getElementById(prefix + '_appointment_time_grid');
             grid.querySelectorAll('.time-slot-pill').forEach(pill => pill.classList.remove('selected'));
-            
+
             input.parentElement.classList.add('selected');
         }
 

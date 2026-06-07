@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
+     * Order matters: Admins → Doctors → Nurses → Labs → Lab Tests → Patients
+     * (Patients depend on Doctors and Nurses already being present.)
      */
     public function run(): void
     {

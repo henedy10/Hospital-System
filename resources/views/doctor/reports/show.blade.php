@@ -149,6 +149,26 @@
             @endif
         </section>
 
+        @if(!empty($report['lab_recommendations']) && $report['lab_recommendations']->count())
+        <section class="content-block">
+            <div class="doc-section-title"><i class="fas fa-flask"></i> Suggested Lab Tests</div>
+            <div style="background:#eff6ff; border-radius:8px; padding:20px; border-left:4px solid #2563eb;">
+                @foreach($report['lab_recommendations'] as $rec)
+                    <div style="background:#fff; border:1px solid #dbeafe; border-radius:6px; padding:12px; margin-bottom:10px;">
+                        <div style="font-weight:600; color:#1e293b;">{{ $rec->labTest->name }}</div>
+                        @if($rec->lab)
+                            <p style="font-size:0.85rem; color:#64748b; margin:4px 0 0;">Preferred: {{ $rec->lab->name }}</p>
+                        @endif
+                        @if($rec->notes)
+                            <p style="font-size:0.85rem; margin:6px 0 0;">{{ $rec->notes }}</p>
+                        @endif
+                        <span style="font-size:0.75rem; color:#2563eb; font-weight:600;">Status: {{ ucfirst($rec->status) }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+        @endif
+
         <!-- Footer / Signature -->
         <footer class="signature-area">
             <div class="signature-box">

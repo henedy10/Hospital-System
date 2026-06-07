@@ -98,6 +98,13 @@
                             style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s; box-sizing: border-box;"
                             onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">is_lab</label>
+                        <input type="radio" name="is_lab" value="1">
+                        <label style="margin-right: 16px;font-size: 0.85rem;">Yes</label>
+                        <input type="radio" name="is_lab" value="0">
+                        <label style="margin-right: 16px;font-size: 0.85rem;">No</label>
+                    </div>
 
                     <div id="genderField" style="display:none;">
                         <label

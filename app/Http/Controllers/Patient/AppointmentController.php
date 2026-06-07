@@ -14,7 +14,7 @@ use App\Models\
     Patient
 };
 
-
+use Illuminate\Support\Facades\Http;
 class AppointmentController extends Controller
 {
     public function index(Request $request)
@@ -30,7 +30,7 @@ class AppointmentController extends Controller
             ->get();
         $doctors = Doctor::with('user')->whereHas('user',function ($q) {
             $q->where('role','doctor');
-        })->get();
+        })->where('is_lab',false)->get();
 
         return view('patient.appointments', compact('appointments', 'status', 'doctors'));
     }
@@ -76,10 +76,24 @@ class AppointmentController extends Controller
             'patient_id' => null,
             'reason' => null
         ]);
-        
+
         if ($appointment->doctor && $appointment->doctor->user) {
             $appointment->doctor->user->notify(new \App\Notifications\AppointmentCancelled($appointment));
         }
+
+        $response = Http::post('https://finicky-unstuffed-rewrap.ngrok-free.dev/webhook-test/4672b0fe-7548-4e59-8904-9887cd53abbb', [
+            'type' => 'cancelling',
+            'id'   => $appointment->id,
+            'patient_name' => $patient->user->name,
+            'patient_email' => $patient->user->email,
+            'doctor_name' => $appointment->doctor->user->name,
+            'doctor_specialty' => $appointment->doctor->specialty,
+            'appointment_date' => $appointment->appointment_date,
+            'appointment_time' => $appointment->appointment_time,
+            'reason' => $appointment->reason,
+            'status' => $appointment->status,
+            'from' => 'patient'
+        ]);
 
         return redirect()->back()->with('success', 'Appointment cancelled successfully.');
     }

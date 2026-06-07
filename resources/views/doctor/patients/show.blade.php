@@ -157,6 +157,59 @@
 
 
             <div class="glass-card" style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Lab Tests & Results 🧪</h3>
+                    <a href="{{ route('doctor.lab-recommendations.create', ['patient_id' => $patient->id]) }}"
+                        class="btn-primary-sm" style="text-decoration: none; font-size: 0.8rem;">
+                        <i class="fas fa-flask"></i> Suggest Lab Test
+                    </a>
+                </div>
+
+                @if($patient->labRecommendations->count())
+                    <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">Your Recommendations</h4>
+                    @foreach($patient->labRecommendations as $rec)
+                        <div style="padding: 12px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>{{ $rec->labTest->name }}</strong>
+                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full {{ $rec->status_color }}">{{ ucfirst($rec->status) }}</span>
+                            </div>
+                            @if($rec->lab)
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 4px 0 0;">{{ $rec->lab->name }}</p>
+                            @endif
+                            @if($rec->notes)
+                                <p style="font-size: 0.85rem; margin: 6px 0 0;">{{ $rec->notes }}</p>
+                            @endif
+                        </div>
+                    @endforeach
+                @endif
+
+                @if($patient->labAppointments->count())
+                    <h4 style="font-size: 0.9rem; color: var(--text-muted); margin: 20px 0 12px;">Booked Appointments</h4>
+                    @foreach($patient->labAppointments as $apt)
+                        <div style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem;">
+                            <strong>{{ $apt->labTest->name }}</strong>
+                            <span style="color: var(--text-muted);"> — {{ $apt->appointment_date->format('M d, Y') }} · {{ ucfirst($apt->status) }}</span>
+                        </div>
+                    @endforeach
+                @endif
+
+                @if($patient->labResults->count())
+                    <h4 style="font-size: 0.9rem; color: var(--text-muted); margin: 20px 0 12px;">Results</h4>
+                    @foreach($patient->labResults as $result)
+                        <div style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem;">
+                            <strong>{{ $result->test_name }}</strong>: {{ $result->result_value }}
+                            @if($result->unit) {{ $result->unit }} @endif
+                            <span style="color: var(--text-muted);"> ({{ $result->test_date->format('M d, Y') }})</span>
+                        </div>
+                    @endforeach
+                @endif
+
+                @if(!$patient->labRecommendations->count() && !$patient->labAppointments->count() && !$patient->labResults->count())
+                    <p style="text-align: center; color: var(--text-muted); padding: 12px 0;">No lab activity for this patient yet.</p>
+                @endif
+            </div>
+
+            <div class="glass-card" style="padding: 24px;">
                 <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 24px;">Medical History & Visits ⏳</h3>
                 <div class="timeline">
                     @forelse($patient->medicalHistories as $history)
@@ -203,7 +256,7 @@
     <div id="historyModal" class="modal"
         style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);">
         <div class="glass-card"
-            style="background: white; margin: 10% auto; padding: 32px; width: 500px; border-radius: 24px; position: relative;">
+            style="background: white; margin: 5% auto; padding: 32px; width: 560px; max-width: 95vw; border-radius: 24px; position: relative; max-height: 90vh; overflow-y: auto;">
             <h3 style="margin-top: 0; margin-bottom: 24px; font-weight: 800;">Add New Medical Record</h3>
             <form action="{{ route('doctor.medical-history.store') }}" method="POST">
                 @csrf
@@ -228,6 +281,29 @@
                         Notes</label>
                     <textarea name="treatment" rows="4"
                         style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;"></textarea>
+                </div>
+
+                <div style="margin-bottom: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">
+                        <i class="fas fa-flask" style="color: #2563eb;"></i> Suggest Lab Test (Optional)
+                    </label>
+                    <select name="lab_items[0][lab_test_id]" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                        <option value="">— No lab test —</option>
+                        @foreach($labTests as $test)
+                            <option value="{{ $test->id }}">{{ $test->name }} ({{ $test->category }})</option>
+                        @endforeach
+                    </select>
+                    <select name="lab_items[0][lab_id]" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                        <option value="">Any available lab</option>
+                        @foreach($labs as $lab)
+                            <option value="{{ $lab->id }}">
+                                {{ $lab->name }}
+                                @if($lab->doctor) (Dr. {{ $lab->doctor->user->name }}) @endif
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="lab_items[0][notes]" placeholder="Notes for patient (e.g. fasting required)"
+                        style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0;">
                 </div>
 
                 <div style="display: flex; gap: 12px; justify-content: flex-end;">

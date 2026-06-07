@@ -114,6 +114,18 @@
                     </button>
                 </div>
 
+                <div style="margin-bottom: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem;">
+                        <i class="fas fa-flask" style="color: #2563eb;"></i> Lab Test Suggestion (Optional)
+                    </label>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 12px;">Patient can book suggested tests from Lab History.</p>
+                    <div id="lab-items-container"></div>
+                    <button type="button" onclick="addLabItem()" class="btn-outline"
+                        style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin-top: 8px;">
+                        <i class="fas fa-plus"></i> Add Lab Test
+                    </button>
+                </div>
+
                 <div style="display: flex; gap: 12px; justify-content: flex-end;">
                     <button type="button" onclick="closeCreateReportModal()" class="btn-outline"
                         style="width: auto; padding: 10px 24px;">Cancel</button>
@@ -220,12 +232,55 @@
             document.getElementById('createReportModal').style.display = 'none';
         }
 
+        const labTestsOptions = @json($labTests->map(fn ($t) => ['id' => $t->id, 'name' => $t->name, 'category' => $t->category]));
+        const labsOptions = @json($labs->map(fn ($l) => ['id' => $l->id, 'name' => $l->name, 'doctor' => $l->doctor?->user?->name]));
+
         let itemIndex = 0;
+        let labItemIndex = 0;
+
         function addPrescriptionItem() {
             const container = document.getElementById('prescription-items-container');
-            const itemHtml = getPrescriptionItemHtml('items', itemIndex);
-            container.insertAdjacentHTML('beforeend', itemHtml);
+            container.insertAdjacentHTML('beforeend', getPrescriptionItemHtml('items', itemIndex));
             itemIndex++;
+        }
+
+        function getPrescriptionItemHtml(prefix, index) {
+            return `
+            <div style="border:1px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:10px; position:relative;">
+                <button type="button" onclick="this.parentElement.remove()" style="position:absolute; top:8px; right:8px; background:#fee2e2; color:#dc2626; border:none; border-radius:6px; width:28px; height:28px; cursor:pointer;"><i class="fas fa-times"></i></button>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div><label style="font-size:.75rem; font-weight:600;">Medicine *</label><input type="text" name="${prefix}[${index}][medicine_name]" required style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;"></div>
+                    <div><label style="font-size:.75rem; font-weight:600;">Dosage *</label><input type="text" name="${prefix}[${index}][dosage]" required style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;"></div>
+                    <div><label style="font-size:.75rem; font-weight:600;">Times/Day *</label><input type="number" name="${prefix}[${index}][frequency]" required min="1" max="10" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;"></div>
+                    <div><label style="font-size:.75rem; font-weight:600;">Duration (days) *</label><input type="number" name="${prefix}[${index}][duration]" required min="1" max="365" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;"></div>
+                </div>
+                <div style="margin-top:8px;"><label style="font-size:.75rem; font-weight:600;">Instructions</label><input type="text" name="${prefix}[${index}][instructions]" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;"></div>
+            </div>`;
+        }
+
+        function addLabItem() {
+            const container = document.getElementById('lab-items-container');
+            container.insertAdjacentHTML('beforeend', getLabItemHtml('lab_items', labItemIndex));
+            labItemIndex++;
+        }
+
+        function getLabItemHtml(prefix, index) {
+            let testOpts = '<option value="">Select test</option>';
+            labTestsOptions.forEach(t => { testOpts += `<option value="${t.id}">${t.name} (${t.category})</option>`; });
+            let labOpts = '<option value="">Any lab</option>';
+            labsOptions.forEach(l => {
+                const suffix = l.doctor ? ` — Dr. ${l.doctor}` : '';
+                labOpts += `<option value="${l.id}">${l.name}${suffix}</option>`;
+            });
+            return `
+            <div style="border:1px solid #dbeafe; border-radius:12px; padding:14px; margin-bottom:10px; position:relative; background:#f8fafc;">
+                <button type="button" onclick="this.parentElement.remove()" style="position:absolute; top:8px; right:8px; background:#fee2e2; color:#dc2626; border:none; border-radius:6px; width:28px; height:28px; cursor:pointer;"><i class="fas fa-times"></i></button>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div><label style="font-size:.75rem; font-weight:600;">Lab Test *</label><select name="${prefix}[${index}][lab_test_id]" required style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">${testOpts}</select></div>
+                    <div><label style="font-size:.75rem; font-weight:600;">Preferred Lab</label><select name="${prefix}[${index}][lab_id]" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">${labOpts}</select></div>
+                </div>
+                <div style="margin-top:8px;"><label style="font-size:.75rem; font-weight:600;">Notes for patient</label><input type="text" name="${prefix}[${index}][notes]" placeholder="e.g. Fasting required" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;"></div>
+            </div>`;
         }
 
 

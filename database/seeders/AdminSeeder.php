@@ -2,23 +2,35 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AdminSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        DB::table('users')->insert([
-            'name' => "Faisal Zayed",
-            'email' => "faisalzayed@gmail.com",
-            'password' => Hash::make('password'),
-            'role' => 'admin'
-        ]);
+        $admins = [
+            [
+                'name'  => 'Faisal Zayed',
+                'email' => 'faisalzayed@gmail.com',
+            ],
+            [
+                'name'  => 'Sara Al-Mansoori',
+                'email' => 'sara.admin@hospital.com',
+            ],
+        ];
+
+        foreach ($admins as $admin) {
+            User::updateOrCreate(
+                ['email' => $admin['email']],
+                [
+                    'name'        => $admin['name'],
+                    'password'    => Hash::make('password'),
+                    'role'        => User::ROLE_ADMIN,
+                    'is_verified' => true,
+                ]
+            );
+        }
     }
 }

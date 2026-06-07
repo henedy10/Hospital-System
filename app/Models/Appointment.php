@@ -13,6 +13,7 @@ class Appointment extends Model
         'appointment_time',
         'reason',
         'status',
+        'is_reminder',
     ];
 
     public function user()

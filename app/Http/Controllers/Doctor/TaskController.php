@@ -10,7 +10,8 @@ use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 class TaskController extends Controller
 {
     /**
@@ -63,7 +64,8 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request)
     {
-        $task = Task::create([
+        try {
+            $task = Task::create([
             'user_id'     => $request->nurse_id,
             'assigned_by' => Auth::id(),
             'patient_id'  => $request->patient_id ?: null,
@@ -78,9 +80,25 @@ class TaskController extends Controller
 
         // Notify the assigned nurse
         $nurse = User::find($request->nurse_id);
+        $patient = Patient::with('user')->find($request->patient_id);
         if ($nurse) {
             $nurse->notify(new TaskAssignedNotification($task));
         }
+
+        Http::post('https://finicky-unstuffed-rewrap.ngrok-free.dev/webhook-test/4602b80f-14af-4374-b2b0-d3fe402f2104',
+        [
+            'title' => 'New Task Assigned',
+            'priority' => $task->priority,
+            'nurse_email' => $nurse->email,
+            'deadline' => $task->due_at,
+            'doctor_name' => Auth::user()->name,
+            'patient_name' => $patient->user->name
+        ]);
+    } catch (\Exception $e) {
+        log::error($e->getMessage());
+        return redirect()->route('doctor.tasks.index')
+            ->with('error', "Failed to assign task: " . $e->getMessage());
+    }
 
         return redirect()->route('doctor.tasks.index')
             ->with('success', "Task \"{$task->title}\" assigned to {$nurse->name} successfully.");

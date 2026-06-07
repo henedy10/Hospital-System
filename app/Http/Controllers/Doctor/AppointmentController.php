@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class AppointmentController extends Controller
 {
@@ -51,6 +52,19 @@ class AppointmentController extends Controller
         $appointment->update([
             'status' => $request->status
         ]);
+        if($request->status == 'cancelled'){
+            $response = Http::post('https://finicky-unstuffed-rewrap.ngrok-free.dev/webhook-test/4672b0fe-7548-4e59-8904-9887cd53abbb', [
+                'type' => 'cancelling',
+                'id'   => $appointment->id,
+                'doctor_name' => $appointment->doctor->user->name,
+                'doctor_specialty' => $appointment->doctor->specialty,
+                'appointment_date' => $appointment->appointment_date,
+                'appointment_time' => $appointment->appointment_time,
+                'patient_email' => $appointment->patient->user->email,
+                'patient_name' => $appointment->patient->user->name,
+                'from' => 'doctor'
+            ]);
+        }
 
         if ($appointment->patient && $appointment->patient->user) {
             $appointment->patient->user->notify(new \App\Notifications\AppointmentStatusUpdated($appointment));

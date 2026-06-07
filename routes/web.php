@@ -20,7 +20,8 @@ use App\Http\Controllers\Doctor\
     SettingController,
     TaskController as DoctorTaskController,
     FeedbackController as DoctorFeedbackController,
-    PrescriptionController as DoctorPrescriptionController
+    PrescriptionController as DoctorPrescriptionController,
+    LabRecommendationController as DoctorLabRecommendationController
 };
 
 use App\Http\Controllers\Nurse\
@@ -49,6 +50,7 @@ use App\Http\Controllers\HomeController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/specialty/{specialty}', [HomeController::class, 'showSpecialty'])->name('specialty.show');
+Route::post('/newsletter', [\App\Http\Controllers\NewsletterSubscriberController::class, 'store'])->name('newsletter.subscribe');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

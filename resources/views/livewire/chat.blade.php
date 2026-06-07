@@ -382,7 +382,18 @@
     <div class="chat-container">
         <!-- Sidebar -->
         <div class="chat-sidebar">
-            <h2>Contacts</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-right: 20px;">
+                <h2>{{ $showNewConversation ? 'All Users' : 'Chats' }}</h2>
+                @if($showNewConversation)
+                    <button wire:click="$set('showNewConversation', false)" style="background: none; border: none; color: #64748b; cursor: pointer; font-size: 0.9rem; padding: 5px; margin-top: 8px;">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                @else
+                    <button wire:click="$set('showNewConversation', true)" style="background: #0d9488; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.8rem; padding: 6px 12px; margin-top: 8px; transition: background 0.2s;">
+                        <i class="fas fa-plus"></i> New
+                    </button>
+                @endif
+            </div>
             <div class="search-box">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search users...">
             </div>
