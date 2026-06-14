@@ -12,10 +12,12 @@ class SymptomCheck extends Model
         'predicted_disease',
         'specialization',
         'urgency',
+        'ai_response',
     ];
 
     protected $casts = [
         'symptoms_json' => 'array',
+        'ai_response' => 'array',
     ];
 
     public function patient()

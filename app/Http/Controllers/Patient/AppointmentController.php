@@ -30,7 +30,7 @@ class AppointmentController extends Controller
             ->get();
         $doctors = Doctor::with('user')->whereHas('user',function ($q) {
             $q->where('role','doctor');
-        })->where('is_lab',false)->get();
+        })->get();
 
         return view('patient.appointments', compact('appointments', 'status', 'doctors'));
     }

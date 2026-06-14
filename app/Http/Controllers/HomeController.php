@@ -18,7 +18,6 @@ class HomeController extends Controller
         $specialties = Doctor::select('specialty')
             ->whereNotNull('specialty')
             ->distinct()
-            ->take(3)
             ->get();
 
         $doctors = User::where('role', 'doctor')->take(3)->get();

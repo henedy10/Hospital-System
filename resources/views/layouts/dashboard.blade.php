@@ -49,11 +49,6 @@
                         <li class="{{ request()->routeIs('doctor.reviews*') ? 'active' : '' }}"><a
                                 href="{{ route('doctor.reviews.index') }}"><i class="fas fa-star"></i>
                                 <span>My Reviews</span></a></li>
-                         @if( !Auth::user()->doctor->is_lab)
-                        <li class="{{ request()->routeIs('doctor.lab-recommendations*') ? 'active' : '' }}"><a
-                                href="{{ route('doctor.lab-recommendations.index') }}"><i class="fas fa-flask"></i>
-                                <span>Lab Suggestions</span></a></li>
-                        @endif
                         <li class="{{ request()->routeIs('chat') ? 'active' : '' }}"><a
                                 href="{{ route('chat') }}"><i class="fas fa-comments"></i> <span>Messages</span></a></li>
                         <li class="{{ request()->routeIs('doctor.settings') ? 'active' : '' }}"><a
@@ -89,12 +84,7 @@
                         <li class="{{ request()->routeIs('patient.profile') ? 'active' : '' }}"><a
                                 href="{{ route('patient.profile') }}"><i class="fas fa-user-circle"></i>
                                 <span>My Profile</span></a></li>
-                        <li class="{{ request()->routeIs('lab.index') || request()->routeIs('patient.lab*') ? 'active' : '' }}"><a
-                                href="{{ route('lab.index') }}"><i class="fas fa-flask"></i>
-                                <span>Lab Services</span></a></li>
-                        <li class="{{ request()->routeIs('patient.lab-history*') ? 'active' : '' }}"><a
-                                href="{{ route('patient.lab-history.index') }}"><i class="fas fa-vial"></i>
-                                <span>Lab History</span></a></li>
+
 
                     @elseif(Auth::user() && Auth::user()->isAdmin())
                         <li class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"><a

@@ -128,7 +128,7 @@
                                         <span style="font-size: 0.8rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($apt->appointment_date)->format('M j') }} · {{ \Carbon\Carbon::parse($apt->appointment_time)->format('h:i A') }}</span>
                                     </div>
                                 </div>
-                                <a href="#" class="btn-primary-sm" style="text-decoration: none; padding: 5px 10px; font-size: 0.75rem; white-space: nowrap;">Profile</a>
+                                <a href="{{ route('doctor.patients.show', $apt->patient->user_id) }}" class="btn-primary-sm" style="text-decoration: none; padding: 5px 10px; font-size: 0.75rem; white-space: nowrap;">Profile</a>
                             </li>
                         @endforeach
                     </ul>

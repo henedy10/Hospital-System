@@ -75,35 +75,6 @@
             </div>
         </div>
 
-        @if($history->labRecommendations->count())
-        <div style="background:#fff; border-radius:16px; box-shadow:0 1px 8px rgba(0,0,0,.07); padding:28px; margin-bottom:22px;">
-            <h2 style="font-size:1rem; font-weight:700; color:#0f172a; margin:0 0 16px 0;">
-                <i class="fas fa-flask" style="color:#2563eb;"></i> Lab Suggestions on This Report
-            </h2>
-            @foreach($history->labRecommendations as $rec)
-                <div style="padding:12px; background:#eff6ff; border-radius:10px; margin-bottom:8px; font-size:.9rem;">
-                    <strong>{{ $rec->labTest->name }}</strong>
-                    @if($rec->lab) · {{ $rec->lab->name }} @endif
-                    <span style="margin-left:8px; font-size:.75rem; padding:2px 8px; border-radius:12px; background:#dbeafe;">{{ ucfirst($rec->status) }}</span>
-                    @if($rec->notes)<p style="margin:6px 0 0; color:#64748b;">{{ $rec->notes }}</p>@endif
-                </div>
-            @endforeach
-        </div>
-        @endif
-
-        <div style="background:#fff; border-radius:16px; box-shadow:0 1px 8px rgba(0,0,0,.07); padding:28px; margin-bottom:22px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <h2 style="font-size:1rem; font-weight:700; color:#0f172a; margin:0;">
-                    <i class="fas fa-vial" style="color:#2563eb;"></i> Add Lab Suggestion (Optional)
-                </h2>
-                <button type="button" onclick="addLabRow()"
-                        style="background:#2563eb; color:#fff; border:none; cursor:pointer; padding:8px 16px; border-radius:9px; font-size:.85rem; font-weight:600;">
-                    <i class="fas fa-plus"></i> Add Lab Test
-                </button>
-            </div>
-            <div id="labRows"></div>
-        </div>
-
         {{-- Medicine Items --}}
         <div style="background:#fff; border-radius:16px; box-shadow:0 1px 8px rgba(0,0,0,.07); padding:28px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -136,8 +107,7 @@
 </div>
 
 <script>
-    const labTestsOptions = @json($labTests->map(fn ($t) => ['id' => $t->id, 'name' => $t->name, 'category' => $t->category]));
-    const labsOptions = @json($labs->map(fn ($l) => ['id' => $l->id, 'name' => $l->name, 'doctor' => $l->doctor?->user?->name]));
+
 
     let rowIndex = 0;
     let labRowIndex = 0;

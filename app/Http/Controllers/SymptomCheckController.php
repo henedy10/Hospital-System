@@ -39,11 +39,12 @@ class SymptomCheckController extends Controller
             'patient_id' => $user->patient->id,
             'symptoms_json' => [
                 'text' => $symptomsText,
-                'features' => array_diff_key($aiResponse, array_flip(['predicted_disease', 'specialization', 'urgency', 'original_text', 'error']))
+                'features' => $aiResponse,
             ],
             'predicted_disease' => $aiResponse['predicted_disease'] ?? 'Unknown',
             'specialization' => $aiResponse['specialization'] ?? 'General Medicine',
             'urgency' => $aiResponse['urgency'] ?? 'medium',
+            'ai_response' => $aiResponse
         ]);
 
         return redirect()->route('symptoms.result', $symptomCheck->id);

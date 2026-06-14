@@ -43,7 +43,7 @@
                         class="hidden" accept="image/*" onchange="previewImage(this)">
                 </div>
                 <div class="user-meta">
-                    <h2>Dr. {{ $user->name }}</h2>
+                    <h2>{{ $user->name }}</h2>
                     <p>Specialization: <span class="user-status active">{{ $user->doctor->specialty ?? 'General' }}</span></p>
                 </div>
             </div>

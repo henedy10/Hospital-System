@@ -232,8 +232,7 @@
             document.getElementById('createReportModal').style.display = 'none';
         }
 
-        const labTestsOptions = @json($labTests->map(fn ($t) => ['id' => $t->id, 'name' => $t->name, 'category' => $t->category]));
-        const labsOptions = @json($labs->map(fn ($l) => ['id' => $l->id, 'name' => $l->name, 'doctor' => $l->doctor?->user?->name]));
+
 
         let itemIndex = 0;
         let labItemIndex = 0;

@@ -1,9 +1,12 @@
+# pyrefly: ignore [missing-import]
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+# pyrefly: ignore [missing-import]
 import joblib
 import pandas as pd
 import os
 from sklearn.linear_model import LinearRegression
+# pyrefly: ignore [missing-import]
 import numpy as np
 
 app = Flask(__name__)

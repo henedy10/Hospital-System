@@ -91,19 +91,12 @@
 
         <!-- Symptom Analysis -->
         <div>
-            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Extracted Symptom Patterns</h4>
+            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Predicted Disease</h4>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                @php
-                    $features = isset($symptomCheck->symptoms_json['features']) ? $symptomCheck->symptoms_json['features'] : $symptomCheck->symptoms_json;
-                @endphp
-                @foreach($features as $key => $value)
-                    @if($value && $key !== 'text' && $key !== 'features')
-                        <span style="background: white; border: 2px solid #f1f5f9; padding: 10px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; color: var(--text-main); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#f1f5f9'">
-                            <i class="fas fa-check-circle" style="color: var(--primary);"></i>
-                            {{ ucwords(str_replace('_', ' ', $key)) }}
-                        </span>
-                    @endif
-                @endforeach
+                <span style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 40px; font-weight: 800; font-size: 0.95rem;">
+                    <i class="fas fa-microchip" style="color: var(--primary);"></i>
+                    {{ $symptomCheck->symptoms_json['features']['predicted_disease'] }}
+                </span>
             </div>
         </div>
 
@@ -146,13 +139,11 @@
                         <img src="{{ $doctor->user->profile_image ? asset('storage/' . $doctor->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($doctor->user->name) . '&background=4361EE&color=fff&size=128' }}" 
                              alt="{{ $doctor->user->name }}" 
                              style="width: 80px; height: 80px; border-radius: 20px; object-fit: cover; box-shadow: 0 8px 15px rgba(0,0,0,0.1);">
-                        <h4 style="font-weight: 800; color: var(--text-main); margin-top: 16px; font-size: 1.1rem;">Dr. {{ $doctor->user->name }}</h4>
+                        <h4 style="font-weight: 800; color: var(--text-main); margin-top: 16px; font-size: 1.1rem;">{{ $doctor->user->name }}</h4>
                         <span style="font-size: 0.85rem; color: var(--primary); font-weight: 700; background: rgba(67, 97, 238, 0.08); padding: 4px 12px; border-radius: 20px;">{{ $doctor->specialty }}</span>
                     </div>
                     
-                    <a href="{{ route('patient.book.appointment', $doctor->id) }}" class="btn-primary" style="width: 100%; justify-content: center; border-radius: 12px; background: var(--text-main);">
-                        Book Visit
-                    </a>
+
                 </div>
             @endforeach
         </div>

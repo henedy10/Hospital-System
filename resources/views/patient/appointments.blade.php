@@ -43,7 +43,7 @@
                             @endif
                         </div>
                         <div class="doctor-info">
-                            <h3>Dr. {{ $appointment->doctor->user->name }}</h3>
+                            <h3>{{ $appointment->doctor->user->name }}</h3>
                             <span class="specialty-badge">{{ $appointment->doctor->specialty ?? 'General Practitioner' }}</span>
                         </div>
                     </div>
@@ -106,8 +106,11 @@
                                             <form method="POST"
                                                   action="{{ route('patient.feedback.destroy', $appointment->feedback) }}"
                                                   onsubmit="return confirm('Delete your review?')">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="btn-review-del"><i class="fas fa-trash"></i></button>
+                                                @csrf 
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-review-del">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
                                             </form>
                                         </div>
                                     </div>
@@ -115,7 +118,7 @@
                                         <div class="doctor-reply-box animate-fade-in">
                                             <div class="reply-header">
                                                 <i class="fas fa-reply fa-flip-horizontal"></i>
-                                                <span>Dr. {{ $appointment->doctor->user->name }}'s Response:</span>
+                                                <span>{{ $appointment->doctor->user->name }}'s Response:</span>
                                             </div>
                                             <p class="reply-text">{{ $appointment->feedback->doctor_reply }}</p>
                                         </div>
@@ -171,7 +174,7 @@
                         <select name="doctor_id" id="book_doctor_id" class="form-control" required onchange="fetchAvailableSlots('book')">
                             <option value="" disabled selected>Select a Doctor</option>
                             @foreach($doctors as $doctor)
-                                <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }} - {{ $doctor->specialty ?? 'General' }}</option>
+                                <option value="{{ $doctor->id }}">{{ $doctor->user->name }} - {{ $doctor->specialty ?? 'General' }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -225,7 +228,7 @@
                         <label class="form-label-premium"><i class="fas fa-user-md"></i> Specialist</label>
                         <select name="doctor_id" id="edit_doctor_id" class="form-control" required onchange="fetchAvailableSlots('edit')">
                             @foreach($doctors as $doctor)
-                                <option value="{{ $doctor->id }}">Dr. {{ $doctor->user->name }} - {{ $doctor->specialty ?? 'General' }}</option>
+                                <option value="{{ $doctor->id }}">{{ $doctor->user->name }} - {{ $doctor->specialty ?? 'General' }}</option>
                             @endforeach
                         </select>
                     </div>
