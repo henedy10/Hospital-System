@@ -12,8 +12,9 @@ class PrescriptionController extends Controller
 {
     public function __construct(
         protected PrescriptionExplainerService $explainerService
-        
-    ) {}
+
+    ) {
+    }
 
     /**
      * List all prescriptions for the logged-in patient.
@@ -54,14 +55,13 @@ class PrescriptionController extends Controller
 
         $prescription->load(['doctor.user', 'patient.user', 'items']);
 
-        // Generate explanation using the service
+        // Generate explanation using the service (now calling Python XAI Model)
         $explanation = $this->explainerService->explain($prescription);
-
         // Also support JSON response for API consumers
         if (request()->expectsJson()) {
             return response()->json($explanation);
         }
 
-        return view('patient.prescriptions.explain', compact('prescription', 'explanation'));
+        return view('patient.prescriptions.medication-xai', compact('prescription', 'explanation'));
     }
 }

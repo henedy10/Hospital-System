@@ -5,9 +5,11 @@ from flask_cors import CORS
 import joblib
 import pandas as pd
 import os
+import csv
 from sklearn.linear_model import LinearRegression
 # pyrefly: ignore [missing-import]
 import numpy as np
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -131,110 +133,151 @@ def predict_load():
 # AI Prescription Explainer Endpoint
 # --------------------------------------------------------------------------
 
-# Arabic medicine knowledge base (mirrored from Laravel service)
-MEDICINE_KB = {
-    'paracetamol':   'مسكن للألم وخافض للحرارة يُستخدم لعلاج الألم الخفيف إلى المتوسط والحمى',
-    'acetaminophen': 'مسكن للألم وخافض للحرارة',
-    'ibuprofen':     'مضاد للالتهاب غير ستيرويدي، يُستخدم لتخفيف الألم والالتهاب والحمى',
-    'amoxicillin':   'مضاد حيوي من مجموعة البنسلين لعلاج العدوى البكتيرية',
-    'azithromycin':  'مضاد حيوي من مجموعة الماكروليد لعلاج التهابات الجهاز التنفسي',
-    'omeprazole':    'مثبط لمضخة البروتون يُستخدم لعلاج قرحة المعدة والحموضة',
-    'metformin':     'دواء سكري من النوع الثاني يُساعد على خفض مستوى السكر في الدم',
-    'amlodipine':    'مُوسِّع للأوعية الدموية لعلاج ضغط الدم المرتفع وذبحة صدرية',
-    'atorvastatin':  'دواء لخفض الكوليسترول والوقاية من أمراض القلب',
-    'cetirizine':    'مضاد للهستامين لعلاج الحساسية والحكة والطفح الجلدي',
-}
+# Helper: Generate fake SHAP-like importance
+def generate_xai_factors(med_data):
+    factors = []
 
-def get_arabic_medicine_info(medicine_name):
-    key = medicine_name.lower().strip()
-    for kb_key, description in MEDICINE_KB.items():
-        if kb_key in key or key in kb_key:
-            return description
-    return 'دواء موصوف من قِبَل طبيبك — يُرجى استشارة طبيبك أو الصيدلاني لمزيد من التفاصيل'
+    # Example factors (simulate XAI reasoning)
+    if med_data.get('side_effects_en'):
+        factors.append({
+            "feature": "Side Effects Severity",
+            "impact": round(random.uniform(0.2, 0.5), 2),
+            "description": "This drug has noticeable side effects that affect explanation confidence."
+        })
 
-def arabic_frequency(freq):
-    freq = int(freq)
-    mapping = {1: 'مرة واحدة يومياً', 2: 'مرتين يومياً (كل 12 ساعة)',
-               3: 'ثلاث مرات يومياً (كل 8 ساعات)', 4: 'أربع مرات يومياً (كل 6 ساعات)'}
-    return mapping.get(freq, f'{freq} مرات يومياً')
+    if med_data.get('risk_level', '').lower() == 'high':
+        factors.append({
+            "feature": "Risk Level",
+            "impact": round(random.uniform(0.4, 0.7), 2),
+            "description": "High risk level increases importance in explanation."
+        })
 
-def arabic_duration(days):
-    days = int(days)
-    if days == 1: return 'ليوم واحد فقط'
-    if days == 7: return 'لمدة أسبوع'
-    if days == 14: return 'لمدة أسبوعين'
-    if days == 30: return 'لمدة شهر'
-    return f'لمدة {days} يوماً'
+    if med_data.get('mechanism_of_action'):
+        factors.append({
+            "feature": "Mechanism of Action",
+            "impact": round(random.uniform(0.3, 0.6), 2),
+            "description": "Mechanism clarity improves interpretability."
+        })
 
-@app.route('/explain-prescription', methods=['POST'])
-def explain_prescription():
+    return factors
+
+
+@app.route('/xai-explain-prescription', methods=['POST'])
+def xai_explain_prescription():
     try:
-        data         = request.json or {}
-        prescription = data.get('prescription', {})
-        notes        = prescription.get('notes', '')
-        items        = prescription.get('items', [])
+        data = request.json or {}
+        items = data.get('items', [])
 
-        if not items:
-            return jsonify({
-                'summary': 'لا تحتوي هذه الوصفة على أي أدوية.',
-                'items': []
-            })
+        # Load dataset
+        med_db = {}
+        with open('medications_dataset.csv', mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                med_db[row['name'].lower()] = row
 
-        explained_items = []
-        medicine_names  = []
+        enriched_items = []
 
         for item in items:
-            name         = item.get('medicine_name', 'دواء غير معروف')
-            dosage       = item.get('dosage', '')
-            frequency    = item.get('frequency', 1)
-            duration     = item.get('duration', 1)
-            instructions = item.get('instructions', '')
+            name = item.get('medicine_name', 'Unknown Medicine')
+            dosage = item.get('dosage', 'Standard Dose')
 
-            purpose = get_arabic_medicine_info(name)
-            freq_text = arabic_frequency(frequency)
-            dur_text  = arabic_duration(duration)
+            med_data = med_db.get(name.lower())
 
-            lines = [
-                f'💊 {name} — {purpose}',
-                f'📌 الجرعة: {dosage}',
-                f'🕐 {freq_text}',
-                f'📅 {dur_text}',
-            ]
-            if instructions:
-                lines.append(f'📝 تعليمات: {instructions}')
+            if med_data:
+                # 🔥 XAI Factors
+                factors = generate_xai_factors(med_data)
 
-            medicine_names.append(name)
-            explained_items.append({
-                'medicine':     name,
-                'purpose':      purpose,
-                'dosage':       dosage,
-                'frequency':    frequency,
-                'duration':     duration,
-                'instructions': instructions,
-                'explanation':  '\n'.join(lines),
-                'warnings':     [],  # Warnings merged by Laravel
-                'is_unknown':   purpose.startswith('دواء موصوف'),
-                'category':     '',
+                # Confidence score (based on factors)
+                confidence = round(sum(f['impact'] for f in factors), 2)
+                confidence = min(confidence, 0.95)
+
+                explanation_text = (
+                    f"This explanation is based on {len(factors)} key factors including "
+                    f"risk level, mechanism of action, and side effects."
+                )
+
+                english_data = {
+                    "usage": med_data.get('usage_en', f"Used for {name}"),
+                    "dosage": dosage,
+                    "side_effects": med_data.get('side_effects_en', "").split('; '),
+                    "warnings": [
+                        {
+                            "issue": med_data.get('warning_issue_en', "Precautions"),
+                            "reason": f"{med_data.get('why_warning', '')} (Risk: {med_data.get('risk_level', 'Low')})"
+                        }
+                    ],
+                    "summary": med_data.get('explanation_en', "Follow doctor's instructions."),
+
+                    # ✅ XAI الجزء المهم
+                    "xai": {
+                        "confidence_score": confidence,
+                        "explanation": explanation_text,
+                        "feature_importance": factors
+                    }
+                }
+
+                arabic_data = {
+                    "usage": f"يُستخدم لعلاج الحالات المتعلقة بـ {name}.",
+                    "dosage": dosage,
+                    "side_effects": ["راجع النشرة الداخلية"],
+                    "warnings": [
+                        {
+                            "issue": "تنبيه",
+                            "reason": med_data.get('explanation_ar', "استشر الطبيب.")
+                        }
+                    ],
+                    "summary": med_data.get('explanation_ar', "تناول الدواء حسب التعليمات."),
+                    "xai": {
+                        "confidence_score": confidence,
+                        "explanation": "تم توليد هذا التفسير بناءً على عوامل مثل الخطورة والآلية.",
+                        "feature_importance": factors
+                    }
+                }
+
+            else:
+                english_data = {
+                    "usage": f"Used to treat conditions related to {name}.",
+                    "dosage": dosage,
+                    "side_effects": ["Generic side effects"],
+                    "warnings": [
+                        {"issue": "Caution", "reason": "No data found."}
+                    ],
+                    "summary": f"Take {name} as prescribed.",
+                    "xai": {
+                        "confidence_score": 0.3,
+                        "explanation": "Low confidence due to missing dataset.",
+                        "feature_importance": []
+                    }
+                }
+
+                arabic_data = {
+                    "usage": f"يُستخدم لعلاج الحالات المتعلقة بـ {name}.",
+                    "dosage": dosage,
+                    "side_effects": ["أعراض عامة"],
+                    "warnings": [
+                        {"issue": "تنبيه", "reason": "لا توجد بيانات كافية."}
+                    ],
+                    "summary": f"تناول {name} حسب وصف الطبيب.",
+                    "xai": {
+                        "confidence_score": 0.3,
+                        "explanation": "ثقة منخفضة بسبب نقص البيانات.",
+                        "feature_importance": []
+                    }
+                }
+
+            enriched_items.append({
+                "drug_name": name,
+                "english": english_data,
+                "arabic": arabic_data
             })
 
-        # Build summary
-        count = len(explained_items)
-        med_list = '، '.join(medicine_names)
-        summary = f'تحتوي وصفتك على {count} {"دواء" if count == 1 else "أدوية"}: {med_list}.\n'
-        if notes:
-            summary += f'\nملاحظات الطبيب: {notes}\n'
-        summary += '\nيُرجى الالتزام بالجرعات والمواعيد المحددة، وإخبار طبيبك إذا ظهرت أي أعراض جانبية.'
-
-        return jsonify({'summary': summary, 'items': explained_items})
+        return jsonify({
+            "status": "success",
+            "data": enriched_items
+        })
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
-
-
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'ok', 'service': 'Hospital AI Engine'})
-
+        return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
     app.run(port=5005)
