@@ -11,12 +11,14 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+Schedule::command('app:send-medication-reminders')->cron('0 6 * * *');
+
 Schedule::call(function () {
     $from = now()->addHours(2)->subMinutes(10)->format('H:i');
     $to = now()->addHours(2)->addMinutes(10)->format('H:i');
-    $appointments = Appointment::with('patient.user', 'doctor.user')
-        ->where('status', 'upcoming')
-        ->where('is_reminder', false)
+    $appointments = Appointment::with(['patient.user', 'doctor.user'])
+        ->where('status','upcoming')
+        ->where('is_reminder',false)
         ->whereDate('appointment_date', now()->toDateString())
         ->whereBetween('appointment_time', [$from, $to])
         ->get();

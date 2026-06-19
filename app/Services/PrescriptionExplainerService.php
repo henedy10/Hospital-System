@@ -25,54 +25,56 @@ class PrescriptionExplainerService
         }
 
         try {
-        $response = Http::timeout(20)->post('http://127.0.0.1:5005/xai-explain-prescription', [
-            'items' => $prescription->items->map(function ($item) {
-                return [
-                    'medicine_name' => $item->medicine_name,
-                    'dosage' => $item->dosage
-                ];
-            })->toArray(),
-            'notes' => $prescription->notes
-        ]);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            if (isset($data['status']) && $data['status'] === 'success') {
-                $mapped = collect($data['data'])->map(function ($drug) {
-// dd($drug);
+            $response = Http::timeout(20)->post('http://127.0.0.1:5005/xai-explain-prescription', [
+                'items' => $prescription->items->map(function ($item) {
                     return [
-                        'drug_name' => $drug['drug_name'] ?? 'Unknown',
-
-                        'english' => [
-                            'usage' => $drug['english']['usage'] ?? '',
-                            'dosage' => $drug['english']['dosage'] ?? '',
-                            'side_effects' => $drug['english']['side_effects'] ?? [],
-                            'warnings' => $drug['english']['warnings'] ?? [],
-                            'summary' => $drug['english']['summary'] ?? '',
-                            'xai' => [
-                                'feature_importance' => $drug['english']['xai']['feature_importance'] ?? [],
-                                'reasoning' => $drug['english']['xai']['explanation'] ?? [],
-                                'confidence' => $drug['english']['xai']['confidence_score'] ?? 0,
-                            ]
-                        ],
-
+                        'medicine_name' => $item->medicine_name,
+                        'dosage' => $item->dosage
                     ];
-                });
-// dd($mapped);
-                return [
-                    'data' => $mapped->toArray(),
-                ];
+                })->toArray(),
+                'notes' => $prescription->notes
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['status']) && $data['status'] === 'success') {
+                    $mapped = collect($data['data'])->map(function ($drug) use ($prescription) {
+                        return [
+                            'drug_name' => $drug['drug_name'] ?? 'Unknown',
+                            'metadata' => [
+                                'frequency' => $prescription->items->firstWhere('medicine_name', $drug['drug_name'])?->frequency ?? 1,
+                                'duration' => $prescription->items->firstWhere('medicine_name', $drug['drug_name'])?->duration ?? 7,
+                                'instructions' => $prescription->items->firstWhere('medicine_name', $drug['drug_name'])?->instructions ?? 'Follow physician instructions',
+                            ],
+                            'english' => [
+                                'usage' => $drug['english']['usage'] ?? '',
+                                'dosage' => $drug['english']['dosage'] ?? '',
+                                'side_effects' => $drug['english']['side_effects'] ?? [],
+                                'warnings' => $drug['english']['warnings'] ?? [],
+                                'summary' => $drug['english']['summary'] ?? '',
+                                'xai' => [
+                                    'feature_importance' => $drug['english']['xai']['feature_importance'] ?? [],
+                                    'reasoning' => $drug['english']['xai']['explanation'] ?? [],
+                                    'confidence' => $drug['english']['xai']['confidence_score'] ?? 0,
+                                ]
+                            ],
+                        ];
+                    });
+                    // dd($mapped);
+                    return [
+                        'data' => $mapped->toArray(),
+                    ];
+                }
             }
+        } catch (Exception $e) {
+            Log::error('Python XAI API Error', [
+                'error' => $e->getMessage()
+            ]);
         }
-    } catch (Exception $e) {
-        Log::error('Python XAI API Error', [
-            'error' => $e->getMessage()
-        ]);
+        // fallback
+        return [
+            'data' => [],
+            'error' => 'Could not fetch AI explanation'
+        ];
     }
-    // fallback
-    return [
-        'data' => [],
-        'error' => 'Could not fetch AI explanation'
-    ];
-}
 }

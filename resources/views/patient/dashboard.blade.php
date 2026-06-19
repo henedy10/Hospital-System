@@ -147,7 +147,7 @@
                                 </span>
 
                                 <span style="font-size:0.85rem; color:var(--text-muted);">
-                                    {{ "Dr. ".$record->doctor->user->name }} -
+                                    {{ $record->doctor->user->name }} -
                                     {{ \Carbon\Carbon::parse($record->diagnosis_date)->format('M d, Y') }}
                                 </span>
 
