@@ -22,15 +22,6 @@
                             healthcare models</p>
                     </div>
                 </div>
-
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <button
-                        class="flex-grow md:flex-grow-0 flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm group">
-                        <i
-                            class="fas fa-file-download text-teal-600 opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                        Download Report
-                    </button>
-                </div>
             </div>
 
             {{-- SUMMARY CARDS GRID --}}
@@ -110,11 +101,12 @@
                     </div>
 
                     @php
-                        $confidence = $explanation['data'][0]['english']['xai']['confidence'] ?? 0.92;
+                        $firstDrug = $explanation['data'][0] ?? null;
+                        $confidence = $firstDrug['english']['xai']['confidence'] ?? 0.92;
                         $percentage = $confidence * 100;
                         $radius = 60;
                         $circumference = 2 * M_PI * $radius;
-                        $offset = $circumference - ($percentage / 100 * $circumference);
+                        $offset = $circumference - (($percentage / 100) * $circumference);
                     @endphp
 
                     <div class="relative w-36 h-36 mb-8 group">
@@ -147,10 +139,11 @@
             <div class="grid lg:grid-cols-3 gap-10 items-start">
 
                 {{-- LEFT: PRESCRIPTIONS --}}
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-4 space-y-6">
                     {{-- Your Prescription Title --}}
                     <div class="flex items-center gap-3 px-4 py-2">
-                        <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 shadow-sm">
+                        <div
+                            class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 shadow-sm">
                             <i class="fas fa-prescription text-emerald-600 text-lg"></i>
                         </div>
                         <h3 class="text-xl font-black text-slate-800 tracking-tight">Your Prescription</h3>
@@ -158,12 +151,16 @@
 
                     <div class="space-y-4">
                         @foreach($explanation['data'] as $index => $drug)
-                            <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative overflow-hidden transition-all hover:border-teal-200 hover:shadow-md">
+                            <div
+                                class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative overflow-hidden transition-all hover:border-teal-200 hover:shadow-md">
                                 {{-- AI Importance Badge --}}
                                 <div class="absolute top-6 right-6">
-                                    <div class="bg-white border {{ $index % 2 == 0 ? 'border-emerald-100 bg-emerald-50/20' : 'border-blue-100 bg-blue-50/20' }} rounded-2xl p-4 min-w-[120px] text-center shadow-sm">
-                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">AI Importance</p>
-                                        <p class="text-2xl font-black {{ $index % 2 == 0 ? 'text-emerald-600' : 'text-blue-600' }}">
+                                    <div
+                                        class="bg-white border {{ $index % 2 == 0 ? 'border-emerald-100 bg-emerald-50/20' : 'border-blue-100 bg-blue-50/20' }} rounded-2xl p-4 min-w-[120px] text-center shadow-sm">
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">AI
+                                            Importance</p>
+                                        <p
+                                            class="text-2xl font-black {{ $index % 2 == 0 ? 'text-emerald-600' : 'text-blue-600' }}">
                                             {{ round(($drug['english']['xai']['confidence'] ?? 0.65) * 100) }}%
                                         </p>
                                     </div>
@@ -172,8 +169,10 @@
                                 <div class="flex items-start gap-8">
                                     {{-- Icon --}}
                                     <div class="flex-shrink-0">
-                                        <div class="w-24 h-24 rounded-full {{ $index % 2 == 0 ? 'bg-emerald-50' : 'bg-blue-50' }} flex items-center justify-center border border-emerald-50 shadow-inner">
-                                            <i class="fas fa-pills {{ $index % 2 == 0 ? 'text-emerald-700' : 'text-blue-700' }} text-3xl"></i>
+                                        <div
+                                            class="w-24 h-24 rounded-full {{ $index % 2 == 0 ? 'bg-emerald-50' : 'bg-blue-50' }} flex items-center justify-center border border-emerald-50 shadow-inner">
+                                            <i
+                                                class="fas fa-pills {{ $index % 2 == 0 ? 'text-emerald-700' : 'text-blue-700' }} text-3xl"></i>
                                         </div>
                                     </div>
 
@@ -181,8 +180,11 @@
                                     <div class="flex-grow pt-2">
                                         {{-- Header --}}
                                         <div class="flex items-center gap-4 mb-6">
-                                            <h4 class="text-3xl font-black text-slate-800 tracking-tight">{{ $drug['drug_name'] }}</h4>
-                                            <span class="px-4 py-1.5 {{ $index % 2 == 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100' }} text-[11px] font-black rounded-full border uppercase tracking-wider">
+                                            <h4 class="text-3xl font-black text-slate-800 tracking-tight">
+                                                {{ $drug['drug_name'] }}
+                                            </h4>
+                                            <span
+                                                class="px-4 py-1.5 {{ $index % 2 == 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100' }} text-[11px] font-black rounded-full border uppercase tracking-wider">
                                                 {{ $drug['english']['drug_class'] ?? 'Medication' }}
                                             </span>
                                         </div>
@@ -191,7 +193,8 @@
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12 mb-8">
                                             <div class="flex items-center gap-4">
                                                 <span class="text-sm font-bold text-slate-900 min-w-[100px]">Dosage:</span>
-                                                <span class="text-sm text-slate-500 font-medium bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">{{ $drug['metadata']['dosage'] ?? $drug['english']['dosage'] }}</span>
+                                                <span
+                                                    class="text-sm text-slate-500 font-medium bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">{{ $drug['metadata']['dosage'] ?? $drug['english']['dosage'] }}</span>
                                             </div>
                                             <div class="flex items-center gap-4">
                                                 <span class="text-sm font-bold text-slate-900 min-w-[100px]">Frequency:</span>
@@ -199,11 +202,15 @@
                                             </div>
                                             <div class="flex items-center gap-4">
                                                 <span class="text-sm font-bold text-slate-900 min-w-[100px]">Duration:</span>
-                                                <span class="text-sm text-slate-500 font-medium">{{ $drug['metadata']['duration'] ?? '90' }} days</span>
+                                                <span
+                                                    class="text-sm text-slate-500 font-medium">{{ $drug['metadata']['duration'] ?? '90' }}
+                                                    days</span>
                                             </div>
                                             <div class="flex items-center gap-4">
-                                                <span class="text-sm font-bold text-slate-900 min-w-[100px]">Instructions:</span>
-                                                <span class="text-sm text-slate-500 font-medium truncate max-w-[280px]" title="{{ $drug['metadata']['instructions'] ?? 'Follow clinical guidance' }}">
+                                                <span
+                                                    class="text-sm font-bold text-slate-900 min-w-[100px]">Instructions:</span>
+                                                <span class="text-sm text-slate-500 font-medium truncate max-w-[280px]"
+                                                    title="{{ $drug['metadata']['instructions'] ?? 'Follow clinical guidance' }}">
                                                     {{ $drug['metadata']['instructions'] ?? 'Take daily' }}
                                                 </span>
                                             </div>
@@ -212,13 +219,15 @@
                                         {{-- Insights --}}
                                         <div class="space-y-6 border-t border-slate-100 pt-6">
                                             <div>
-                                                <h5 class="text-teal-700 font-black text-sm uppercase tracking-wider mb-2">How it works</h5>
+                                                <h5 class="text-teal-700 font-black text-sm uppercase tracking-wider mb-2">How
+                                                    it works</h5>
                                                 <p class="text-slate-600 text-[14px] leading-relaxed font-semibold">
                                                     {{ $drug['english']['usage'] }}
                                                 </p>
                                             </div>
                                             <div>
-                                                <h5 class="text-teal-700 font-black text-sm uppercase tracking-wider mb-2">Why prescribed for you</h5>
+                                                <h5 class="text-teal-700 font-black text-sm uppercase tracking-wider mb-2">Why
+                                                    prescribed for you</h5>
                                                 <p class="text-slate-600 text-[14px] leading-relaxed font-semibold">
                                                     {{ $drug['english']['summary'] }}
                                                 </p>
@@ -230,173 +239,234 @@
                         @endforeach
                     </div>
                 </div>
-                </div>
+            </div>
+            {{-- RIGHT: SIDEBARS --}}
+            <div class="space-y-6">
 
-                {{-- RIGHT: SIDEBARS --}}
-                <div class="space-y-8">
+                {{-- Venn Diagram Card --}}
+                <div class="bg-white p-8 rounded-[1.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+                    <h3 class="text-xl font-bold text-teal-900 tracking-tight mb-8">How these medications work together</h3>
 
-                    {{-- Venn Diagram Card --}}
-                    <div
-                        class="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/30 group overflow-hidden relative">
-                        <div
-                            class="absolute inset-0 bg-gradient-to-br from-teal-50/40 via-white to-indigo-50/40 -z-10 opacity-70">
-                        </div>
-
-                        <div class="flex items-center justify-between mb-12">
-                            <h3 class="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] opacity-60">
-                                Synergetic Analysis</h3>
-                            <div
-                                class="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center shadow-sm border border-teal-100">
-                                <i class="fas fa-brain text-teal-600 text-base drop-shadow-sm"></i>
-                            </div>
-                        </div>
-
-                        <div
-                            class="relative h-72 flex items-center justify-center mb-12 group-hover:scale-105 transition-transform duration-1000">
-                            {{-- Dynamic Circles --}}
-                            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-white/40 backdrop-blur-md rounded-full border border-teal-200/50 flex flex-col items-center justify-center p-10 text-center z-10 hover:z-30 transition-all cursor-default shadow-2xl shadow-teal-900/10 animate-entrance-left"
-                                style="transform: translate(-60%, -50%)">
-                                <p class="text-[11px] font-black text-teal-900 leading-tight uppercase tracking-tight mb-2">
-                                    {{ $explanation['data'][0]['drug_name'] ?? 'Primary Agent' }}</p>
-                                <span
-                                    class="text-[8px] font-black text-teal-600 uppercase tracking-widest opacity-70 decoration-teal-200 underline decoration-2">{{ $explanation['data'][0]['english']['drug_class'] ?? 'Therapeutic' }}</span>
-                            </div>
-
-                            @if(count($explanation['data']) > 1)
-                                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-white/40 backdrop-blur-md rounded-full border border-indigo-200/50 flex flex-col items-center justify-center p-10 text-center z-10 hover:z-30 transition-all cursor-default shadow-2xl shadow-indigo-900/10 animate-entrance-right"
-                                    style="transform: translate(-40%, -50%)">
-                                    <p
-                                        class="text-[11px] font-black text-indigo-900 leading-tight uppercase tracking-tight mb-2">
-                                        {{ $explanation['data'][1]['drug_name'] ?? 'Supportive' }}</p>
-                                    <span
-                                        class="text-[8px] font-black text-indigo-600 uppercase tracking-widest opacity-70 decoration-indigo-200 underline decoration-2">{{ $explanation['data'][1]['english']['drug_class'] ?? 'Catalyst' }}</span>
-                                </div>
-                            @endif
-
-                            {{-- Connection Node --}}
-                            <div
-                                class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-[1.5rem] flex items-center justify-center z-20 shadow-2xl border border-slate-100 rotate-12 group-hover:rotate-0 transition-all duration-700 ring-8 ring-white/50">
-                                <i class="fas fa-plus text-teal-500"></i>
-                            </div>
-                        </div>
-
-                        <div
-                            class="bg-gradient-to-tr from-slate-50 to-white/80 p-8 rounded-[2.5rem] border border-slate-100 backdrop-blur-sm shadow-inner text-center">
-                            <p class="text-slate-600 text-xs font-bold leading-relaxed italic opacity-80">
-                                This AI-modeled combination effectively manages multiple medical metrics while maintaining a
-                                high safety profile.
+                    <div class="relative h-56 flex items-center justify-center mb-6">
+                        {{-- Left Circle --}}
+                        <div class="absolute left-1/2 top-1/2 -translate-y-1/2 w-48 h-48 bg-[#e8f5ed] rounded-full flex flex-col items-center justify-center p-6 text-center mix-blend-multiply z-10 border border-emerald-100/30"
+                            style="transform: translate(-95%, -50%)">
+                            <p class="text-sm font-bold text-emerald-900 mb-0.5">
+                                {{ $explanation['data'][0]['drug_name'] ?? 'Lisinopril' }}
                             </p>
+                            <span class="text-[11px] font-semibold text-emerald-700 mb-3 block">
+                                ({{ $explanation['data'][0]['english']['drug_class'] ?? 'ACE Inhibitor' }})
+                            </span>
+                            <p class="text-[11px] text-emerald-800/80 leading-snug">
+                                {{ $explanation['data'][0]['english']['usage'] ?? 'Reduces the workload on the heart' }}
+                            </p>
+                        </div>
+
+                        @if(count($explanation['data']) > 1)
+                            {{-- Right Circle --}}
+                            <div class="absolute left-1/2 top-1/2 -translate-y-1/2 w-48 h-48 bg-[#eef2ff] rounded-full flex flex-col items-center justify-center p-6 text-center mix-blend-multiply z-10 border border-blue-100/30"
+                                style="transform: translate(-5%, -50%)">
+                                <p class="text-sm font-bold text-blue-900 mb-0.5">
+                                    {{ $explanation['data'][1]['drug_name'] ?? 'Amlodipine' }}
+                                </p>
+                                <span class="text-[11px] font-semibold text-blue-700 mb-3 block">
+                                    ({{ $explanation['data'][1]['english']['drug_class'] ?? 'Calcium Blocker' }})
+                                </span>
+                                <p class="text-[11px] text-blue-800/80 leading-snug truncate whitespace-normal">
+                                    {{ $explanation['data'][1]['english']['usage'] ?? 'Relaxes blood vessels' }}
+                                </p>
+                            </div>
+                        @else
+                            {{-- Right Circle Placeholder if only 1 med --}}
+                            <div class="absolute left-1/2 top-1/2 -translate-y-1/2 w-48 h-48 bg-[#eef2ff] rounded-full flex flex-col items-center justify-center p-6 text-center mix-blend-multiply z-10 border border-blue-100/30"
+                                style="transform: translate(-25%, -50%)">
+                                <p class="text-sm font-bold text-blue-900 mb-0.5">
+                                    Amlodipine
+                                </p>
+                                <span class="text-[11px] font-semibold text-blue-700 mb-3 block">
+                                    (Calcium Blocker)
+                                </span>
+                                <p class="text-[11px] text-blue-800/80 leading-snug text-center max-w-[120px]">
+                                    Relaxes blood vessels
+                                </p>
+                            </div>
+                        @endif
+
+                        {{-- Large Central Plus Node --}}
+                        <div
+                            class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-black text-slate-800 z-20">
+                            +
                         </div>
                     </div>
 
-                    {{-- AI Explanation Factors --}}
-                    <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
-                        <div class="flex items-center justify-between mb-10">
-                            <h3 class="text-xl font-bold text-slate-800 tracking-tight">Inference Factors</h3>
-                            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
-                                <i class="fas fa-robot text-teal-600 text-xs"></i>
-                            </div>
-                        </div>
+                    {{-- Summary --}}
+                    <p class="text-slate-600 text-[13px] leading-relaxed text-center font-medium mt-6">
+                        Using both medications together provides better blood pressure control than either one alone, with
+                        fewer side effects.
+                    </p>
+                </div>
 
-                        <div class="space-y-8 mb-10">
-                            @foreach($explanation['data'][0]['english']['xai']['feature_importance'] ?? [] as $factor)
-                                <div>
-                                    <div
-                                        class="flex justify-between text-[10px] font-black mb-3 px-1 uppercase tracking-widest text-slate-500">
-                                        <span class="text-slate-800">{{ $factor['feature'] }}</span>
-                                        <span class=" tabular-nums">{{ round($factor['impact'] * 100) }}%</span>
-                                    </div>
-                                    <div
-                                        class="h-2.5 w-full bg-slate-50 rounded-full border border-slate-100 shadow-inner overflow-hidden">
-                                        <div class="h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-[2s] ease-out-expo scale-x-0 origin-left"
+                {{-- AI Explanation Factors --}}
+                <div class="bg-white p-8 rounded-[1.5rem] shadow-sm border border-slate-100">
+                    <div class="flex items-center tracking-tight mb-8">
+                        <h3 class="text-xl font-bold text-teal-900">AI Explanation</h3>
+                        <span class="text-slate-500 font-medium text-base ml-2">(Top Factors)</span>
+                        <i class="fas fa-info-circle text-slate-400 text-sm ml-2"></i>
+                    </div>
+
+                    <div class="space-y-4 mb-8">
+                        @php
+                            $factors = $explanation['data'][0]['english']['xai']['feature_importance'] ?? [
+                                ['feature' => 'High blood pressure diagnosis', 'impact' => 0.40],
+                                ['feature' => 'Age and risk factors', 'impact' => 0.20],
+                                ['feature' => 'Medication effectiveness', 'impact' => 0.20],
+                                ['feature' => 'Safe drug combination', 'impact' => 0.15],
+                                ['feature' => 'Clinical guidelines', 'impact' => 0.05]
+                            ];
+                        @endphp
+                        @foreach($factors as $factor)
+                            <div class="flex items-center gap-4">
+                                <div class="w-[45%]">
+                                    <span class="text-[13px] font-semibold text-slate-700 leading-tight">
+                                        @php
+                                            $words = explode(' ', $factor['feature']);
+                                            $boldWords = array_splice($words, 0, 2);
+                                        @endphp
+                                        <span class="font-bold text-slate-900">{{ implode(' ', $boldWords) }}</span>
+                                        {{ implode(' ', $words) }}
+                                    </span>
+                                </div>
+                                <div class="flex-grow flex items-center">
+                                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-[#1e40af] rounded-full transition-all duration-[2s] ease-out-expo scale-x-0 origin-left"
                                             style="width: {{ $factor['impact'] * 100 }}%" data-animate="width">
                                         </div>
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
-
-                        <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 text-center">
-                            <p
-                                class="text-slate-400 text-[8px] leading-relaxed font-black uppercase tracking-[0.2em] max-w-[200px] mx-auto">
-                                Analytical weights are derived from global healthcare data models.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- BOTTOM GRID: INFO --}}
-            <div class="grid md:grid-cols-3 gap-8">
-                {{-- Warnings --}}
-                <div class="bg-[#FFFBEB] p-10 rounded-[3rem] border border-amber-100 shadow-sm">
-                    <div class="flex items-center gap-4 mb-8">
-                        <div
-                            class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-amber-500 shadow-sm border border-amber-50">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <h4 class="font-black uppercase tracking-[0.1em] text-xs text-amber-800">Critical Alerts</h4>
-                    </div>
-                    <ul class="space-y-5">
-                        @foreach($explanation['data'][0]['english']['warnings'] ?? [] as $warning)
-                            <li class="flex items-start gap-4">
-                                <span
-                                    class="mt-2 w-1.5 h-1.5 bg-amber-400 rounded-full flex-shrink-0 ring-4 ring-amber-100"></span>
-                                <span class="text-amber-900 text-sm font-semibold leading-relaxed">
-                                    {{ is_array($warning) ? implode(', ', $warning) : $warning }}
-                                </span>
-                            </li>
+                                <div class="w-[10%] text-right font-semibold text-slate-700 text-[13px]">
+                                    {{ round($factor['impact'] * 100) }}%
+                                </div>
+                            </div>
                         @endforeach
-                    </ul>
-                </div>
-
-                {{-- Side Effects --}}
-                <div class="bg-[#F0FDF4] p-10 rounded-[3rem] border border-green-100 shadow-sm">
-                    <div class="flex items-center gap-4 mb-8">
-                        <div
-                            class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-green-500 shadow-sm border border-green-50">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <h4 class="font-black uppercase tracking-[0.1em] text-xs text-green-800">Monitor Symptoms</h4>
                     </div>
-                    <ul class="space-y-5">
-                        @foreach($explanation['data'] as $drug)
-                            <li class="flex items-start gap-4">
-                                <span
-                                    class="mt-2 w-1.5 h-1.5 bg-green-400 rounded-full flex-shrink-0 ring-4 ring-green-100"></span>
-                                <span class="text-green-900 text-sm font-semibold leading-relaxed leading-relaxed">
-                                    <strong
-                                        class="text-green-950 underline decoration-green-200 decoration-2">{{ $drug['drug_name'] }}:</strong>
-                                    <span
-                                        class="opacity-80">{{ implode(', ', array_slice($drug['english']['side_effects'], 0, 3)) }}</span>
-                                </span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
 
-                {{-- Lifestyle --}}
-                <div class="bg-[#EFF6FF] p-10 rounded-[3rem] border border-blue-100 shadow-sm">
-                    <div class="flex items-center gap-4 mb-8">
-                        <div
-                            class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-blue-500 shadow-sm border border-blue-50">
-                            <i class="fas fa-heart"></i>
-                        </div>
-                        <h4 class="font-black uppercase tracking-[0.1em] text-xs text-blue-800">Holistic Care</h4>
+                    <div class="border-t border-slate-100 pt-5 mt-2">
+                        <p class="text-slate-600 text-sm leading-relaxed font-medium">
+                            The AI model uses these factors to recommend this treatment plan.
+                        </p>
                     </div>
-                    <ul class="space-y-4">
-                        @foreach($explanation['data'][0]['english']['lifestyle'] ?? [] as $lifestyle)
-                            <li class="flex items-center gap-4 p-3 bg-white/50 rounded-2xl">
-                                <i class="fas fa-check-circle text-blue-400 text-xs"></i>
-                                <span class="text-blue-900 text-sm font-bold">
-                                    {{ is_array($lifestyle) ? implode(', ', $lifestyle) : $lifestyle }}
-                                </span>
-                            </li>
-                        @endforeach
-                    </ul>
                 </div>
             </div>
         </div>
+
+        {{-- BOTTOM GRID: INFO --}}
+        <div class="grid md:grid-cols-3 gap-6 mt-8">
+            {{-- Warnings --}}
+            <div class="bg-[#FFFBEB] p-8 rounded-[1.5rem] border border-amber-100 shadow-sm flex flex-col">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fas fa-exclamation-triangle text-amber-500 text-lg"></i>
+                    <h4 class="font-bold text-amber-700 text-base">Important Warnings</h4>
+                </div>
+                <ul class="space-y-3 flex-grow">
+                    @forelse($explanation['data'][0]['english']['warnings'] ?? [] as $warning)
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">
+                                {{ is_array($warning) ? implode(', ', $warning) : $warning }}
+                            </span>
+                        </li>
+                    @empty
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">Take medications exactly as prescribed.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">Do not stop taking these medications without consulting your doctor.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">Report any side effects such as dizziness, swelling, or persistent cough.</span>
+                        </li>
+                    @endforelse
+                </ul>
+            </div>
+
+            {{-- Side Effects --}}
+            <div class="bg-white p-8 rounded-[1.5rem] border border-slate-100 shadow-sm flex flex-col">
+                <div class="flex items-center gap-2 mb-6">
+                    <h4 class="font-bold text-teal-900 text-base tracking-tight">Common Side Effects</h4>
+                    <i class="fas fa-info-circle text-slate-400 text-xs shadow-sm rounded-full"></i>
+                </div>
+                <ul class="space-y-3 flex-grow">
+                    @if(!empty($explanation['data']) && isset($explanation['data'][0]['english']['side_effects']))
+                        @foreach($explanation['data'] as $drug)
+                            <li class="flex items-start gap-3">
+                                <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                                <span class="text-[13px] leading-snug">
+                                    <strong class="text-slate-800">{{ $drug['drug_name'] }}:</strong>
+                                    <span class="text-slate-600 font-medium">{{ implode(', ', array_slice($drug['english']['side_effects'], 0, 3)) }}</span>
+                                </span>
+                            </li>
+                        @endforeach
+                    @else
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-[13px] leading-snug">
+                                <strong class="text-slate-800">Lisinopril:</strong>
+                                <span class="text-slate-600 font-medium">Dry cough, dizziness, increased potassium</span>
+                            </span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-[13px] leading-snug">
+                                <strong class="text-slate-800">Amlodipine:</strong>
+                                <span class="text-slate-600 font-medium">Swelling in ankles, headache, dizziness</span>
+                            </span>
+                        </li>
+                    @endif
+                </ul>
+                <p class="mt-5 text-[12px] font-semibold text-slate-500">
+                    Contact your doctor if side effects persist or worsen.
+                </p>
+            </div>
+
+            {{-- Lifestyle --}}
+            <div class="bg-[#EFF6FF] p-8 rounded-[1.5rem] border border-blue-100 shadow-sm flex flex-col">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fas fa-heartbeat text-blue-500 text-lg"></i>
+                    <h4 class="font-bold text-blue-700 text-base">Lifestyle Recommendations</h4>
+                </div>
+                <ul class="space-y-3 flex-grow">
+                    @forelse($explanation['data'][0]['english']['lifestyle'] ?? [] as $lifestyle)
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">
+                                {{ is_array($lifestyle) ? implode(', ', $lifestyle) : $lifestyle }}
+                            </span>
+                        </li>
+                    @empty
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">Reduce salt intake</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">Exercise regularly</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">Maintain a healthy weight</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-2 w-1 h-1 bg-slate-400 rounded-full flex-shrink-0"></span>
+                            <span class="text-slate-700 text-[13px] leading-snug font-medium">Monitor your blood pressure</span>
+                        </li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
+    </div>
     </div>
 @endsection
 

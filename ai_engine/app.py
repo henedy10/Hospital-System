@@ -23,6 +23,11 @@ try:
 except FileNotFoundError:
     model = None
 
+try:
+    med_xai_model = joblib.load('medication_xai_model.joblib')
+except FileNotFoundError:
+    med_xai_model = None
+
 # Enhanced Mapping
 MAPPING = {
     "Flu": {"specialization": "Internal Medicine", "urgency": "medium"},
@@ -200,14 +205,8 @@ def xai_explain_prescription():
                 "benefit": "Combining these therapies targets multiple disease pathways simultaneously."
             }]
 
-        # Top Factors (for bar chart)
-        top_factors = [
-            {"factor": "High blood pressure diagnosis", "weight": 0.40},
-            {"factor": "Age and risk factors", "weight": 0.20},
-            {"factor": "Medication effectiveness", "weight": 0.20},
-            {"factor": "Safe drug combination", "weight": 0.15},
-            {"factor": "Clinical guidelines", "weight": 0.05}
-        ]
+        overall_confidences = []
+        all_top_factors = {}
 
         for item in items:
             name = item.get('medicine_name', 'Unknown Medicine')
@@ -219,9 +218,69 @@ def xai_explain_prescription():
             med_data = med_db.get(name.lower())
 
             if med_data:
-                # Dynamic Importance (simulate)
-                importance = 0.88 if "lisinopril" in name.lower() else 0.76
-                if len(items) == 1: importance = 1.0
+                confidence = 0.85
+                feature_importance_list = []
+                
+                # Dynamic prediction using trained model
+                if med_xai_model is not None:
+                    # Extract the numerical features from our expanded DB
+                    try:
+                        clinical_efficacy = float(med_data.get('clinical_efficacy_score', 7.0))
+                        patient_adherence = float(med_data.get('patient_adherence_rate', 80.0))
+                        risk_level = float(med_data.get('risk_level_score', 3.0))
+                        synergy = float(med_data.get('synergy_potential', 5.0))
+                        severity_handled = float(med_data.get('target_disease_severity_handled', 6.0))
+                        
+                        input_features = pd.DataFrame([{
+                            'clinical_efficacy_score': clinical_efficacy,
+                            'patient_adherence_rate': patient_adherence,
+                            'risk_level_score': risk_level,
+                            'synergy_potential': synergy,
+                            'target_disease_severity_handled': severity_handled
+                        }])
+                        
+                        # Get success probability
+                        probs = med_xai_model.predict(input_features)
+                        success_prob = probs[0]
+                        confidence = round(float(success_prob), 2)
+                        
+                        # Extract feature importances
+                        importances = med_xai_model.feature_importances_
+                        feature_names = input_features.columns
+                    except Exception as e:
+                        print(f"Prediction fallback due to missing features: {e}")
+                        confidence = 0.85
+                        importances = [0.45, 0.30, 0.15]
+                        feature_names = ['clinical_guidelines', 'disease_severity', 'patient_history']
+                    
+                    # Create dynamic factors mapping actual model importances
+                    for f_name, imp in zip(feature_names, importances):
+                        if imp > 0.05: # Only show significant factors
+                            # Map mathematical feature names to UI friendly names
+                            ui_name = f_name.replace('_', ' ').title()
+                            if f_name == 'age': ui_name = "Patient Age"
+                            if f_name == 'medication': continue # Don't list the drug itself as an impact factor
+                            feature_importance_list.append({
+                                "feature": ui_name,
+                                "impact": round(float(imp), 2)
+                            })
+                            
+                            # Aggregate for top factors
+                            if ui_name in all_top_factors:
+                                all_top_factors[ui_name] += float(imp)
+                            else:
+                                all_top_factors[ui_name] = float(imp)
+                                
+                    feature_importance_list = sorted(feature_importance_list, key=lambda x: x['impact'], reverse=True)
+                else:
+                    # Fallback XAI static values if model is missing
+                    feature_importance_list = [
+                        {"feature": "Clinical Guidelines", "impact": 0.45},
+                        {"feature": "Disease Severity", "impact": 0.30},
+                        {"feature": "Patient History", "impact": 0.15}
+                    ]
+
+                overall_confidences.append(confidence)
 
                 english_data = {
                     "drug_class": med_data.get('drug_class', 'General'),
@@ -229,7 +288,7 @@ def xai_explain_prescription():
                     "summary": med_data.get('why_prescribed_en', "Recommended based on your current health status."),
                     "how_it_works": med_data.get('how_it_works_en', "Mechanism of action varies."),
                     "why_prescribed": med_data.get('why_prescribed_en', "Recommended based on your current health status."),
-                    "importance": importance,
+                    "importance": confidence,
                     "dosage": dosage,
                     "frequency": frequency,
                     "duration": duration,
@@ -238,39 +297,12 @@ def xai_explain_prescription():
                     "warnings": str(med_data.get('warnings_en') or "Follow clinical instructions; Consult healthcare provider").split('; '),
                     "lifestyle": str(med_data.get('lifestyle_recommendations_en') or "Healthy diet; Regular Exercise").split('; '),
                     "xai": {
-                        "confidence_score": 0.94,
-                        "feature_importance": [
-                            {"feature": "Clinical Guidelines", "impact": 0.45},
-                            {"feature": "Disease Severity", "impact": 0.30},
-                            {"feature": "Drug Synergy", "impact": 0.15},
-                            {"feature": "Patient History", "impact": 0.10}
-                        ]
-                    }
-                }
-
-                arabic_data = {
-                    "drug_class": "فئة الدواء",
-                    "usage": med_data.get('explanation_ar', "آلية العمل."),
-                    "summary": "محسن لعلاج حالتك الصحية.",
-                    "importance": importance,
-                    "dosage": dosage,
-                    "frequency": frequency,
-                    "duration": duration,
-                    "instructions": instructions,
-                    "side_effects": ["تحقق من العبوة"],
-                    "warnings": ["اتبع التعليمات"],
-                    "lifestyle": ["نظام غذائي صحي"],
-                    "xai": {
-                        "confidence_score": 0.94,
-                        "feature_importance": [
-                            {"feature": "المبادئ التوجيهية", "impact": 0.45},
-                            {"feature": "خطورة المرض", "impact": 0.30},
-                            {"feature": "تآزر الأدوية", "impact": 0.15},
-                            {"feature": "تاريخ المريض", "impact": 0.10}
-                        ]
+                        "confidence_score": confidence,
+                        "feature_importance": feature_importance_list
                     }
                 }
             else:
+                overall_confidences.append(0.5)
                 english_data = {
                     "drug_class": "Generic",
                     "usage": f"Standard action for {name}.",
@@ -284,36 +316,37 @@ def xai_explain_prescription():
                     "warnings": ["Caution"],
                     "lifestyle": ["Stay healthy"],
                     "xai": {
-                        "confidence": 0.3,
+                        "confidence_score": 0.3,
                         "feature_importance": [{"feature": "Generic Match", "impact": 1.0}]
                     }
-                }
-                arabic_data = {
-                    "drug_class": "دواء عام",
-                    "usage": f"عمل قياسي لـ {name}.",
-                    "why_prescribed": "علاج عام.",
-                    "importance": 0.5,
-                    "dosage": dosage,
-                    "frequency": frequency,
-                    "duration": duration,
-                    "instructions": instructions,
-                    "side_effects": ["أعراض عامة"],
-                    "warnings": ["تنبيه"],
-                    "lifestyle": ["حافظ على صحتك"],
-                    "xai": {"confidence_score": 0.3, "explanation": "بيانات عامة."}
                 }
 
             enriched_items.append({
                 "drug_name": name,
-                "english": english_data,
-                "arabic": arabic_data
+                "english": english_data
             })
+
+        final_confidence = round(sum(overall_confidences) / len(overall_confidences), 2) if overall_confidences else 0.85
+        
+        # Calculate dynamic top_factors for the whole explanation
+        if all_top_factors:
+            sorted_top_factors = sorted(all_top_factors.items(), key=lambda x: x[1], reverse=True)[:5]
+            # Normalize weights to sum to 1.0
+            total_weight = sum([x[1] for x in sorted_top_factors])
+            top_factors = [{"factor": k, "weight": round(v / total_weight if total_weight > 0 else 0, 2)} for k, v in sorted_top_factors]
+        else:
+            top_factors = [
+                {"factor": "High blood pressure diagnosis", "weight": 0.40},
+                {"factor": "Age and risk factors", "weight": 0.20},
+                {"factor": "Medication effectiveness", "weight": 0.20},
+                {"factor": "Safe drug combination", "weight": 0.15},
+            ]
 
         return jsonify({
             "status": "success",
             "overall_diagnosis": overall_diagnosis,
             "overall_treatment_goal": overall_treatment_goal,
-            "overall_confidence": 0.92,
+            "overall_confidence": final_confidence,
             "top_factors": top_factors,
             "synergies": synergies,
             "data": enriched_items

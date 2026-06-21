@@ -1,161 +1,278 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Deep AI Analysis Results')
+@section('title', 'AI Analysis Results')
 
 @section('content')
-<div class="welcome-section" style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
-    <div>
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">
-            Optimized Analysis Report
-        </h1>
-        <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 600px;">
-            Our deep analysis model has cross-referenced your symptoms with its diagnostic database.
-        </p>
-    </div>
-    <div style="display: flex; gap: 12px;">
-        <a href="{{ route('symptoms.index') }}" class="btn-secondary" style="width: auto; padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-            <i class="fas fa-search-plus"></i> New Check
-        </a>
-        <a href="{{ route('symptoms.history') }}" class="btn-secondary" style="width: auto; padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-            <i class="fas fa-list-ul"></i> History
-        </a>
-    </div>
-</div>
+    <style>
+        .sym-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 15px;
+            border-radius: 30px;
+            font-size: 0.83rem;
+            font-weight: 700;
+            transition: transform 0.15s;
+        }
 
-@php
-    $urgency = strtolower($symptomCheck->urgency);
-    
-    $urgencyBg = '#E0F2F1'; 
-    $urgencyColor = '#00796B';
-    $urgencyIcon = 'fa-check-circle';
-    $urgencyMessage = "Low Priority: Your symptoms appear manageable, but monitoring is advised.";
-    
-    if($urgency === 'high') {
-        $urgencyBg = '#FFF1F2';
-        $urgencyColor = '#E11D48';
-        $urgencyIcon = 'fa-biohazard';
-        $urgencyMessage = "CRITICAL: Urgent medical evaluation is required based on high-risk symptom patterns.";
-    } elseif($urgency === 'medium') {
-        $urgencyBg = '#FFF8E1';
-        $urgencyColor = '#D97706';
-        $urgencyIcon = 'fa-shield-alt';
-        $urgencyMessage = "MODERATE: Persistent symptoms detected. Professional consultation is recommended within 24-48 hours.";
-    }
-@endphp
+        .sym-badge.detected {
+            background: rgba(67, 97, 238, 0.12);
+            color: #4361EE;
+            border: 1px solid rgba(67, 97, 238, 0.3);
+        }
 
-@if($urgency === 'high')
-<div style="background: #FFF1F2; border-left: 6px solid #E11D48; border-radius: 16px; padding: 28px; margin-bottom: 32px; display: flex; align-items: center; gap: 24px; box-shadow: 0 10px 25px rgba(225, 29, 72, 0.15);">
-    <div style="width: 64px; height: 64px; background: rgba(225, 29, 72, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #E11D48; font-size: 2rem;">
-        <i class="fas fa-hospital-user"></i>
-    </div>
-    <div>
-        <h3 style="font-size: 1.35rem; font-weight: 800; color: #BE123C; margin-bottom: 6px;">Immediate Action Required</h3>
-        <p style="color: #9F1239; font-size: 1.05rem; line-height: 1.5; font-weight: 600;">
-            {{ $urgencyMessage }} Seek emergency care if symptoms worsen.
-        </p>
-    </div>
-</div>
-@endif
+        .sym-badge.absent {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1px solid #e2e8f0;
+            opacity: 0.6;
+        }
 
-<div class="glass-card" style="margin-bottom: 32px; padding: 40px; border-radius: 24px;">
-    <!-- Result Header -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 24px; border-bottom: 1px solid #f1f5f9;">
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .urgency-pill {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 800;
+        }
+
+        @keyframes pulse-red {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, .45)
+            }
+
+            50% {
+                box-shadow: 0 0 0 14px rgba(225, 29, 72, 0)
+            }
+        }
+
+        .alert-pulse {
+            animation: pulse-red 2s infinite;
+        }
+
+        @media(max-width:768px) {
+            .two-col {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+
+    @php
+        $urgency = strtolower($symptomCheck->urgency);
+        $aiResponse = $symptomCheck->ai_response ?? [];
+        $features = $symptomCheck->symptoms_json['features'] ?? [];
+
+        $symLabels = [
+            'fever' => ['Fever', 'fa-thermometer-half'],
+            'cough' => ['Cough', 'fa-head-side-cough'],
+            'headache' => ['Headache', 'fa-brain'],
+            'fatigue' => ['Fatigue', 'fa-battery-quarter'],
+            'chest_pain' => ['Chest Pain', 'fa-heart'],
+            'shortness_of_breath' => ['Shortness of Breath', 'fa-lungs'],
+            'dizziness' => ['Dizziness', 'fa-dizzy'],
+            'nausea' => ['Nausea', 'fa-hand-holding-water'],
+            'sore_throat' => ['Sore Throat', 'fa-allergies'],
+        ];
+
+        $detected = collect($symLabels)->filter(fn($v, $k) => ($features[$k] ?? 0) == 1)->count();
+
+        [$urgBg, $urgColor, $urgIcon, $urgMsg, $urgLabel] = match ($urgency) {
+            'high' => [
+                '#FFF1F2',
+                '#E11D48',
+                'fa-biohazard',
+                'CRITICAL — Seek immediate emergency care. Do not delay.',
+                'HIGH'
+            ],
+            'medium' => [
+                '#FFF8E1',
+                '#D97706',
+                'fa-shield-alt',
+                'MODERATE — Consult a doctor within 24–48 hours.',
+                'MEDIUM'
+            ],
+            default => [
+                '#E0F2F1',
+                '#00796B',
+                'fa-check-circle',
+                'LOW — Symptoms appear manageable. Rest and monitor.',
+                'LOW'
+            ],
+        };
+    @endphp
+
+    {{-- Page header --}}
+    <div
+        style="margin-bottom:26px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px;">
         <div>
-            <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">
-                {{ $symptomCheck->predicted_disease }}
-            </h2>
-            <p style="color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-microchip" style="color: var(--primary);"></i> AI Classification Result
-            </p>
+            <h1 style="font-size:1.7rem; font-weight:800; color:var(--text-main); margin-bottom:5px;">AI Analysis Report
+            </h1>
+            <p style="color:var(--text-muted); font-size:0.92rem;">Symptoms cross-referenced with the diagnostic model.</p>
         </div>
-        <div style="text-align: right;">
-            <span style="background: {{ $urgencyBg }}; color: {{ $urgencyColor }}; padding: 10px 24px; border-radius: 40px; font-weight: 800; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 10px; border: 1px solid {{ $urgencyColor }}33;">
-                <i class="fas {{ $urgencyIcon }}"></i> {{ strtoupper($urgency) }} URGENCY
-            </span>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Analyzed on {{ $symptomCheck->created_at->format('M d, Y H:i') }}</p>
-        </div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;">
-        <!-- Original Description -->
-        @if(isset($symptomCheck->symptoms_json['text']))
-        <div style="grid-column: 1 / -1; background: #f8fafc; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
-            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-quote-left" style="color: var(--primary);"></i> Your Description
-            </h4>
-            <p style="font-style: italic; color: var(--text-main); line-height: 1.6; font-size: 1.05rem;">
-                "{{ $symptomCheck->symptoms_json['text'] }}"
-            </p>
-        </div>
-        @endif
-
-        <!-- Symptom Analysis -->
-        <div>
-            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Predicted Disease</h4>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                <span style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 40px; font-weight: 800; font-size: 0.95rem;">
-                    <i class="fas fa-microchip" style="color: var(--primary);"></i>
-                    {{ $symptomCheck->symptoms_json['features']['predicted_disease'] }}
-                </span>
-            </div>
-        </div>
-
-        <!-- Care Pathway -->
-        <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 30px; padding: 32px; position: relative; overflow: hidden;">
-            <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; color: rgba(67, 97, 238, 0.03);">
-                <i class="fas fa-user-md"></i>
-            </div>
-            
-            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px;">Recommended Care Pathway</h4>
-            <div style="margin-bottom: 32px; position: relative;">
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px;">Consultation Specialist:</p>
-                <p style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">
-                   {{ $symptomCheck->specialization }}
-                </p>
-                <p style="color: var(--text-main); line-height: 1.6; font-size: 1rem; margin-top: 12px; font-weight: 500;">
-                    {{ $urgencyMessage }}
-                </p>
-            </div>
-            
-            <a href="{{ route('patient.appointments') }}" class="btn-primary" style="width: 100%; justify-content: center; padding: 18px; border-radius: 16px; font-weight: 700; font-size: 1.05rem; box-shadow: 0 10px 15px -3px rgba(67, 97, 238, 0.3);">
-                <i class="fas fa-calendar-check" style="margin-right: 10px;"></i> Instant Booking
+        <div style="display:flex; gap:10px;">
+            <a href="{{ route('symptoms.index') }}" class="btn-secondary"
+                style="width:auto; padding:9px 18px; text-decoration:none; display:inline-flex; align-items:center; gap:7px;">
+                <i class="fas fa-search-plus"></i> New Check
+            </a>
+            <a href="{{ route('symptoms.history') }}" class="btn-secondary"
+                style="width:auto; padding:9px 18px; text-decoration:none; display:inline-flex; align-items:center; gap:7px;">
+                <i class="fas fa-list-ul"></i> History
             </a>
         </div>
     </div>
-</div>
 
-@if($urgency !== 'high')
-<div style="margin-top: 60px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-        <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">Top Matched Specialists</h3>
-        <p style="color: var(--text-muted); font-weight: 500;">Based on predicted specialty: <strong>{{ $symptomCheck->specialization }}</strong></p>
-    </div>
-
-    @if($recommendedDoctors && $recommendedDoctors->count() > 0)
-        <div class="patient-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
-            @foreach($recommendedDoctors as $doctor)
-                <div class="glass-card" style="padding: 30px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #f1f5f9;" onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='scale(1.03)'" onmouseout="this.style.borderColor='#f1f5f9'; this.style.transform='scale(1)'">
-                    <div style="text-align: center; margin-bottom: 24px;">
-                        <img src="{{ $doctor->user->profile_image ? asset('storage/' . $doctor->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($doctor->user->name) . '&background=4361EE&color=fff&size=128' }}" 
-                             alt="{{ $doctor->user->name }}" 
-                             style="width: 80px; height: 80px; border-radius: 20px; object-fit: cover; box-shadow: 0 8px 15px rgba(0,0,0,0.1);">
-                        <h4 style="font-weight: 800; color: var(--text-main); margin-top: 16px; font-size: 1.1rem;">{{ $doctor->user->name }}</h4>
-                        <span style="font-size: 0.85rem; color: var(--primary); font-weight: 700; background: rgba(67, 97, 238, 0.08); padding: 4px 12px; border-radius: 20px;">{{ $doctor->specialty }}</span>
-                    </div>
-                    
-
-                </div>
-            @endforeach
-        </div>
-    @else
-        <div class="glass-card" style="text-align: center; padding: 60px; background: rgba(248, 250, 252, 0.5); border-style: dashed;">
-            <i class="fas fa-stethoscope" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"></i>
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main);">No direct matches for this specialty</h3>
-            <p style="color: var(--text-muted); max-width: 400px; margin: 12px auto 32px;">You can book with our General Practitioners who can provide a referral after evaluation.</p>
-            <a href="{{ route('patient.appointments') }}" class="btn-primary" style="display: inline-flex;">Browse All Doctors</a>
+    {{-- Critical Banner --}}
+    @if($urgency === 'high')
+        <div class="alert-pulse"
+            style="background:#FFF1F2; border-left:6px solid #E11D48; border-radius:16px; padding:22px 28px; margin-bottom:26px; display:flex; align-items:center; gap:20px;">
+            <div
+                style="width:52px;height:52px;background:rgba(225,29,72,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#E11D48;font-size:1.7rem;">
+                <i class="fas fa-hospital-user"></i>
+            </div>
+            <div>
+                <h3 style="font-size:1.15rem;font-weight:800;color:#BE123C;margin-bottom:4px;">Immediate Action Required</h3>
+                <p style="color:#9F1239;font-size:0.96rem;line-height:1.5;font-weight:600;">{{ $urgMsg }} If symptoms worsen,
+                    call emergency services immediately.</p>
+            </div>
         </div>
     @endif
-</div>
-@endif
+
+    {{-- Main card --}}
+    <div class="glass-card" style="padding:36px;border-radius:24px;margin-bottom:28px;">
+
+        {{-- Header row --}}
+        <div
+            style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid #f1f5f9;">
+            <div>
+                <p
+                    style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">
+                    <i class="fas fa-microchip" style="color:var(--primary);"></i> AI Prediction
+                </p>
+                <h2 style="font-size:1.9rem;font-weight:900;color:var(--text-main);margin-bottom:5px;">
+                    {{ $symptomCheck->predicted_disease }}</h2>
+                <p style="color:var(--text-muted);font-size:0.87rem;">
+                    {{ $symptomCheck->created_at->format('M d, Y \a\t H:i') }}
+                </p>
+            </div>
+            <span class="urgency-pill"
+                style="background:{{ $urgBg }};color:{{ $urgColor }};border:1px solid {{ $urgColor }}44;display:inline-flex;align-items:center;gap:9px;flex-shrink:0;">
+                <i class="fas {{ $urgIcon }}"></i> {{ $urgLabel }} URGENCY
+            </span>
+        </div>
+
+        {{-- Two-column: description + care pathway --}}
+        <div class="two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+
+            <div>
+                {{-- Patient text --}}
+                @if(isset($symptomCheck->symptoms_json['text']))
+                    <div
+                        style="background:#f8fafc;padding:20px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:18px;">
+                        <h4
+                            style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">
+                            <i class="fas fa-quote-left" style="color:var(--primary);"></i> Your Description
+                        </h4>
+                        <p style="font-style:italic;color:var(--text-main);line-height:1.65;font-size:0.94rem;">
+                            "{{ $symptomCheck->symptoms_json['text'] }}"
+                        </p>
+                    </div>
+                @endif
+
+                {{-- Assessment box --}}
+                <div style="background:{{ $urgBg }}33;border:1px solid {{ $urgColor }}44;border-radius:14px;padding:18px;">
+                    <h4
+                        style="font-size:0.78rem;font-weight:700;color:{{ $urgColor }};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+                        <i class="fas {{ $urgIcon }}"></i> Assessment
+                    </h4>
+                    <p style="color:var(--text-main);font-size:0.94rem;line-height:1.6;">{{ $urgMsg }}</p>
+                </div>
+            </div>
+
+            {{-- Care card --}}
+            <div
+                style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1px solid #e2e8f0;border-radius:20px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;">
+                <div>
+                    <h4
+                        style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;">
+                        Recommended Care Pathway
+                    </h4>
+                    <div class="info-row">
+                        <span style="font-size:0.87rem;color:var(--text-muted);">Predicted Condition</span>
+                        <strong style="color:var(--text-main);">{{ $symptomCheck->predicted_disease }}</strong>
+                    </div>
+                    <div class="info-row">
+                        <span style="font-size:0.87rem;color:var(--text-muted);">Consult Specialist</span>
+                        <strong style="color:var(--primary);">{{ $symptomCheck->specialization }}</strong>
+                    </div>
+                    <div class="info-row">
+                        <span style="font-size:0.87rem;color:var(--text-muted);">Urgency Level</span>
+                        <span class="urgency-pill"
+                            style="background:{{ $urgBg }};color:{{ $urgColor }};">{{ $urgLabel }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Matched Specialists --}}
+    @if($urgency !== 'high')
+        <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
+                <h3 style="font-size:1.4rem;font-weight:800;color:var(--text-main);">Top Matched Specialists</h3>
+                <p style="color:var(--text-muted);font-size:0.88rem;">Specialty:
+                    <strong>{{ $symptomCheck->specialization }}</strong></p>
+            </div>
+
+            @if($recommendedDoctors && $recommendedDoctors->count() > 0)
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+                    @foreach($recommendedDoctors as $doctor)
+                        <div class="glass-card"
+                            style="padding:26px;text-align:center;border:1px solid #f1f5f9;border-radius:20px;transition:all .3s;"
+                            onmouseover="this.style.borderColor='var(--primary)';this.style.transform='translateY(-4px)'"
+                            onmouseout="this.style.borderColor='#f1f5f9';this.style.transform='translateY(0)'">
+                            <img src="{{ $doctor->user->profile_image ? asset('storage/' . $doctor->user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($doctor->user->name) . '&background=4361EE&color=fff&size=128' }}"
+                                alt="{{ $doctor->user->name }}"
+                                style="width:68px;height:68px;border-radius:16px;object-fit:cover;margin:0 auto 14px;display:block;box-shadow:0 6px 12px rgba(0,0,0,.1);">
+                            <h4 style="font-weight:800;color:var(--text-main);font-size:1rem;margin-bottom:6px;">
+                                {{ $doctor->user->name }}</h4>
+                            <span
+                                style="font-size:0.8rem;color:var(--primary);font-weight:700;background:rgba(67,97,238,.08);padding:4px 12px;border-radius:20px;">{{ $doctor->specialty }}</span>
+                            <div style="margin-top:18px;">
+                                <a href="{{ route('patient.appointments') }}" class="btn-primary"
+                                    style="display:inline-flex;gap:6px;align-items:center;padding:9px 18px;font-size:0.85rem;text-decoration:none;border-radius:10px;">
+                                    <i class="fas fa-calendar-plus"></i> Book
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="glass-card" style="text-align:center;padding:50px;border-style:dashed;">
+                    <i class="fas fa-stethoscope" style="font-size:2.5rem;color:#cbd5e1;margin-bottom:14px;"></i>
+                    <h3 style="font-size:1.1rem;font-weight:700;color:var(--text-main);margin-bottom:10px;">No direct specialty
+                        match in our system</h3>
+                    <p style="color:var(--text-muted);max-width:380px;margin:0 auto 22px;">Our General Practitioners can evaluate
+                        and refer you.</p>
+                    <a href="{{ route('patient.appointments') }}" class="btn-primary"
+                        style="display:inline-flex;gap:8px;align-items:center;text-decoration:none;">
+                        <i class="fas fa-user-md"></i> Browse All Doctors
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
 
 @endsection
