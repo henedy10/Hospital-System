@@ -11,8 +11,8 @@ class AppointmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Appointment::whereHas('doctor.user' , function ($q){
-            $q->where('id',Auth::id());
+        $query = Appointment::whereHas('doctor.user', function ($q) {
+            $q->where('id', Auth::id());
         })
             ->with('patient.user');
 
@@ -43,7 +43,7 @@ class AppointmentController extends Controller
         return view('doctor.appointments.index', compact('appointments'));
     }
 
-    public function updateStatus(Request $request,Appointment $appointment)
+    public function updateStatus(Request $request, Appointment $appointment)
     {
         $request->validate([
             'status' => 'required|in:upcoming,completed,cancelled'
@@ -52,22 +52,48 @@ class AppointmentController extends Controller
         $appointment->update([
             'status' => $request->status
         ]);
-        if($request->status == 'cancelled'){
+
+        $suggestedSlots = collect([]);
+        if ($request->status == 'cancelled') {
+            $now = now();
+            $suggestedSlots = Appointment::where('doctor_id', $appointment->doctor_id)
+                ->where('status', 'available')
+                ->where(function ($query) use ($now) {
+                    $query->where('appointment_date', '>', $now->toDateString())
+                        ->orWhere(function ($q) use ($now) {
+                            $q->where('appointment_date', '=', $now->toDateString())
+                                ->where('appointment_time', '>=', $now->toTimeString());
+                        });
+                })
+                ->orderBy('appointment_date', 'asc')
+                ->orderBy('appointment_time', 'asc')
+                ->limit(3)
+                ->get();
+
+            $suggestedArray = $suggestedSlots->map(function ($slot) {
+                return [
+                    'id' => $slot->id,
+                    'appointment_date' => $slot->appointment_date,
+                    'appointment_time' => $slot->appointment_time,
+                ];
+            })->toArray();
+
             $response = Http::post('https://finicky-unstuffed-rewrap.ngrok-free.dev/webhook-test/4672b0fe-7548-4e59-8904-9887cd53abbb', [
                 'type' => 'cancelling',
-                'id'   => $appointment->id,
+                'id' => $appointment->id,
                 'doctor_name' => $appointment->doctor->user->name,
                 'doctor_specialty' => $appointment->doctor->specialty,
                 'appointment_date' => $appointment->appointment_date,
                 'appointment_time' => $appointment->appointment_time,
                 'patient_email' => $appointment->patient->user->email,
                 'patient_name' => $appointment->patient->user->name,
-                'from' => 'doctor'
+                'from' => 'doctor',
+                'suggested_appointments' => $suggestedArray
             ]);
         }
 
         if ($appointment->patient && $appointment->patient->user) {
-            $appointment->patient->user->notify(new \App\Notifications\AppointmentStatusUpdated($appointment));
+            $appointment->patient->user->notify(new \App\Notifications\AppointmentStatusUpdated($appointment, $suggestedSlots));
         }
 
         return back()->with('success', 'Appointment status updated successfully');

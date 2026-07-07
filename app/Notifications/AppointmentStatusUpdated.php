@@ -13,13 +13,15 @@ class AppointmentStatusUpdated extends Notification
     use Queueable;
 
     public $appointment;
+    public $suggestedSlots;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(Appointment $appointment)
+    public function __construct(Appointment $appointment, $suggestedSlots = null)
     {
         $this->appointment = $appointment;
+        $this->suggestedSlots = $suggestedSlots;
     }
 
     /**
@@ -40,10 +42,28 @@ class AppointmentStatusUpdated extends Notification
     public function toArray(object $notifiable): array
     {
         $status = ucfirst($this->appointment->status);
-        return [
+        $data = [
             'appointment_id' => $this->appointment->id,
             'message' => 'Your appointment on ' . $this->appointment->appointment_date . ' has been ' . $status . '.',
             'url' => route('patient.appointments'),
         ];
+
+        if ($this->appointment->status === 'cancelled' && $this->suggestedSlots && $this->suggestedSlots->isNotEmpty()) {
+            $slotsArray = $this->suggestedSlots->map(function ($slot) {
+                return [
+                    'id' => $slot->id,
+                    'appointment_date' => $slot->appointment_date,
+                    'appointment_time' => $slot->appointment_time,
+                ];
+            })->toArray();
+            $data['suggested_appointments'] = $slotsArray;
+
+            $slotsText = $this->suggestedSlots->map(function ($slot) {
+                return $slot->appointment_date . ' ' . $slot->appointment_time;
+            })->implode(', ');
+            $data['message'] .= ' Nearest alternative slots: ' . $slotsText . '.';
+        }
+
+        return $data;
     }
 }
